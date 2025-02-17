@@ -17,11 +17,17 @@ Including another URLconf
 from django.urls import include, path
 from rest_framework import routers
 
-from autoctonos.users import views
+from users import views as users_views
+from products import views as products_views
+
 
 router = routers.DefaultRouter()
-router.register(r'users', views.UserViewSet)
-router.register(r'groups', views.GroupViewSet)
+router.register(r'users', users_views.UserViewSet)
+router.register(r'groups', users_views.GroupViewSet)
+
+router.register(r'productos', products_views.ProductoViewSet)
+router.register(r'categorias', products_views.CategoriaViewSet)
+router.register(r'posts', products_views.PostViewSet)
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
