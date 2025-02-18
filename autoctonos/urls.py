@@ -43,6 +43,7 @@ router.register(r'groups', users_views.GroupViewSet)
 router.register(r'productos', products_views.ProductoViewSet)
 router.register(r'categorias', products_views.CategoriaViewSet)
 router.register(r'posts', products_views.PostViewSet)
+router.register(r'imagenes_productos', products_views.ImagenProductoViewSet)
 
 router.register(r'pedidos', commerce_views.PedidoViewSet)
 router.register(r'detalle_pedidos', commerce_views.DetallePedidoViewSet)
