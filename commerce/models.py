@@ -1,6 +1,6 @@
 from django.db import models
-from autoctonos.users.models import User
-from autoctonos.products.models import Producto
+from django.contrib.auth.models import User
+from products.models import Producto
 
 ESTADO_CHOICES = [
         ('pendiente', 'Pendiente'),
