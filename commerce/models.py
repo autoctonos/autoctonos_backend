@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from users.models import Usuario
 from products.models import Producto
 
 ESTADO_CHOICES = [

@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from users.models import Usuario
 
 class Categoria(models.Model):
     id_categoria = models.AutoField(primary_key=True)
@@ -12,7 +12,7 @@ class Categoria(models.Model):
 
 class Post(models.Model):
     id_post = models.AutoField(primary_key=True)
-    id_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(default=None, null=True)
