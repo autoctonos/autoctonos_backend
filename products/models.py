@@ -5,8 +5,7 @@ class Categoria(models.Model):
     id_categoria = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    deleted_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(default=None, null=True)
 
     def __str__(self):
         return self.nombre
@@ -16,10 +15,8 @@ class Post(models.Model):
     id_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    deleted_at = models.DateTimeField(auto_now=True)
-
-
+    updated_at = models.DateTimeField(default=None, null=True)
+    deleted_at = models.DateTimeField(default=None, null=True)
 
 class Producto(models.Model):
     id_producto = models.AutoField(primary_key=True)
@@ -31,8 +28,8 @@ class Producto(models.Model):
     stock = models.IntegerField()
     imagen = models.ImageField(upload_to='productos/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    deleted_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(default=None, null=True)
+    deleted_at = models.DateTimeField(default=None, null=True)
 
     def __str__(self):
         return self.nombre
