@@ -2,3 +2,5 @@
 pycache/
 __pycache__/
 staticfiles/
+__pycache__/*
+**/migrations/*.py
