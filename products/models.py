@@ -1,6 +1,12 @@
 from django.db import models
 from users.models import Usuario
 
+estado_choices = [
+    ('aprobado', 'Aprobado'),
+    ('rechazado', 'Rechazado'),
+]
+
+
 class Categoria(models.Model):
     id_categoria = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100, null=False)
@@ -17,6 +23,8 @@ class Post(models.Model):
     descripcion = models.TextField(null=False)
     precio = models.DecimalField(max_digits=10, decimal_places=2, null=False)
     stock = models.IntegerField(null=False)
+    estado = models.CharField(max_length=10, choices=estado_choices, default='aprobado')
+    mensaje_rechazo = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=False)
     updated_at = models.DateTimeField(default=None, null=True)
     deleted_at = models.DateTimeField(default=None, null=True)
