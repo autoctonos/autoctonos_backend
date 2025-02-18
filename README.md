@@ -30,7 +30,7 @@ docker compose exec app python manage.py migrate
 docker compose exec app python manage.py createsuperuser
 ```
 
-6. Create staticfiles
+6. Create staticfiles (Styles, Images, etc.)
 
 ```
 docker compose exec app python manage.py collectstatic
