@@ -5,14 +5,19 @@ from .models import Producto, Categoria, Post
 class ProductoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Producto
-        fields = '__all__'
+        fields = ['id_producto', 'id_categoria', 'id_post', 'nombre', 'descripcion', 'precio', 'stock', 'imagen']
 
 class CategoriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Categoria
-        fields = '__all__'
+        fields = ['id_categoria', 'nombre']
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = '__all__'
+        fields = ['id_post', 'id_usuario', 'nombre']
+
+class ImagenProductoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ImagenProducto
+        fields = ['id_imagen', 'id_producto', 'url_imagen']

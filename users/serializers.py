@@ -6,7 +6,7 @@ from .models import Usuario
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-        fields = "__all__"
+        fields = ['id', 'username', 'first_name', 'last_name', 'direccion', 'telefono', 'email', 'password']
 
 
 class GroupSerializer(serializers.ModelSerializer):
