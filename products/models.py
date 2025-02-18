@@ -26,8 +26,6 @@ class Post(models.Model):
     estado = models.CharField(max_length=10, choices=estado_choices, default='aprobado')
     mensaje_rechazo = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=False)
-    updated_at = models.DateTimeField(default=None, null=True)
-    deleted_at = models.DateTimeField(default=None, null=True)
     
 class Producto(models.Model):
     id_producto = models.AutoField(primary_key=True)
