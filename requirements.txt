@@ -6,3 +6,4 @@ typing_extensions==4.12.2
 psycopg2-binary==2.9.10
 Pillow==11.1.0
 drf-yasg==1.21.8
+djangorestframework_simplejwt==5.4.0
