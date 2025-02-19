@@ -4,3 +4,5 @@ __pycache__/
 staticfiles/
 __pycache__/*
 **/migrations/*.py
+productos_imagenes/
+productos/

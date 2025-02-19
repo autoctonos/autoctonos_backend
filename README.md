@@ -17,20 +17,25 @@ This guide will help you set up and run the project in a development environment
 ```
 docker compose up --build
 ```
-
-4. Migrations
+4. Make Migrations
 
 ```
-docker compose exec app python manage.py migrate
+docker exec -it django-docker python manage.py makemigrations
 ```
 
-5. Create a superuser
+5. Migrations
+
+```
+docker compose exec django-web python manage.py migrate
+```
+
+6. Create a superuser
 
 ```
 docker compose exec app python manage.py createsuperuser
 ```
 
-6. Create staticfiles
+7. Create staticfiles (Styles, Images, etc.)
 
 ```
 docker compose exec app python manage.py collectstatic

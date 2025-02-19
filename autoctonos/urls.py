@@ -15,12 +15,26 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import include, path
-from rest_framework import routers
-
+from rest_framework import routers, permissions
+from django.contrib import admin
 from users import views as users_views
 from products import views as products_views
 from commerce import views as commerce_views
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
 
+schema_view = get_schema_view(
+    openapi.Info(
+        title="API Documentation",
+        default_version='v1',
+        description="API documentation for the project",
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(email="contact@myapi.com"),
+        license=openapi.License(name="BSD License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 router = routers.DefaultRouter()
 router.register(r'users', users_views.UserViewSet)
@@ -29,6 +43,7 @@ router.register(r'groups', users_views.GroupViewSet)
 router.register(r'productos', products_views.ProductoViewSet)
 router.register(r'categorias', products_views.CategoriaViewSet)
 router.register(r'posts', products_views.PostViewSet)
+router.register(r'imagenes_productos', products_views.ImagenProductoViewSet)
 
 router.register(r'pedidos', commerce_views.PedidoViewSet)
 router.register(r'detalle_pedidos', commerce_views.DetallePedidoViewSet)
@@ -39,5 +54,7 @@ router.register(r'envios', commerce_views.EnvioViewSet)
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     path('', include(router.urls)),
+    path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path("admin/", admin.site.urls),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]

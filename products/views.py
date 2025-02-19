@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets, permissions
-from .models import Producto, Categoria, Post
-from .serializers import ProductoSerializer, CategoriaSerializer, PostSerializer
+from .models import Producto, Categoria, Post, ImagenProducto
+from .serializers import ProductoSerializer, CategoriaSerializer, PostSerializer, ImagenProductoSerializer
 
 class ProductoViewSet(viewsets.ModelViewSet):
     queryset = Producto.objects.all()
@@ -15,3 +15,7 @@ class CategoriaViewSet(viewsets.ModelViewSet):
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+    
+class ImagenProductoViewSet(viewsets.ModelViewSet):
+    queryset = ImagenProducto.objects.all()
+    serializer_class = ImagenProductoSerializer
