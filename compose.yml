@@ -13,6 +13,8 @@ services:
       - postgres_data:/var/lib/postgresql/data
     env_file:
       - .env
+    networks:
+      - autoctonos_network
 
   django-web:
     build: .
@@ -37,6 +39,12 @@ services:
     volumes:
       - .:/app  
     command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    networks:
+      - autoctonos_network
 
 volumes:
   postgres_data:
+
+networks:
+  autoctonos_network:
+    external: true
