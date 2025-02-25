@@ -8,7 +8,7 @@ from users.models import Usuario
 
 
 class Command(BaseCommand):
-    help = "Genera datos de prueba para varias tablas usando Faker"
+    help = "Genera datos de prueba"
 
     def handle(self, *args, **kwargs):
         fake = Faker()
