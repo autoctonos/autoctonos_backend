@@ -6,3 +6,4 @@ __pycache__/*
 **/migrations/*.py
 productos_imagenes/
 productos/
+venv/
