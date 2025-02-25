@@ -26,18 +26,23 @@ docker exec -it django-docker python manage.py makemigrations
 5. Migrations
 
 ```
-docker compose exec django-web python manage.py migrate
+docker compose exec django-docker python manage.py migrate
 ```
 
 6. Create a superuser
 
 ```
-docker compose exec app python manage.py createsuperuser
+docker compose exec django-docker manage.py createsuperuser
 ```
 
 7. Create staticfiles (Styles, Images, etc.)
 
 ```
-docker compose exec app python manage.py collectstatic
+docker compose exec django-docker python manage.py collectstatic
 ```
 
+8. Create seeders
+
+```
+docker compose exec django-docker python manage.py seeders
+```
