@@ -4,13 +4,13 @@ from .models import Usuario  # Importa tu modelo de usuario personalizado
 
 class CustomUserAdmin(UserAdmin):
     # Define qué campos se mostrarán en la lista de usuarios
-    list_display = ("username", "email", "telefono", "is_staff", "is_active")
+    list_display = ("username", "email", "phone", "is_staff", "is_active")
     # Define los campos editables en el admin
     fieldsets = UserAdmin.fieldsets + (
-        ("Información adicional", {"fields": ("direccion", "telefono", "updated_at", "deleted_at")}),
+        ("Información adicional", {"fields": ("address", "phone", "updated_at", "deleted_at")}),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
-        ("Información adicional", {"fields": ("direccion", "telefono")}),
+        ("Información adicional", {"fields": ("address", "phone")}),
     )
 
 # Registra el modelo en el admin
