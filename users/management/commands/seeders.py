@@ -15,6 +15,8 @@ class Command(BaseCommand):
         self.create_usuarios(fake)
         self.create_categorias(fake)
         self.create_posts(fake)
+        self.create_productos(fake)
+        self.create_imagenes_producto(fake)
         self.stdout.write(self.style.SUCCESS('✅ Datos de prueba creados con éxito'))
 
     
@@ -54,8 +56,10 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('✅ 10 productos creados'))
     
     def create_imagenes_producto(self, fake):
-        for _ in range(10):
+        posts = list(Post.objects.all())
+        for i in range(10):
             ImagenProducto.objects.create(
+                id_post= posts[i],
                 url_imagen="https://picsum.photos/400/300"
             )
         self.stdout.write(self.style.SUCCESS('✅ 10 imágenes de producto creadas'))
