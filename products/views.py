@@ -15,7 +15,7 @@ class ProductoViewSet(viewsets.ModelViewSet):
 class CategoriaViewSet(viewsets.ModelViewSet):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    #permission_classes = [permissions.IsAuthenticated]
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
@@ -31,3 +31,14 @@ class ProductosConImagenView(APIView):
         serializer = ProductoConImagenSerializer(productos, many=True)
         return Response(serializer.data)
 
+class ProductoDetalleView(viewsets.ModelViewSet):
+    queryset = Producto.objects.all()
+    serializer_class = ProductoConImagenSerializer
+
+    def retrieve(self, request, pk=None):
+        try:
+            producto = self.get_object()
+            serializer = self.get_serializer(producto)
+            return Response(serializer.data)
+        except Producto.DoesNotExist:
+            return Response({"message": "Producto no encontrado."})
