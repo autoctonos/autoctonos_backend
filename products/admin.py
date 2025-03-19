@@ -3,13 +3,13 @@ from .models import Post
 
 @admin.action(description="Aprobar posts seleccionados")
 def aprobar_posts(modeladmin, request, queryset):
-    queryset.update(estado='aprobado', mensaje_rechazo=None)
+    queryset.update(estado='Aprobado', mensaje_rechazo=None)
 
 @admin.action(description="Rechazar posts seleccionados")
 def rechazar_posts(modeladmin, request, queryset):
     for post in queryset:
-        post.estado = 'rechazado'
-        post.mensaje_rechazo = "Rechazado por el administrador" 
+        post.estado = 'Rechazado'
+        post.mensaje = "Rechazado por el administrador" 
         post.save()
 
 class PostAdmin(admin.ModelAdmin):
