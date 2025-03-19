@@ -12,11 +12,16 @@ class CategoriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Categoria
         fields = ['id_categoria', 'nombre']
+        
+class PostCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ['id_post', 'id_usuario', 'nombre', 'descripcion', 'precio', 'stock']
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ['id_post', 'id_usuario', 'nombre', 'descripcion', 'precio', 'stock', 'estado', 'mensaje_rechazo']
+        fields = ['id_post', 'id_usuario', 'nombre', 'descripcion', 'precio', 'stock', 'estado', 'mensaje', 'created_at']
 
 class ImagenProductoSerializer(serializers.ModelSerializer):
     class Meta:
