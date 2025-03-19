@@ -1,7 +1,8 @@
 from django.contrib.auth.models import Group
 from rest_framework import permissions, viewsets
 from .models import Usuario
-
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from .serializers import GroupSerializer, UserSerializer
 
 
@@ -19,3 +20,11 @@ class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all().order_by('name')
     serializer_class = GroupSerializer
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+
+
+class UserMeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
