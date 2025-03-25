@@ -3,7 +3,7 @@ from .models import Post
 
 @admin.action(description="Aprobar posts seleccionados")
 def aprobar_posts(modeladmin, request, queryset):
-    queryset.update(estado='Aprobado', mensaje_rechazo=None)
+    queryset.update(estado='Aprobado', mensaje=None)
 
 @admin.action(description="Rechazar posts seleccionados")
 def rechazar_posts(modeladmin, request, queryset):
