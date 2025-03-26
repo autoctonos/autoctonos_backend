@@ -4,6 +4,7 @@ from users.models import Usuario
 estado_choices = [
     ('aprobado', 'Aprobado'),
     ('rechazado', 'Rechazado'),
+    ('revisión', 'Revisión'),
 ]
 
 
@@ -23,8 +24,8 @@ class Post(models.Model):
     descripcion = models.TextField(null=False)
     precio = models.DecimalField(max_digits=10, decimal_places=2, null=False)
     stock = models.IntegerField(null=False)
-    estado = models.CharField(max_length=10, choices=estado_choices, default='aprobado')
-    mensaje_rechazo = models.TextField(null=True)
+    estado = models.CharField(max_length=10, choices=estado_choices, default='Revisión')
+    mensaje = models.TextField(null=True, default='En revisión')
     created_at = models.DateTimeField(auto_now_add=True, null=False)
     
 class Producto(models.Model):

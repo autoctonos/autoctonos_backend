@@ -36,7 +36,7 @@ class Command(BaseCommand):
                 precio=round(random.uniform(10, 500), 2),
                 stock=random.randint(1, 100),
                 estado=random.choice(['activo', 'inactivo']),
-                mensaje_rechazo=fake.sentence() if random.choice([True, False]) else None,
+                mensaje=fake.sentence() if random.choice([True, False]) else None,
                 id_usuario=random.choice(usuarios)
             )
         self.stdout.write(self.style.SUCCESS('✅ 10 posts creados'))
