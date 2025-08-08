@@ -3,12 +3,12 @@ from django.contrib.auth import get_user_model
 from products.models import Categoria
 
 class Command(BaseCommand):
-    help = "Carga categorías y subcategorías reales"
+    help = "Carga categorías y subcategorías producción"
 
     def handle(self, *args, **kwargs):
         self.create_categorias()
         self.stdout.write(
-            self.style.SUCCESS("Datos reales cargados")
+            self.style.SUCCESS("Datos de producción cargados")
         )
 
     def create_categorias(self):
