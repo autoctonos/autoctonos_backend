@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from products.models import Categoria
 
 class Command(BaseCommand):
-    help = "Carga categorías y subcategorías reales"
+    help = "Carga categorías y subcategorías producción"
 
   def handle(self, *args, **kwargs):
         self.create_categorias()
