@@ -5,7 +5,7 @@ from products.models import Categoria
 class Command(BaseCommand):
     help = "Carga categorías y subcategorías reales"
 
-  def handle(self, *args, **kwargs):
+    def handle(self, *args, **kwargs):
         self.create_categorias()
         self.stdout.write(
             self.style.SUCCESS("Datos reales cargados")
