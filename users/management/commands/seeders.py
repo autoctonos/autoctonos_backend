@@ -20,13 +20,24 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('✅ Datos de prueba creados con éxito'))
 
     
-    def create_categorias(self, fake):
-        for _ in range(10):
-            Categoria.objects.create(
-                nombre=fake.word()
-            )
-        self.stdout.write(self.style.SUCCESS('✅ 10 categorías creadas'))
-
+    def create_categorias(self):
+        categorias = [
+            "QUESOS",
+            "BEBIDAS",
+            "AMASIJOS",
+            "CAFÉ",
+            "TEJIDOS",
+            "COLACIONES",
+            "CESTERIA",
+            "ARTESANIAS",
+            "EMBUTIDOS Y ENCURTIDOS",
+            "SALUD",
+            "MUEBLES"
+        ]
+        for nombre in categorias:
+            Categoria.objects.get_or_create(nombre=nombre)
+        self.stdout.write(self.style.SUCCESS("11 categorías creadas"))
+        
     def create_posts(self, fake):
         usuarios = list(Usuario.objects.all())
         for _ in range(10):
