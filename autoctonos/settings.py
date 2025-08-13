@@ -161,6 +161,3 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://autoctonos_frontend-app-1:3000",
 ]
-
-CORS_ALLOW_CREDENTIALS = True
-    

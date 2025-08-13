@@ -16,3 +16,5 @@ typing_extensions==4.12.2
 uritemplate==4.1.1
 django-cors-headers==4.7.0
 Faker==36.1.1
+django-storages
+boto3
