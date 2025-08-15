@@ -23,8 +23,14 @@ class ProductoConImagenSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Producto
-        fields = ['id_producto', 'id_categoria', 'id_producto', 'nombre', 'descripcion', 'precio', 'stock', 'imagenes']
+        fields = ['id_producto', 'id_categoria', 'nombre', 'descripcion', 'precio', 'stock', 'imagenes']
 
     def get_imagenes(self, obj):
         imagenes = ImagenProducto.objects.filter(id_producto=obj.id_producto)
         return ImagenProductoSerializer(imagenes, many=True).data
+
+class ProductoByCategoriaSerializer(serializers.ModelSerializer):
+    productos_categoria = serializers.SerializerMethodField()
+    class Meta:
+        model = Producto
+        fields = ['id_producto','nombre','descripcion','precio','stock','imagenes']

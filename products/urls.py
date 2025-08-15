@@ -1,5 +1,5 @@
 from django.urls import include, path
-from .views import ProductosConImagenView, ProductoViewSet, CategoriaViewSet, ImagenProductoViewSet, ProductoDetalleView
+from .views import ProductosConImagenView, ProductosCategoriaView, ProductoViewSet, CategoriaViewSet, ImagenProductoViewSet, ProductoDetalleView
 from django.conf.urls.static import static
 from django.conf import settings
 from rest_framework import routers, permissions
@@ -14,5 +14,7 @@ urlpatterns = [
     path('', include(router.urls)),
     path('productos-con-imagenes/', ProductosConImagenView.as_view(), name='productos-con-imagenes'),
     path('producto-detalle/<int:pk>/', ProductoDetalleView.as_view({'get': 'retrieve'}), name='producto-detalle'),
+    path('productos_categoria/', ProductosCategoriaView.as_view(), name='productos-categoria'),
+
 ]
 

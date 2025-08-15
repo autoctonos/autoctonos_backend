@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework import generics
+from django.db.models import Q
 
 class ProductoViewSet(viewsets.ModelViewSet):
     queryset = Producto.objects.all()
@@ -37,3 +38,18 @@ class ProductoDetalleView(viewsets.ModelViewSet):
             return Response(serializer.data)
         except Producto.DoesNotExist:
             return Response({"message": "Producto no encontrado."})
+
+class ProductosCategoriaView(APIView):
+    def get(self, request):
+        value = (request.query_params.get('id_categoria') or '').strip()
+        qs = Producto.objects.all()
+
+        if value:
+            # si es numérico, filtra por ID; si no, por nombre (case-insensitive)
+            if value.isdigit():
+                qs = qs.filter(id_categoria=value)  # FK → acepta el PK directamente
+            else:
+                qs = qs.filter(id_categoria__nombre__iexact=value)
+
+        serializer = ProductoConImagenSerializer(qs, many=True)  # ← NO tocamos lógica de imágenes
+        return Response(serializer.data)
