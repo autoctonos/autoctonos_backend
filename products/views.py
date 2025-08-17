@@ -1,6 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from rest_framework import viewsets, permissions
 from .models import Producto, Categoria, Post, ImagenProducto
+from .forms import ProductoForm
+from users.models import Usuario
 from .serializers import ProductoConImagenSerializer, PostCreateSerializer, ProductoSerializer, CategoriaSerializer, PostSerializer, ImagenProductoSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response 
@@ -53,3 +55,26 @@ class ProductoDetalleView(viewsets.ModelViewSet):
             return Response(serializer.data)
         except Producto.DoesNotExist:
             return Response({"message": "Producto no encontrado."})
+
+def dashboard(request):
+    if request.method == 'POST':
+        form = ProductoForm(request.POST)
+        if form.is_valid():
+            producto = form.save(commit=False)
+            user = Usuario.objects.first()
+            if user:
+                post = Post.objects.create(
+                    id_usuario=user,
+                    nombre=producto.nombre,
+                    descripcion=producto.descripcion,
+                    precio=producto.precio,
+                    stock=producto.stock,
+                    estado='aprobado',
+                )
+                producto.id_post = post
+                producto.save()
+            return redirect('dashboard')
+    else:
+        form = ProductoForm()
+    productos = Producto.objects.all()
+    return render(request, 'products/dashboard.html', {'form': form, 'productos': productos})
