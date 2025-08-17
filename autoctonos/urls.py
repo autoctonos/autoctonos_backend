@@ -9,7 +9,7 @@ from drf_yasg.views import get_schema_view
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.conf.urls.static import static
 from django.conf import settings
-from products import urls as product_url 
+from products import urls as product_url
 from users import urls as user_url
 from commerce import urls as commerce_url
 
@@ -36,7 +36,8 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/productos/', include(product_url)),
     path('api/users/', include(user_url)),
-    path('api/commerce/', include(commerce_url))
+    path('api/commerce/', include(commerce_url)),
+    path('dashboard/', products_views.product_dashboard, name='product-dashboard'),
 ]
 
 if settings.DEBUG:

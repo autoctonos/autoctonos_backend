@@ -1,13 +1,20 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from rest_framework import viewsets, permissions
 from .models import Producto, Categoria, ImagenProducto
-from .serializers import ProductoConImagenSerializer, ProductoSerializer, CategoriaSerializer, ImagenProductoSerializer
+from .serializers import (
+    ProductoConImagenSerializer,
+    ProductoSerializer,
+    CategoriaSerializer,
+    ImagenProductoSerializer,
+)
 from rest_framework.decorators import api_view
-from rest_framework.response import Response 
+from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework import generics
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .forms import ProductoForm
 
 class ProductoViewSet(viewsets.ModelViewSet):
     queryset = Producto.objects.all()
@@ -53,3 +60,27 @@ class ProductosCategoriaView(APIView):
 
         serializer = ProductoConImagenSerializer(qs, many=True)  # ← NO tocamos lógica de imágenes
         return Response(serializer.data)
+
+
+def staff_check(user):
+    return user.is_staff
+
+
+@login_required(login_url='/admin/login/')
+@user_passes_test(staff_check)
+def product_dashboard(request):
+    """Simple dashboard to add and list products."""
+    if request.method == 'POST':
+        form = ProductoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('product-dashboard')
+    else:
+        form = ProductoForm()
+
+    productos = Producto.objects.all()
+    context = {
+        'form': form,
+        'productos': productos,
+    }
+    return render(request, 'products/dashboard.html', context)
