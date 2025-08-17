@@ -14,7 +14,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework import generics
 from django.db.models import Q
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 from .forms import ProductoForm
 
 class ProductoViewSet(viewsets.ModelViewSet):
@@ -64,7 +64,7 @@ class ProductosCategoriaView(APIView):
 
 
 def admin_check(user):
-    return user.is_superuser
+    return user.is_staff
 
 
 @login_required(login_url='/admin/login/')
@@ -116,5 +116,5 @@ def product_update(request, pk):
             initial['image'] = imagen.url_imagen
         form = ProductoForm(instance=producto, initial=initial)
 
-    context = {'form': form, 'producto': producto}
+    context = {'form': form, 'producto': producto, 'imagen': imagen}
     return render(request, 'products/product_form.html', context)

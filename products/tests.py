@@ -10,7 +10,7 @@ class ProductDashboardTests(TestCase):
     def setUp(self):
         User = get_user_model()
         self.admin = User.objects.create_user(
-            username='admin', password='pass', is_staff=True, is_superuser=True
+            username='admin', password='pass', is_staff=True
         )
         self.user = User.objects.create_user(
             username='user', password='pass'

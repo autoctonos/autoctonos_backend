@@ -4,14 +4,59 @@
 <head>
     <meta charset="UTF-8">
     <title>Edit Product</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 40px auto; background: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #555; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { margin-top: 15px; padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        img.preview { max-width: 100%; margin-bottom: 10px; border-radius: 4px; }
+        a { display: inline-block; margin-top: 10px; color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
 </head>
 <body>
-    <h1>Edit Product</h1>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Save</button>
-    </form>
-    <p><a href="{% url 'product-dashboard' %}">Back to dashboard</a></p>
+    <div class="container">
+        <h1>Edit Product</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ form.id_categoria.label_tag }}
+                {{ form.id_categoria }}
+            </div>
+            <div class="form-group">
+                {{ form.nombre.label_tag }}
+                {{ form.nombre }}
+            </div>
+            <div class="form-group">
+                {{ form.descripcion.label_tag }}
+                {{ form.descripcion }}
+            </div>
+            <div class="form-group">
+                {{ form.precio.label_tag }}
+                {{ form.precio }}
+            </div>
+            <div class="form-group">
+                {{ form.stock.label_tag }}
+                {{ form.stock }}
+            </div>
+            <div class="form-group">
+                {{ form.estado.label_tag }}
+                {{ form.estado }}
+            </div>
+            <div class="form-group">
+                {% if imagen %}
+                    <img src="{{ imagen.url_imagen.url }}" alt="{{ producto.nombre }}" class="preview"/>
+                {% endif %}
+                {{ form.image.label_tag }}
+                {{ form.image }}
+            </div>
+            <button type="submit">Save</button>
+        </form>
+        <a href="{% url 'product-dashboard' %}">Back to dashboard</a>
+    </div>
 </body>
 </html>
