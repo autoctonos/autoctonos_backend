@@ -1,4 +1,5 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponseForbidden
 from rest_framework import viewsets, permissions
 from .models import Producto, Categoria, ImagenProducto
 from .serializers import (
@@ -62,18 +63,22 @@ class ProductosCategoriaView(APIView):
         return Response(serializer.data)
 
 
-def staff_check(user):
-    return user.is_staff
+def admin_check(user):
+    return user.is_superuser
 
 
 @login_required(login_url='/admin/login/')
-@user_passes_test(staff_check)
 def product_dashboard(request):
-    """Simple dashboard to add and list products."""
+    """Dashboard to add and list products with optional image upload."""
+    if not admin_check(request.user):
+        return HttpResponseForbidden()
     if request.method == 'POST':
-        form = ProductoForm(request.POST)
+        form = ProductoForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            producto = form.save()
+            image = form.cleaned_data.get('image')
+            if image:
+                ImagenProducto.objects.create(id_producto=producto, url_imagen=image)
             return redirect('product-dashboard')
     else:
         form = ProductoForm()
@@ -84,3 +89,32 @@ def product_dashboard(request):
         'productos': productos,
     }
     return render(request, 'products/dashboard.html', context)
+
+
+@login_required(login_url='/admin/login/')
+def product_update(request, pk):
+    if not admin_check(request.user):
+        return HttpResponseForbidden()
+    producto = get_object_or_404(Producto, pk=pk)
+    imagen = ImagenProducto.objects.filter(id_producto=producto).first()
+
+    if request.method == 'POST':
+        form = ProductoForm(request.POST, request.FILES, instance=producto)
+        if form.is_valid():
+            producto = form.save()
+            image = form.cleaned_data.get('image')
+            if image:
+                if imagen:
+                    imagen.url_imagen = image
+                    imagen.save()
+                else:
+                    ImagenProducto.objects.create(id_producto=producto, url_imagen=image)
+            return redirect('product-dashboard')
+    else:
+        initial = {}
+        if imagen:
+            initial['image'] = imagen.url_imagen
+        form = ProductoForm(instance=producto, initial=initial)
+
+    context = {'form': form, 'producto': producto}
+    return render(request, 'products/product_form.html', context)
