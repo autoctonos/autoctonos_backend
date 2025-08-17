@@ -53,3 +53,27 @@ class ProductoDetalleView(viewsets.ModelViewSet):
             return Response(serializer.data)
         except Producto.DoesNotExist:
             return Response({"message": "Producto no encontrado."})
+
+
+class DashboardCreateProductView(generics.CreateAPIView):
+    """Create a Post from the dashboard with default review state."""
+
+    queryset = Post.objects.all()
+    serializer_class = PostCreateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+        data["id_usuario"] = request.user.id
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer):
+        serializer.save(
+            id_usuario=self.request.user,
+            estado="revisión",
+            mensaje="En revisión",
+        )
