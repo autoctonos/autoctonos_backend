@@ -13,6 +13,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework import generics
 from django.db.models import Q
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import ProductoForm
 
@@ -71,14 +72,18 @@ def staff_check(user):
 def product_dashboard(request):
     """Simple dashboard to add and list products."""
     if request.method == 'POST':
-        form = ProductoForm(request.POST)
+        form = ProductoForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            producto = form.save()
+            imagen = form.cleaned_data.get('imagen')
+            if imagen:
+                ImagenProducto.objects.create(id_producto=producto, url_imagen=imagen)
+            messages.success(request, 'Producto agregado correctamente.')
             return redirect('product-dashboard')
     else:
         form = ProductoForm()
 
-    productos = Producto.objects.all()
+    productos = Producto.objects.prefetch_related('imagenproducto_set').all()
     context = {
         'form': form,
         'productos': productos,

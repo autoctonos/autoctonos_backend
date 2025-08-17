@@ -5,31 +5,58 @@
     <meta charset="UTF-8">
     <title>Product Dashboard</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
-        .container { max-width: 800px; margin: 40px auto; background: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #333; }
+        body { font-family: Arial, sans-serif; background-color: #eef1f5; margin:0; }
+        .container { max-width: 900px; margin: 40px auto; background: #fff; padding: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius:8px; }
+        h1 { text-align: center; color: #333; margin-bottom:20px; }
         form { margin-bottom: 30px; }
-        label { display: block; margin-top: 10px; }
-        input, select, textarea { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; }
-        button { margin-top: 15px; padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #45a049; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
-        th { background-color: #f2f2f2; }
+        label { display:block; margin-top:15px; font-weight:bold; }
+        input, select, textarea { width:100%; padding:10px; margin-top:5px; border:1px solid #ccc; border-radius:4px; }
+        button { margin-top:20px; padding:12px 20px; background-color:#4CAF50; color:white; border:none; border-radius:4px; cursor:pointer; }
+        button:hover { background-color:#45a049; }
+        table { width:100%; border-collapse:collapse; margin-top:20px; }
+        th, td { padding:10px; border-bottom:1px solid #ddd; text-align:left; }
+        th { background-color:#f2f2f2; }
+        tr:hover { background-color:#f9f9f9; }
+        .messages { margin-bottom:20px; }
+        .alert { padding:10px 15px; border-radius:4px; margin-bottom:10px; }
+        .alert-success { background-color:#d4edda; color:#155724; }
+        .preview { margin-top:10px; max-width:100%; display:none; border:1px solid #ccc; border-radius:4px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Product Dashboard</h1>
-        <form method="post">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            {{ form.as_p }}
+            <label for="id_id_categoria">Category</label>
+            {{ form.id_categoria }}
+            <label for="id_nombre">Name</label>
+            {{ form.nombre }}
+            <label for="id_descripcion">Description</label>
+            {{ form.descripcion }}
+            <label for="id_precio">Price</label>
+            {{ form.precio }}
+            <label for="id_stock">Stock</label>
+            {{ form.stock }}
+            <label for="id_estado">Status</label>
+            {{ form.estado }}
+            <label for="id_imagen">Image</label>
+            {{ form.imagen }}
+            <img id="imagePreview" class="preview" alt="Image preview" />
             <button type="submit">Add Product</button>
         </form>
         <h2>Existing Products</h2>
         <table>
             <thead>
                 <tr>
+                    <th>Image</th>
                     <th>Name</th>
                     <th>Category</th>
                     <th>Price</th>
@@ -39,16 +66,39 @@
             <tbody>
             {% for producto in productos %}
                 <tr>
+                    <td>
+                        {% with img=producto.imagenproducto_set.first %}
+                            {% if img %}
+                                <img src="{{ img.url_imagen.url }}" alt="{{ producto.nombre }}" style="max-width:60px;">
+                            {% else %}
+                                –
+                            {% endif %}
+                        {% endwith %}
+                    </td>
                     <td>{{ producto.nombre }}</td>
                     <td>{{ producto.id_categoria.nombre }}</td>
                     <td>{{ producto.precio }}</td>
                     <td>{{ producto.stock }}</td>
                 </tr>
             {% empty %}
-                <tr><td colspan="4">No products yet.</td></tr>
+                <tr><td colspan="5">No products yet.</td></tr>
             {% endfor %}
             </tbody>
         </table>
     </div>
+    <script>
+        const input = document.getElementById('id_imagen');
+        const preview = document.getElementById('imagePreview');
+        input.addEventListener('change', function(e){
+            const [file] = this.files;
+            if(file){
+                preview.src = URL.createObjectURL(file);
+                preview.style.display = 'block';
+            } else {
+                preview.src = '';
+                preview.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
