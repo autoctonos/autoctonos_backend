@@ -17,11 +17,23 @@
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
         th { background-color: #f2f2f2; }
+        .messages { margin-bottom: 20px; }
+        .alert { padding: 10px 15px; border-radius: 4px; margin-bottom: 10px; }
+        .alert.success { background-color: #d4edda; color: #155724; }
+        .alert.error { background-color: #f8d7da; color: #721c24; }
+        #image-preview { max-width: 150px; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Product Dashboard</h1>
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group">
@@ -51,6 +63,7 @@
             <div class="form-group">
                 {{ form.image.label_tag }}
                 {{ form.image }}
+                <img id="image-preview" alt="Image preview" />
             </div>
             <button type="submit">Add Product</button>
         </form>
@@ -86,5 +99,21 @@
             </tbody>
         </table>
     </div>
+    <script>
+        const imageInput = document.getElementById('id_image');
+        const preview = document.getElementById('image-preview');
+        if (imageInput) {
+            imageInput.addEventListener('change', function (e) {
+                const [file] = imageInput.files;
+                if (file) {
+                    preview.src = URL.createObjectURL(file);
+                    preview.style.display = 'block';
+                } else {
+                    preview.src = '';
+                    preview.style.display = 'none';
+                }
+            });
+        }
+    </script>
 </body>
 </html>

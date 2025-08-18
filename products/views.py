@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseForbidden
 from rest_framework import viewsets, permissions
+from django.contrib import messages
 from .models import Producto, Categoria, ImagenProducto
 from .serializers import (
     ProductoConImagenSerializer,
@@ -79,7 +80,10 @@ def product_dashboard(request):
             image = form.cleaned_data.get('image')
             if image:
                 ImagenProducto.objects.create(id_producto=producto, url_imagen=image)
+            messages.success(request, 'Product added successfully!')
             return redirect('product-dashboard')
+        else:
+            messages.error(request, 'Please correct the errors below.')
     else:
         form = ProductoForm()
 
@@ -109,7 +113,10 @@ def product_update(request, pk):
                     imagen.save()
                 else:
                     ImagenProducto.objects.create(id_producto=producto, url_imagen=image)
+            messages.success(request, 'Product updated successfully!')
             return redirect('product-dashboard')
+        else:
+            messages.error(request, 'Please correct the errors below.')
     else:
         initial = {}
         if imagen:

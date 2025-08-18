@@ -16,11 +16,22 @@
         img.preview { max-width: 100%; margin-bottom: 10px; border-radius: 4px; }
         a { display: inline-block; margin-top: 10px; color: #007bff; text-decoration: none; }
         a:hover { text-decoration: underline; }
+        .messages { margin-bottom: 20px; }
+        .alert { padding: 10px 15px; border-radius: 4px; margin-bottom: 10px; }
+        .alert.success { background-color: #d4edda; color: #155724; }
+        .alert.error { background-color: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Edit Product</h1>
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group">
@@ -50,6 +61,8 @@
             <div class="form-group">
                 {% if imagen %}
                     <img src="{{ imagen.url_imagen.url }}" alt="{{ producto.nombre }}" class="preview"/>
+                {% else %}
+                    <img class="preview" style="display:none;"/>
                 {% endif %}
                 {{ form.image.label_tag }}
                 {{ form.image }}
@@ -58,5 +71,18 @@
         </form>
         <a href="{% url 'product-dashboard' %}">Back to dashboard</a>
     </div>
+    <script>
+        const imageInput = document.getElementById('id_image');
+        const preview = document.querySelector('img.preview');
+        if (imageInput) {
+            imageInput.addEventListener('change', function (e) {
+                const [file] = imageInput.files;
+                if (file) {
+                    preview.src = URL.createObjectURL(file);
+                    preview.style.display = 'block';
+                }
+            });
+        }
+    </script>
 </body>
 </html>
