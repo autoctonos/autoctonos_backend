@@ -55,10 +55,6 @@
                 {{ form.stock }}
             </div>
             <div class="form-group">
-                {{ form.estado.label_tag }}
-                {{ form.estado }}
-            </div>
-            <div class="form-group">
                 {% if imagen %}
                     <img src="{{ imagen.url_imagen.url }}" alt="{{ producto.nombre }}" class="preview"/>
                 {% else %}
