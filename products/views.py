@@ -1,12 +1,22 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponseForbidden
 from rest_framework import viewsets, permissions
-from .models import Producto, Categoria, Post, ImagenProducto
-from .serializers import ProductoConImagenSerializer, PostCreateSerializer, ProductoSerializer, CategoriaSerializer, PostSerializer, ImagenProductoSerializer
+from django.contrib import messages
+from .models import Producto, Categoria, ImagenProducto
+from .serializers import (
+    ProductoConImagenSerializer,
+    ProductoSerializer,
+    CategoriaSerializer,
+    ImagenProductoSerializer,
+)
 from rest_framework.decorators import api_view
-from rest_framework.response import Response 
+from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework import generics
+from django.db.models import Q
+from django.contrib.auth.decorators import login_required
+from .forms import ProductoForm
 
 class ProductoViewSet(viewsets.ModelViewSet):
     queryset = Producto.objects.all()
@@ -15,22 +25,6 @@ class ProductoViewSet(viewsets.ModelViewSet):
 class CategoriaViewSet(viewsets.ModelViewSet):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
-
-class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all() 
-    
-    def get_queryset(self):
-        queryset = super().get_queryset()
-       
-        id_usuario = self.request.query_params.get('id_usuario', None)
-        if id_usuario is not None:
-            queryset = queryset.filter(id_usuario=id_usuario)
-        return queryset
-    
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return PostCreateSerializer
-        return PostSerializer
 
 class ImagenProductoViewSet(viewsets.ModelViewSet):
     queryset = ImagenProducto.objects.all()
@@ -53,3 +47,81 @@ class ProductoDetalleView(viewsets.ModelViewSet):
             return Response(serializer.data)
         except Producto.DoesNotExist:
             return Response({"message": "Producto no encontrado."})
+
+class ProductosCategoriaView(APIView):
+    def get(self, request):
+        value = (request.query_params.get('id_categoria') or '').strip()
+        qs = Producto.objects.all()
+
+        if value:
+            # si es numérico, filtra por ID; si no, por nombre (case-insensitive)
+            if value.isdigit():
+                qs = qs.filter(id_categoria=value)  # FK → acepta el PK directamente
+            else:
+                qs = qs.filter(id_categoria__nombre__iexact=value)
+
+        serializer = ProductoConImagenSerializer(qs, many=True)  # ← NO tocamos lógica de imágenes
+        return Response(serializer.data)
+
+
+def admin_check(user):
+    return user.is_staff
+
+
+@login_required(login_url='/admin/login/')
+def product_dashboard(request):
+    """Dashboard to add and list products with optional image upload."""
+    if not admin_check(request.user):
+        return HttpResponseForbidden()
+    if request.method == 'POST':
+        form = ProductoForm(request.POST, request.FILES)
+        if form.is_valid():
+            producto = form.save()
+            image = form.cleaned_data.get('image')
+            if image:
+                ImagenProducto.objects.create(id_producto=producto, url_imagen=image)
+            messages.success(request, 'Product added successfully!')
+            return redirect('product-dashboard')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = ProductoForm()
+
+    productos = Producto.objects.all()
+    context = {
+        'form': form,
+        'productos': productos,
+    }
+    return render(request, 'products/dashboard.html', context)
+
+
+@login_required(login_url='/admin/login/')
+def product_update(request, pk):
+    if not admin_check(request.user):
+        return HttpResponseForbidden()
+    producto = get_object_or_404(Producto, pk=pk)
+    imagen = ImagenProducto.objects.filter(id_producto=producto).first()
+
+    if request.method == 'POST':
+        form = ProductoForm(request.POST, request.FILES, instance=producto)
+        if form.is_valid():
+            producto = form.save()
+            image = form.cleaned_data.get('image')
+            if image:
+                if imagen:
+                    imagen.url_imagen = image
+                    imagen.save()
+                else:
+                    ImagenProducto.objects.create(id_producto=producto, url_imagen=image)
+            messages.success(request, 'Product updated successfully!')
+            return redirect('product-dashboard')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        initial = {}
+        if imagen:
+            initial['image'] = imagen.url_imagen
+        form = ProductoForm(instance=producto, initial=initial)
+
+    context = {'form': form, 'producto': producto, 'imagen': imagen}
+    return render(request, 'products/product_form.html', context)

@@ -1,0 +1,88 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Product</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 40px auto; background: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #555; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { margin-top: 15px; padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        img.preview { max-width: 100%; margin-bottom: 10px; border-radius: 4px; }
+        a { display: inline-block; margin-top: 10px; color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .messages { margin-bottom: 20px; }
+        .alert { padding: 10px 15px; border-radius: 4px; margin-bottom: 10px; }
+        .alert.success { background-color: #d4edda; color: #155724; }
+        .alert.error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Edit Product</h1>
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ form.id_categoria.label_tag }}
+                {{ form.id_categoria }}
+            </div>
+            <div class="form-group">
+                {{ form.nombre.label_tag }}
+                {{ form.nombre }}
+            </div>
+            <div class="form-group">
+                {{ form.descripcion.label_tag }}
+                {{ form.descripcion }}
+            </div>
+            <div class="form-group">
+                {{ form.precio.label_tag }}
+                {{ form.precio }}
+            </div>
+            <div class="form-group">
+                {{ form.stock.label_tag }}
+                {{ form.stock }}
+            </div>
+            <div class="form-group">
+                {{ form.estado.label_tag }}
+                {{ form.estado }}
+            </div>
+            <div class="form-group">
+                {% if imagen %}
+                    <img src="{{ imagen.url_imagen.url }}" alt="{{ producto.nombre }}" class="preview"/>
+                {% else %}
+                    <img class="preview" style="display:none;"/>
+                {% endif %}
+                {{ form.image.label_tag }}
+                {{ form.image }}
+            </div>
+            <button type="submit">Save</button>
+        </form>
+        <a href="{% url 'product-dashboard' %}">Back to dashboard</a>
+    </div>
+    <script>
+        const imageInput = document.getElementById('id_image');
+        const preview = document.querySelector('img.preview');
+        if (imageInput) {
+            imageInput.addEventListener('change', function (e) {
+                const [file] = imageInput.files;
+                if (file) {
+                    preview.src = URL.createObjectURL(file);
+                    preview.style.display = 'block';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

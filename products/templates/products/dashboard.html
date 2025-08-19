@@ -1,0 +1,119 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
+        .container { max-width: 800px; margin: 40px auto; background: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; }
+        form { margin-bottom: 30px; }
+        .form-group { margin-top: 10px; }
+        label { display: block; margin-bottom: 5px; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { margin-top: 15px; padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .messages { margin-bottom: 20px; }
+        .alert { padding: 10px 15px; border-radius: 4px; margin-bottom: 10px; }
+        .alert.success { background-color: #d4edda; color: #155724; }
+        .alert.error { background-color: #f8d7da; color: #721c24; }
+        #image-preview { max-width: 150px; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Product Dashboard</h1>
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ form.id_categoria.label_tag }}
+                {{ form.id_categoria }}
+            </div>
+            <div class="form-group">
+                {{ form.nombre.label_tag }}
+                {{ form.nombre }}
+            </div>
+            <div class="form-group">
+                {{ form.descripcion.label_tag }}
+                {{ form.descripcion }}
+            </div>
+            <div class="form-group">
+                {{ form.precio.label_tag }}
+                {{ form.precio }}
+            </div>
+            <div class="form-group">
+                {{ form.stock.label_tag }}
+                {{ form.stock }}
+            </div>
+            <div class="form-group">
+                {{ form.estado.label_tag }}
+                {{ form.estado }}
+            </div>
+            <div class="form-group">
+                {{ form.image.label_tag }}
+                {{ form.image }}
+                <img id="image-preview" alt="Image preview" />
+            </div>
+            <button type="submit">Add Product</button>
+        </form>
+        <h2>Existing Products</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for producto in productos %}
+                <tr>
+                    <td>
+                        {% with producto.imagenproducto_set.first as img %}
+                            {% if img %}<img src="{{ img.url_imagen.url }}" alt="{{ producto.nombre }}" style="max-width:60px;"/>{% endif %}
+                        {% endwith %}
+                    </td>
+                    <td>{{ producto.nombre }}</td>
+                    <td>{{ producto.id_categoria.nombre }}</td>
+                    <td>{{ producto.precio }}</td>
+                    <td>{{ producto.stock }}</td>
+                    <td><a href="{% url 'product-update' producto.pk %}">Edit</a></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="6">No products yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <script>
+        const imageInput = document.getElementById('id_image');
+        const preview = document.getElementById('image-preview');
+        if (imageInput) {
+            imageInput.addEventListener('change', function (e) {
+                const [file] = imageInput.files;
+                if (file) {
+                    preview.src = URL.createObjectURL(file);
+                    preview.style.display = 'block';
+                } else {
+                    preview.src = '';
+                    preview.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

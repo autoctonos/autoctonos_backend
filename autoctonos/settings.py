@@ -159,8 +159,19 @@ SIMPLE_JWT = {
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://localhost:3001",
     "http://autoctonos_frontend-app-1:3000",
+    "http://autoctonos_frontend-app-1:3001",
+    "http://localhost:4321",
+    "http://127.0.0.1:4321"
 ]
 
-CORS_ALLOW_CREDENTIALS = True
-    
+if os.environ.get("DISABLE_MIGRATIONS"):
+    class DisableMigrations(dict):
+        def __contains__(self, item):
+            return True
+
+        def __getitem__(self, item):
+            return None
+
+    MIGRATION_MODULES = DisableMigrations()
