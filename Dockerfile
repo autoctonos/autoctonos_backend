@@ -1,27 +1,33 @@
-# Stage 1: Base build stage
+# Stage 1: build dependencies and application
 FROM python:3.13-slim AS builder
- 
-# Set the working directory
+
 WORKDIR /app
 
-# Set environment variables to optimize Python
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1 
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-# Upgrade pip and install dependencies
-RUN pip install --upgrade pip 
+RUN apt-get update && apt-get install -y build-essential libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy the requirements file first (better caching)
-COPY requirements.txt /app/
+COPY requirements.txt .
+RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
 
-# Copy the application code (this is missing in your original Dockerfile)
-COPY . /app/
+# Stage 2: production image
+FROM python:3.13-slim
 
-# Expose Django development server port
-EXPOSE 8000 
+WORKDIR /app
 
-# Start the Django development server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000", "--noreload"]
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+RUN apt-get update && apt-get install -y libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /usr/local /usr/local
+COPY --from=builder /app /app
+
+EXPOSE 8000
+
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "autoctonos.wsgi:application"]

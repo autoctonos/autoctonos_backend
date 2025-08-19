@@ -46,3 +46,24 @@ docker compose exec django-docker python manage.py collectstatic
 ```
 docker compose exec django-docker python manage.py seeders
 ```
+
+## Production
+
+Build a production-ready stack that serves the Django application through
+Nginx:
+
+1. Ensure a `.env` file with the required settings exists in the project
+   root.
+2. Build and start the services:
+
+   ```
+   docker compose -f compose.prod.yml up --build
+   ```
+3. Apply database migrations:
+
+   ```
+   docker compose -f compose.prod.yml exec django python manage.py migrate
+   ```
+
+Nginx will expose the application on port `80`.
+
