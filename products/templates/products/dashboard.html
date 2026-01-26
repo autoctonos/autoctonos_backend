@@ -1,119 +1,504 @@
-{% load static %}
-<!DOCTYPE html>
+{% load static %} {% load product_filters %}
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Product Dashboard</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dashboard de Productos</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
-        .container { max-width: 800px; margin: 40px auto; background: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #333; }
-        form { margin-bottom: 30px; }
-        .form-group { margin-top: 10px; }
-        label { display: block; margin-bottom: 5px; }
-        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-        button { margin-top: 15px; padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #45a049; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .messages { margin-bottom: 20px; }
-        .alert { padding: 10px 15px; border-radius: 4px; margin-bottom: 10px; }
-        .alert.success { background-color: #d4edda; color: #155724; }
-        .alert.error { background-color: #f8d7da; color: #721c24; }
-        #image-preview { max-width: 150px; margin-top: 10px; display: none; }
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+      }
+      .container {
+        max-width: 800px;
+        margin: 40px auto;
+        background: #fff;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        text-align: center;
+        color: #333;
+      }
+      form {
+        margin-bottom: 30px;
+      }
+      .form-group {
+        margin-top: 10px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      button {
+        margin-top: 15px;
+        padding: 10px 15px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.8em;
+      }
+      th,
+      td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      tbody td {
+        font-size: 0.85em;
+      }
+      .messages {
+        margin-bottom: 20px;
+      }
+      .alert {
+        padding: 10px 15px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+      }
+      .alert.success {
+        background-color: #d4edda;
+        color: #155724;
+      }
+      .alert.error {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+      #image-preview {
+        max-width: 150px;
+        margin-top: 10px;
+        display: none;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>Product Dashboard</h1>
-        {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-            <div class="alert {{ message.tags }}">{{ message }}</div>
-            {% endfor %}
+      <h1>Dashboard de Productos</h1>
+      {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+        <div class="alert {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %} {% if form.errors %}
+      <div class="messages">
+        <div class="alert error">
+          <strong>Por favor, corrija los siguientes errores:</strong>
+          <ul>
+            {% for field, errors in form.errors.items %} {% for error in errors
+            %}
+            <li><strong>{{ field }}:</strong> {{ error }}</li>
+            {% endfor %} {% endfor %}
+          </ul>
         </div>
-        {% endif %}
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="form-group">
-                {{ form.id_categoria.label_tag }}
-                {{ form.id_categoria }}
-            </div>
-            <div class="form-group">
-                {{ form.nombre.label_tag }}
-                {{ form.nombre }}
-            </div>
-            <div class="form-group">
-                {{ form.descripcion.label_tag }}
-                {{ form.descripcion }}
-            </div>
-            <div class="form-group">
-                {{ form.precio.label_tag }}
-                {{ form.precio }}
-            </div>
-            <div class="form-group">
-                {{ form.stock.label_tag }}
-                {{ form.stock }}
-            </div>
-            <div class="form-group">
-                {{ form.estado.label_tag }}
-                {{ form.estado }}
-            </div>
-            <div class="form-group">
-                {{ form.image.label_tag }}
-                {{ form.image }}
-                <img id="image-preview" alt="Image preview" />
-            </div>
-            <button type="submit">Add Product</button>
-        </form>
-        <h2>Existing Products</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Image</th>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Price</th>
-                    <th>Stock</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for producto in productos %}
-                <tr>
-                    <td>
-                        {% with producto.imagenproducto_set.first as img %}
-                            {% if img %}<img src="{{ img.url_imagen.url }}" alt="{{ producto.nombre }}" style="max-width:60px;"/>{% endif %}
-                        {% endwith %}
-                    </td>
-                    <td>{{ producto.nombre }}</td>
-                    <td>{{ producto.id_categoria.nombre }}</td>
-                    <td>{{ producto.precio }}</td>
-                    <td>{{ producto.stock }}</td>
-                    <td><a href="{% url 'product-update' producto.pk %}">Edit</a></td>
-                </tr>
-            {% empty %}
-                <tr><td colspan="6">No products yet.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
+      </div>
+      {% endif %}
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+          {{ form.id_categoria.label_tag }} {{ form.id_categoria }} {% if
+          form.id_categoria.errors %}
+          <div class="error" style="color: red; font-size: 12px">
+            {{ form.id_categoria.errors }}
+          </div>
+          {% endif %}
+        </div>
+        <div class="form-group">
+          {{ form.nombre.label_tag }} {{ form.nombre }} {% if form.nombre.errors
+          %}
+          <div class="error" style="color: red; font-size: 12px">
+            {{ form.nombre.errors }}
+          </div>
+          {% endif %}
+        </div>
+        <div class="form-group">
+          {{ form.descripcion.label_tag }} {{ form.descripcion }} {% if
+          form.descripcion.errors %}
+          <div class="error" style="color: red; font-size: 12px">
+            {{ form.descripcion.errors }}
+          </div>
+          {% endif %}
+        </div>
+        <div class="form-group">
+          {{ form.precio.label_tag }} {{ form.precio }} {% if form.precio.errors
+          %}
+          <div class="error" style="color: red; font-size: 12px">
+            {{ form.precio.errors }}
+          </div>
+          {% endif %}
+        </div>
+        <div class="form-group">
+          {{ form.stock.label_tag }} {{ form.stock }} {% if form.stock.errors %}
+          <div class="error" style="color: red; font-size: 12px">
+            {{ form.stock.errors }}
+          </div>
+          {% endif %}
+        </div>
+        <div class="form-group">
+          {{ form.presentacion.label_tag }} {{ form.presentacion }} {% if
+          form.presentacion.errors %}
+          <div class="error" style="color: red; font-size: 12px">
+            {{ form.presentacion.errors }}
+          </div>
+          {% endif %}
+        </div>
+        <div class="form-group">
+          {{ form.id_municipio.label_tag }} {{ form.id_municipio }} {% if
+          form.id_municipio.errors %}
+          <div class="error" style="color: red; font-size: 12px">
+            {{ form.id_municipio.errors }}
+          </div>
+          {% endif %}
+        </div>
+        <div class="form-group">
+          {{ form.fabricante.label_tag }} {{ form.fabricante }} {% if
+          form.fabricante.errors %}
+          <div class="error" style="color: red; font-size: 12px">
+            {{ form.fabricante.errors }}
+          </div>
+          {% endif %}
+        </div>
+        <div class="form-group">
+          {{ form.es_promocionado.label_tag }} {{ form.es_promocionado }} {% if
+          form.es_promocionado.errors %}
+          <div class="error" style="color: red; font-size: 12px">
+            {{ form.es_promocionado.errors }}
+          </div>
+          {% endif %}
+        </div>
+        <div class="form-group" id="descuento-group" style="display: none">
+          {{ form.porcentaje_descuento.label_tag }} {{ form.porcentaje_descuento
+          }}
+          <small style="color: #666"
+            >Ingrese el porcentaje de descuento (ej: 10 para 10%)</small
+          >
+          {% if form.porcentaje_descuento.errors %}
+          <div class="error" style="color: red; font-size: 12px">
+            {{ form.porcentaje_descuento.errors }}
+          </div>
+          {% endif %}
+          <div
+            id="precio-preview"
+            style="
+              margin-top: 10px;
+              padding: 10px;
+              background-color: #f0f0f0;
+              border-radius: 4px;
+              display: none;
+            "
+          >
+            <strong>Precio Original:</strong>
+            <span id="precio-original-display"></span><br />
+            <strong>Descuento:</strong> <span id="descuento-display"></span
+            ><br />
+            <strong>Nuevo Precio:</strong>
+            <span
+              id="precio-nuevo-display"
+              style="color: green; font-weight: bold"
+            ></span>
+          </div>
+        </div>
+        <div class="form-group">
+          {{ form.estado.label_tag }} {{ form.estado }} {% if form.estado.errors
+          %}
+          <div class="error" style="color: red; font-size: 12px">
+            {{ form.estado.errors }}
+          </div>
+          {% endif %}
+        </div>
+        <div class="form-group">
+          {{ form.image.label_tag }} {{ form.image }}
+          <img id="image-preview" alt="Image preview" />
+        </div>
+        <button type="submit">Añadir Producto</button>
+      </form>
+      <h2>Productos Existentes</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Imagen</th>
+            <th>Nombre</th>
+            <th>Categoria</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Presentación</th>
+            <th>Municipio</th>
+            <th>Fabricante</th>
+            <th>Promocionado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for producto in productos %}
+          <tr>
+            <td>
+              {% with producto.imagenproducto_set.first as img %} {% if img
+              %}<img
+                src="{{ img.url_imagen.url }}"
+                alt="{{ producto.nombre }}"
+                style="max-width: 40px"
+              />{% endif %} {% endwith %}
+            </td>
+            <td>{{ producto.nombre }}</td>
+            <td>{{ producto.id_categoria.nombre }}</td>
+            <td>
+              {% if producto.es_promocionado and producto.porcentaje_descuento
+              %}
+              <span style="text-decoration: line-through; color: #999"
+                >{{ producto.precio|format_precio }}</span
+              ><br />
+              <span style="color: green; font-weight: bold"
+                >{{ producto.precio_con_descuento|format_precio }}</span
+              >
+              <small style="color: red"
+                >(-{{ producto.porcentaje_descuento }}%)</small
+              >
+              {% else %} {{ producto.precio|format_precio }} {% endif %}
+            </td>
+            <td>{{ producto.stock }}</td>
+            <td>{{ producto.get_presentacion_display }}</td>
+            <td>
+              {% if producto.id_municipio %} {{ producto.id_municipio.nombre }}
+              ({{ producto.id_municipio.id_departamento.nombre }}) {% else %} -
+              {% endif %}
+            </td>
+            <td>{{ producto.fabricante|default:"-" }}</td>
+            <td>
+              {% if producto.es_promocionado %}
+              <span style="color: green; font-weight: bold">✓ Sí</span>
+              {% else %}
+              <span style="color: #999">No</span>
+              {% endif %}
+            </td>
+            <td><a href="{% url 'product-update' producto.pk %}">Edit</a></td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="10">No products yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
     <script>
-        const imageInput = document.getElementById('id_image');
-        const preview = document.getElementById('image-preview');
-        if (imageInput) {
-            imageInput.addEventListener('change', function (e) {
-                const [file] = imageInput.files;
-                if (file) {
-                    preview.src = URL.createObjectURL(file);
-                    preview.style.display = 'block';
-                } else {
-                    preview.src = '';
-                    preview.style.display = 'none';
-                }
-            });
+      const imageInput = document.getElementById("id_image");
+      const preview = document.getElementById("image-preview");
+      if (imageInput) {
+        imageInput.addEventListener("change", function (e) {
+          const [file] = imageInput.files;
+          if (file) {
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = "block";
+          } else {
+            preview.src = "";
+            preview.style.display = "none";
+          }
+        });
+      }
+
+      // Formatear el campo de precio mientras se escribe (solo números enteros)
+      const precioInput = document.getElementById("id_precio");
+      if (precioInput) {
+        // Función para formatear número con puntos
+        function formatearNumero(numero) {
+          // Eliminar todo excepto dígitos
+          let soloNumeros = numero.toString().replace(/[^\d]/g, "");
+          if (!soloNumeros) return "";
+
+          // Formatear con puntos cada 3 dígitos desde la derecha
+          return soloNumeros.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
+
+        precioInput.addEventListener("input", function (e) {
+          // Obtener solo números del valor actual
+          let soloNumeros = this.value.replace(/[^\d]/g, "");
+
+          // Si no hay números, limpiar el campo
+          if (!soloNumeros) {
+            this.value = "";
+            return;
+          }
+
+          // Guardar la posición del cursor antes de formatear
+          let cursorPos = this.selectionStart;
+          let valorOriginal = this.value;
+
+          // Contar cuántos dígitos hay antes de la posición del cursor
+          let digitosAntes = 0;
+          for (let i = 0; i < cursorPos && i < valorOriginal.length; i++) {
+            if (/\d/.test(valorOriginal[i])) {
+              digitosAntes++;
+            }
+          }
+
+          // Formatear el número completo
+          let valorFormateado = formatearNumero(soloNumeros);
+
+          // Calcular la nueva posición del cursor en el valor formateado
+          let nuevaPosicion = valorFormateado.length;
+          let digitosContados = 0;
+
+          for (let i = 0; i < valorFormateado.length; i++) {
+            if (/\d/.test(valorFormateado[i])) {
+              digitosContados++;
+              if (digitosContados === digitosAntes) {
+                nuevaPosicion = i + 1;
+                break;
+              }
+            }
+          }
+
+          // Si estamos al final, mantener la posición al final
+          if (digitosAntes >= soloNumeros.length) {
+            nuevaPosicion = valorFormateado.length;
+          }
+
+          // Actualizar el valor
+          this.value = valorFormateado;
+
+          // Restaurar la posición del cursor después de que el DOM se actualice
+          setTimeout(() => {
+            try {
+              let pos = Math.min(Math.max(0, nuevaPosicion), this.value.length);
+              this.setSelectionRange(pos, pos);
+            } catch (err) {
+              // Si hay error, simplemente poner al final
+              this.setSelectionRange(this.value.length, this.value.length);
+            }
+          }, 0);
+        });
+
+        // Prevenir que se peguen caracteres no numéricos
+        precioInput.addEventListener("paste", function (e) {
+          e.preventDefault();
+          let texto = (e.clipboardData || window.clipboardData).getData("text");
+          let soloNumeros = texto.replace(/[^\d]/g, "");
+          if (soloNumeros) {
+            let valorActual = this.value.replace(/[^\d]/g, "");
+            let nuevoValor = valorActual + soloNumeros;
+            this.value = formatearNumero(nuevoValor);
+          }
+        });
+
+        // Antes de enviar el formulario, eliminar los puntos para enviar solo números
+        const form = precioInput.closest("form");
+        if (form) {
+          form.addEventListener("submit", function (e) {
+            precioInput.value = precioInput.value.replace(/\./g, "");
+          });
+        }
+      }
+
+      // Mostrar/ocultar campo de descuento según el checkbox de promocionado
+      const esPromocionadoCheckbox =
+        document.getElementById("id_es_promocionado");
+      const descuentoGroup = document.getElementById("descuento-group");
+      const porcentajeDescuentoInput = document.getElementById(
+        "id_porcentaje_descuento",
+      );
+      const precioPreview = document.getElementById("precio-preview");
+      const precioOriginalDisplay = document.getElementById(
+        "precio-original-display",
+      );
+      const descuentoDisplay = document.getElementById("descuento-display");
+      const precioNuevoDisplay = document.getElementById(
+        "precio-nuevo-display",
+      );
+
+      function toggleDescuentoField() {
+        if (esPromocionadoCheckbox && descuentoGroup) {
+          if (esPromocionadoCheckbox.checked) {
+            descuentoGroup.style.display = "block";
+            if (porcentajeDescuentoInput && porcentajeDescuentoInput.value) {
+              calcularPrecioConDescuento();
+            }
+          } else {
+            descuentoGroup.style.display = "none";
+            precioPreview.style.display = "none";
+            if (porcentajeDescuentoInput) {
+              porcentajeDescuentoInput.value = "";
+            }
+          }
+        }
+      }
+
+      function calcularPrecioConDescuento() {
+        const precioInput = document.getElementById("id_precio");
+        const porcentajeInput = porcentajeDescuentoInput;
+
+        if (!precioInput || !porcentajeInput) return;
+
+        // Obtener precio sin puntos
+        let precioStr = precioInput.value.replace(/\./g, "");
+        let precio = parseFloat(precioStr) || 0;
+        let porcentaje = parseFloat(porcentajeInput.value) || 0;
+
+        if (precio > 0 && porcentaje > 0 && porcentaje <= 100) {
+          let descuento = precio * (porcentaje / 100);
+          let precioNuevo = precio - descuento;
+
+          // Formatear números con puntos
+          precioOriginalDisplay.textContent = formatearNumero(
+            precio.toString(),
+          );
+          descuentoDisplay.textContent = formatearNumero(descuento.toFixed(0));
+          precioNuevoDisplay.textContent = formatearNumero(
+            precioNuevo.toFixed(0),
+          );
+
+          precioPreview.style.display = "block";
+        } else {
+          precioPreview.style.display = "none";
+        }
+      }
+
+      function formatearNumero(numero) {
+        let soloNumeros = numero.toString().replace(/[^\d]/g, "");
+        if (!soloNumeros) return "0";
+        return soloNumeros.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      }
+
+      if (esPromocionadoCheckbox) {
+        esPromocionadoCheckbox.addEventListener("change", toggleDescuentoField);
+        // Ejecutar al cargar para mostrar si ya está marcado
+        toggleDescuentoField();
+      }
+
+      if (porcentajeDescuentoInput) {
+        porcentajeDescuentoInput.addEventListener(
+          "input",
+          calcularPrecioConDescuento,
+        );
+      }
+
+      // También calcular cuando cambia el precio
+      const precioInputForDescuento = document.getElementById("id_precio");
+      if (precioInputForDescuento) {
+        precioInputForDescuento.addEventListener("input", function () {
+          if (esPromocionadoCheckbox && esPromocionadoCheckbox.checked) {
+            calcularPrecioConDescuento();
+          }
+        });
+      }
     </script>
-</body>
+  </body>
 </html>
