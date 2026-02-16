@@ -7,3 +7,6 @@ __pycache__/*
 productos_imagenes/
 productos/
 venv/
+.idea/
+autoctonos-env
+media/

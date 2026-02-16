@@ -39,3 +39,19 @@ class ImagenProducto(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(default=None, null=True)
     deleted_at = models.DateTimeField(default=None, null=True)
+
+class Post(models.Model):
+    id_post = models.AutoField(primary_key=True)
+    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, null=False)
+    id_categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, null=False)
+    nombre = models.CharField(max_length=100, null=False)
+    descripcion = models.TextField(null=False)
+    precio = models.DecimalField(max_digits=10, decimal_places=2, null=False)
+    stock = models.IntegerField(null=False)
+    estado = models.CharField(max_length=10, choices=estado_choices, default='Revisión')
+    mensaje = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(default=None, null=True)
+    deleted_at = models.DateTimeField(default=None, null=True)
+    producto = models.OneToOneField(Producto, on_delete=models.SET_NULL, null=True, blank=True)
+
