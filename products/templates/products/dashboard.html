@@ -1,4 +1,5 @@
-{% load static %} {% load product_filters %}
+{% load static %}
+{% load product_filters %}
 <!doctype html>
 <html lang="en">
   <head>
@@ -99,15 +100,17 @@
         <div class="alert {{ message.tags }}">{{ message }}</div>
         {% endfor %}
       </div>
-      {% endif %} {% if form.errors %}
+      {% endif %}
+      {% if form.errors %}
       <div class="messages">
         <div class="alert error">
           <strong>Por favor, corrija los siguientes errores:</strong>
           <ul>
-            {% for field, errors in form.errors.items %} {% for error in errors
-            %}
-            <li><strong>{{ field }}:</strong> {{ error }}</li>
-            {% endfor %} {% endfor %}
+            {% for field, errors in form.errors.items %}
+              {% for error in errors %}
+                <li><strong>{{ field }}:</strong> {{ error }}</li>
+              {% endfor %}
+            {% endfor %}
           </ul>
         </div>
       </div>
@@ -115,71 +118,72 @@
       <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form-group">
-          {{ form.id_categoria.label_tag }} {{ form.id_categoria }} {% if
-          form.id_categoria.errors %}
+          {{ form.id_categoria.label_tag }} {{ form.id_categoria }}
+          {% if form.id_categoria.errors %}
           <div class="error" style="color: red; font-size: 12px">
             {{ form.id_categoria.errors }}
           </div>
           {% endif %}
         </div>
         <div class="form-group">
-          {{ form.nombre.label_tag }} {{ form.nombre }} {% if form.nombre.errors
-          %}
+          {{ form.nombre.label_tag }} {{ form.nombre }}
+          {% if form.nombre.errors %}
           <div class="error" style="color: red; font-size: 12px">
             {{ form.nombre.errors }}
           </div>
           {% endif %}
         </div>
         <div class="form-group">
-          {{ form.descripcion.label_tag }} {{ form.descripcion }} {% if
-          form.descripcion.errors %}
+          {{ form.descripcion.label_tag }} {{ form.descripcion }}
+          {% if form.descripcion.errors %}
           <div class="error" style="color: red; font-size: 12px">
             {{ form.descripcion.errors }}
           </div>
           {% endif %}
         </div>
         <div class="form-group">
-          {{ form.precio.label_tag }} {{ form.precio }} {% if form.precio.errors
-          %}
+          {{ form.precio.label_tag }} {{ form.precio }}
+          {% if form.precio.errors %}
           <div class="error" style="color: red; font-size: 12px">
             {{ form.precio.errors }}
           </div>
           {% endif %}
         </div>
         <div class="form-group">
-          {{ form.stock.label_tag }} {{ form.stock }} {% if form.stock.errors %}
+          {{ form.stock.label_tag }} {{ form.stock }}
+          {% if form.stock.errors %}
           <div class="error" style="color: red; font-size: 12px">
             {{ form.stock.errors }}
           </div>
           {% endif %}
         </div>
         <div class="form-group">
-          {{ form.presentacion.label_tag }} {{ form.presentacion }} {% if
-          form.presentacion.errors %}
+          {{ form.presentacion.label_tag }} {{ form.presentacion }}
+          {% if form.presentacion.errors %}
           <div class="error" style="color: red; font-size: 12px">
             {{ form.presentacion.errors }}
           </div>
           {% endif %}
         </div>
         <div class="form-group">
-          {{ form.id_municipio.label_tag }} {{ form.id_municipio }} {% if
-          form.id_municipio.errors %}
+          {{ form.id_municipio.label_tag }} {{ form.id_municipio }}
+          {% if form.id_municipio.errors %}
           <div class="error" style="color: red; font-size: 12px">
             {{ form.id_municipio.errors }}
           </div>
           {% endif %}
         </div>
         <div class="form-group">
-          {{ form.fabricante.label_tag }} {{ form.fabricante }} {% if
-          form.fabricante.errors %}
+          {{ form.fabricante.label_tag }} {{ form.fabricante }}
+          {% if form.fabricante.errors %}
           <div class="error" style="color: red; font-size: 12px">
             {{ form.fabricante.errors }}
           </div>
           {% endif %}
         </div>
         <div class="form-group">
-          {{ form.es_promocionado.label_tag }} {{ form.es_promocionado }} {% if
-          form.es_promocionado.errors %}
+          {{ form.es_promocionado.label_tag }} {{ form.es_promocionado }}
+          {% if form.es_promocionado.errors %}
           <div class="error" style="color: red; font-size: 12px">
             {{ form.es_promocionado.errors }}
           </div>
@@ -218,8 +222,8 @@
           </div>
         </div>
         <div class="form-group">
-          {{ form.estado.label_tag }} {{ form.estado }} {% if form.estado.errors
-          %}
+          {{ form.estado.label_tag }} {{ form.estado }}
+          {% if form.estado.errors %}
           <div class="error" style="color: red; font-size: 12px">
             {{ form.estado.errors }}
           </div>
@@ -251,18 +255,20 @@
           {% for producto in productos %}
           <tr>
             <td>
-              {% with producto.imagenproducto_set.first as img %} {% if img
-              %}<img
-                src="{{ img.url_imagen.url }}"
-                alt="{{ producto.nombre }}"
-                style="max-width: 40px"
-              />{% endif %} {% endwith %}
+              {% with producto.imagenproducto_set.first as img %}
+                {% if img and img.url_imagen %}
+                  <img
+                    src="{{ img.url_imagen.url }}"
+                    alt="{{ producto.nombre }}"
+                    style="max-width: 40px"
+                  />
+                {% endif %}
+              {% endwith %}
             </td>
             <td>{{ producto.nombre }}</td>
             <td>{{ producto.id_categoria.nombre }}</td>
             <td>
-              {% if producto.es_promocionado and producto.porcentaje_descuento
-              %}
+              {% if producto.es_promocionado and producto.porcentaje_descuento %}
               <span style="text-decoration: line-through; color: #999"
                 >{{ producto.precio|format_precio }}</span
               ><br />

@@ -26,6 +26,7 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 DEBUG = os.environ.get("DEBUG", default=True)
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1").split(",")
+API_BASE = os.getenv("API_BASE", "https://api-colombia.com/api/v1")
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
@@ -163,7 +164,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://autoctonos_frontend-app-1:3000",
     "http://autoctonos_frontend-app-1:3001",
     "http://localhost:4321",
-    "http://127.0.0.1:4321"
+    "http://localhost:4322",
+    "http://127.0.0.1:4321",
+    "http://127.0.0.1:4322"
 ]
 
 if os.environ.get("DISABLE_MIGRATIONS"):

@@ -85,7 +85,7 @@
                 {{ form.estado }}
             </div>
             <div class="form-group">
-                {% if imagen %}
+                {% if imagen and imagen.url_imagen %}
                     <img src="{{ imagen.url_imagen.url }}" alt="{{ producto.nombre }}" class="preview"/>
                 {% else %}
                     <img class="preview" style="display:none;"/>
