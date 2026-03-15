@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.paginator import Paginator
 from django.http import HttpResponseForbidden
 from django.conf import settings
 from rest_framework import viewsets, permissions
@@ -84,7 +85,6 @@ def product_dashboard(request):
             messages.success(request, 'Product added successfully!')
             return redirect('product-dashboard')
         else:
-            # Mostrar errores específicos en modo debug
             if hasattr(settings, 'DEBUG') and settings.DEBUG:
                 import pprint
                 print("Form errors:", pprint.pformat(form.errors))
@@ -93,12 +93,16 @@ def product_dashboard(request):
     else:
         form = ProductoForm()
 
-    productos = Producto.objects.all()
+    queryset = Producto.objects.all().order_by("-created_at")
+    paginator = Paginator(queryset, 15)
+    page_number = request.GET.get("page", 1)
+    page = paginator.get_page(page_number)
     context = {
-        'form': form,
-        'productos': productos,
+        "form": form,
+        "page": page,
+        "productos": page.object_list,
     }
-    return render(request, 'products/dashboard.html', context)
+    return render(request, "products/dashboard.html", context)
 
 
 @login_required(login_url='/admin/login/')

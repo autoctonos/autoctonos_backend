@@ -14,19 +14,12 @@ class CategoriaAdmin(admin.ModelAdmin):
     ordering = ("nombre",)
 
 
-# -----------------------
-# Admin de Departamento
-# -----------------------
 @admin.register(Departamento)
 class DepartamentoAdmin(admin.ModelAdmin):
     list_display = ("nombre", "created_at")
     search_fields = ("nombre",)  # Requerido para autocomplete_fields en MunicipioAdmin
     ordering = ("nombre",)
 
-
-# -----------------------
-# Admin de Municipio
-# -----------------------
 @admin.register(Municipio)
 class MunicipioAdmin(admin.ModelAdmin):
     list_display = ("nombre", "id_departamento", "created_at")
@@ -76,10 +69,6 @@ class EstadoPublicadoFilter(admin.SimpleListFilter):
             return queryset.filter(deleted_at__isnull=False)
         return queryset
 
-
-# -----------------------
-# Formulario personalizado para el Admin de Producto
-# -----------------------
 class ProductoAdminForm(forms.ModelForm):
     class Meta:
         model = Producto
@@ -107,7 +96,7 @@ class ProductoAdmin(admin.ModelAdmin):
         "precio",
         "precio_con_descuento_display",
         "stock",
-        "presentacion",
+        "presentacion_completa_display",
         "id_municipio",
         "fabricante",
         "es_promocionado_display",
@@ -137,6 +126,10 @@ class ProductoAdmin(admin.ModelAdmin):
     esta_publicado.boolean = True
     esta_publicado.short_description = "Publicado"
     
+    def presentacion_completa_display(self, obj):
+        return obj.get_presentacion_completa()
+    presentacion_completa_display.short_description = "Presentación"
+
     def es_promocionado_display(self, obj):
         return obj.es_promocionado
     es_promocionado_display.boolean = True

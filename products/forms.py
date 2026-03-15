@@ -6,8 +6,7 @@ class ProductoForm(forms.ModelForm):
     image = forms.ImageField(
         required=False, widget=forms.FileInput(attrs={"class": "form-control"})
     )
-    
-    # Sobrescribir el campo municipio para personalizar el label
+
     id_municipio = forms.ModelChoiceField(
         queryset=Municipio.objects.select_related('id_departamento').all().order_by('id_departamento__nombre', 'nombre'),
         required=True,
@@ -25,6 +24,7 @@ class ProductoForm(forms.ModelForm):
             "precio",
             "stock",
             "presentacion",
+            "cantidad_presentacion",
             "id_municipio",
             "fabricante",
             "es_promocionado",
@@ -37,7 +37,8 @@ class ProductoForm(forms.ModelForm):
             "descripcion": "Descripción",
             "precio": "Precio Original",
             "stock": "Stock",
-            "presentacion": "Presentación",
+            "presentacion": "Unidad de venta",
+            "cantidad_presentacion": "Cantidad por presentación",
             "id_municipio": "Municipio",
             "fabricante": "Fabricante",
             "es_promocionado": "Promocionado",
@@ -53,6 +54,14 @@ class ProductoForm(forms.ModelForm):
             "precio": forms.TextInput(attrs={"class": "form-control", "type": "text", "inputmode": "numeric"}),
             "stock": forms.NumberInput(attrs={"class": "form-control"}),
             "presentacion": forms.Select(attrs={"class": "form-control"}),
+            "cantidad_presentacion": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "step": "0.01",
+                    "min": "0",
+                    "placeholder": "Ej: 200 (gramos), 1.5 (litros)",
+                }
+            ),
             "fabricante": forms.TextInput(attrs={"class": "form-control", "maxlength": "200"}),
             "es_promocionado": forms.CheckboxInput(attrs={"class": "form-control", "id": "id_es_promocionado"}),
             "porcentaje_descuento": forms.NumberInput(attrs={"class": "form-control", "id": "id_porcentaje_descuento", "step": "0.01", "min": "0", "max": "100"}),
@@ -62,22 +71,18 @@ class ProductoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        # Hacer campos requeridos
         self.fields['id_categoria'].required = True
         self.fields['nombre'].required = True
         self.fields['descripcion'].required = True
         self.fields['precio'].required = True
         self.fields['stock'].required = True
         self.fields['presentacion'].required = True
+        self.fields['cantidad_presentacion'].required = False
         self.fields['fabricante'].required = True
         self.fields['estado'].required = True
-        # es_promocionado es un BooleanField, no necesita ser requerido (por defecto False)
-        # porcentaje_descuento es opcional, solo se usa si es_promocionado es True
         self.fields['porcentaje_descuento'].required = False
         
-        # Actualizar el queryset del municipio (ya está definido arriba pero lo actualizamos por si acaso)
         self.fields['id_municipio'].queryset = Municipio.objects.select_related('id_departamento').all().order_by('id_departamento__nombre', 'nombre')
         
-        # Personalizar las opciones para mostrar municipio y departamento
         self.fields['id_municipio'].label_from_instance = lambda obj: f"{obj.nombre} ({obj.id_departamento.nombre})"
 

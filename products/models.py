@@ -65,6 +65,14 @@ class Producto(models.Model):
     precio = models.DecimalField(max_digits=10, decimal_places=2, null=False)
     stock = models.IntegerField(null=False)
     presentacion = models.CharField(max_length=10, choices=presentacion_choices, default='Un', null=False)
+    cantidad_presentacion = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name="Cantidad por presentación",
+        help_text="Ej: 200 para 200 g, 1.5 para 1.5 L. Opcional.",
+    )
     id_municipio = models.ForeignKey('Municipio', on_delete=models.SET_NULL, null=True, blank=True, related_name='productos')
     fabricante = models.CharField(max_length=200, null=True, blank=True)
     es_promocionado = models.BooleanField(default=False, verbose_name="Promocionado")
@@ -89,7 +97,19 @@ class Producto(models.Model):
     def precio_original(self):
         """Retorna el precio original (siempre el precio base)"""
         return self.precio
-    
+
+    def get_presentacion_completa(self):
+        """Ej: '200 Gr', '1.5 Lt' o 'Unidad (Un)' si no hay cantidad. Sin notación científica."""
+        if self.cantidad_presentacion is not None:
+            d = self.cantidad_presentacion
+            if d == d.to_integral_value():
+                cantidad_str = str(int(d))
+            else:
+                cantidad_str = f"{d:.2f}".rstrip("0").rstrip(".")
+            return f"{cantidad_str} {self.presentacion}"
+        return self.get_presentacion_display()
+
+
 class ImagenProducto(models.Model):
     id_imagen = models.AutoField(primary_key=True)
     id_producto = models.ForeignKey(Producto, on_delete=models.CASCADE, null=False)

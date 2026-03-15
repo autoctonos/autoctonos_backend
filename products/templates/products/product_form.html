@@ -57,6 +57,12 @@
             <div class="form-group">
                 {{ form.presentacion.label_tag }}
                 {{ form.presentacion }}
+                <small style="color: #666;">Unidad de venta (Gramos, Litros, etc.)</small>
+            </div>
+            <div class="form-group">
+                {{ form.cantidad_presentacion.label_tag }}
+                {{ form.cantidad_presentacion }}
+                <small style="color: #666;">Opcional. Ej: 200 (para 200 g), 1.5 (para 1.5 L)</small>
             </div>
             <div class="form-group">
                 {{ form.id_municipio.label_tag }}
