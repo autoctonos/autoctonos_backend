@@ -1,119 +1,575 @@
 {% load static %}
+{% load product_filters %}
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Product Dashboard</title>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard de Productos</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
-        .container { max-width: 800px; margin: 40px auto; background: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #333; }
-        form { margin-bottom: 30px; }
-        .form-group { margin-top: 10px; }
-        label { display: block; margin-bottom: 5px; }
-        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-        button { margin-top: 15px; padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #45a049; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .messages { margin-bottom: 20px; }
-        .alert { padding: 10px 15px; border-radius: 4px; margin-bottom: 10px; }
-        .alert.success { background-color: #d4edda; color: #155724; }
-        .alert.error { background-color: #f8d7da; color: #721c24; }
-        #image-preview { max-width: 150px; margin-top: 10px; display: none; }
+      :root {
+        --color-bg: #f0f2f5;
+        --color-card: #fff;
+        --color-border: #e1e4e8;
+        --color-primary: #2563eb;
+        --color-primary-hover: #1d4ed8;
+        --color-success: #059669;
+        --color-success-bg: #d1fae5;
+        --color-error: #dc2626;
+        --color-error-bg: #fee2e2;
+        --color-text: #1f2937;
+        --color-text-muted: #6b7280;
+        --radius: 8px;
+        --shadow: 0 1px 3px rgba(0,0,0,0.08);
+        --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        background: var(--color-bg);
+        color: var(--color-text);
+        line-height: 1.5;
+        margin: 0;
+        padding: 24px 16px;
+      }
+
+      .container {
+        max-width: 1320px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0 0 24px;
+        color: var(--color-text);
+      }
+
+      h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0 0 16px;
+        color: var(--color-text);
+      }
+
+      .card {
+        background: var(--color-card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 24px;
+        margin-bottom: 24px;
+      }
+
+      .card-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin: 0 0 16px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--color-border);
+      }
+
+      .messages { margin-bottom: 20px; }
+
+      .alert {
+        padding: 12px 16px;
+        border-radius: var(--radius);
+        margin-bottom: 10px;
+      }
+      .alert.success { background: var(--color-success-bg); color: #065f46; }
+      .alert.error { background: var(--color-error-bg); color: var(--color-error); }
+      .alert ul { margin: 8px 0 0; padding-left: 20px; }
+
+      .form-grid {
+        display: grid;
+        gap: 16px;
+      }
+      @media (min-width: 640px) {
+        .form-grid { grid-template-columns: 1fr 1fr; }
+        .form-grid .full-width { grid-column: 1 / -1; }
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .form-group label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--color-text);
+      }
+      .form-group input[type="checkbox"] {
+        width: auto;
+        margin-right: 8px;
+      }
+      .form-group .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .form-group .help {
+        font-size: 0.8125rem;
+        color: var(--color-text-muted);
+      }
+      .form-group .field-error {
+        font-size: 0.8125rem;
+        color: var(--color-error);
+      }
+
+      input:not([type="checkbox"]),
+      select,
+      textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        font-size: 0.9375rem;
+      }
+      input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      }
+
+      .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .btn-primary {
+        background: var(--color-primary);
+        color: #fff;
+      }
+      .btn-primary:hover { background: var(--color-primary-hover); }
+      .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.8125rem;
+      }
+
+      .promo-block {
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        padding: 16px;
+        background: #fafafa;
+      }
+      .promo-block .form-group { margin-bottom: 0; }
+      .js-descuento-toggle {
+        transition: opacity 0.2s ease;
+      }
+      .js-descuento-toggle[hidden] {
+        display: none !important;
+      }
+      .precio-preview {
+        margin-top: 12px;
+        padding: 12px;
+        background: #f0fdf4;
+        border-radius: 6px;
+        font-size: 0.875rem;
+      }
+      .precio-preview strong { color: var(--color-text); }
+
+      .table-wrap {
+        overflow-x: auto;
+        border-radius: var(--radius);
+        border: 1px solid var(--color-border);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+      }
+      th, td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+      }
+      th {
+        background: #f8fafc;
+        font-weight: 600;
+        color: var(--color-text);
+      }
+      tbody tr:hover { background: #f8fafc; }
+      tbody tr:last-child td { border-bottom: none; }
+      .table-img { width: 48px; text-align: center; }
+      .table-img img { max-width: 40px; max-height: 40px; object-fit: cover; border-radius: 4px; }
+      .empty-row td {
+        padding: 32px;
+        text-align: center;
+        color: var(--color-text-muted);
+      }
+
+      #image-preview {
+        max-width: 160px;
+        margin-top: 8px;
+        border-radius: 6px;
+        display: none;
+      }
+
+      .pagination {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid var(--color-border);
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+      .pagination-info {
+        font-size: 0.875rem;
+        color: var(--color-text-muted);
+        margin: 0;
+      }
+      .pagination-links {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .pagination-links .btn {
+        background: var(--color-card);
+        border: 1px solid var(--color-border);
+        color: var(--color-text);
+      }
+      .pagination-links .btn:hover {
+        background: #f0f2f5;
+        border-color: var(--color-primary);
+      }
+      .pagination-current {
+        font-size: 0.875rem;
+        color: var(--color-text-muted);
+        padding: 0 8px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>Product Dashboard</h1>
-        {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-            <div class="alert {{ message.tags }}">{{ message }}</div>
+      <h1>Dashboard de Productos</h1>
+
+      {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+        <div class="alert {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if form.errors %}
+      <div class="messages">
+        <div class="alert error">
+          <strong>Por favor, corrija los siguientes errores:</strong>
+          <ul>
+            {% for field, errors in form.errors.items %}
+              {% for error in errors %}
+                <li><strong>{{ field }}:</strong> {{ error }}</li>
+              {% endfor %}
             {% endfor %}
+          </ul>
         </div>
-        {% endif %}
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="form-group">
-                {{ form.id_categoria.label_tag }}
-                {{ form.id_categoria }}
+      </div>
+      {% endif %}
+
+      <div class="card">
+        <h2 class="card-title">Nuevo producto</h2>
+        <form method="post" enctype="multipart/form-data" id="product-form">
+          {% csrf_token %}
+          <div class="form-grid">
+            <div class="form-group full-width">
+              {{ form.id_categoria.label_tag }}
+              {{ form.id_categoria }}
+              {% if form.id_categoria.errors %}
+                <span class="field-error">{{ form.id_categoria.errors.0 }}</span>
+              {% endif %}
+            </div>
+            <div class="form-group full-width">
+              {{ form.nombre.label_tag }}
+              {{ form.nombre }}
+              {% if form.nombre.errors %}
+                <span class="field-error">{{ form.nombre.errors.0 }}</span>
+              {% endif %}
+            </div>
+            <div class="form-group full-width">
+              {{ form.descripcion.label_tag }}
+              {{ form.descripcion }}
+              {% if form.descripcion.errors %}
+                <span class="field-error">{{ form.descripcion.errors.0 }}</span>
+              {% endif %}
             </div>
             <div class="form-group">
-                {{ form.nombre.label_tag }}
-                {{ form.nombre }}
+              {{ form.precio.label_tag }}
+              {{ form.precio }}
+              {% if form.precio.errors %}
+                <span class="field-error">{{ form.precio.errors.0 }}</span>
+              {% endif %}
             </div>
             <div class="form-group">
-                {{ form.descripcion.label_tag }}
-                {{ form.descripcion }}
+              {{ form.stock.label_tag }}
+              {{ form.stock }}
+              {% if form.stock.errors %}
+                <span class="field-error">{{ form.stock.errors.0 }}</span>
+              {% endif %}
             </div>
             <div class="form-group">
-                {{ form.precio.label_tag }}
-                {{ form.precio }}
+              {{ form.presentacion.label_tag }}
+              {{ form.presentacion }}
+              <span class="help">Unidad en que se vende (ej. Gramos, Litros)</span>
+              {% if form.presentacion.errors %}
+                <span class="field-error">{{ form.presentacion.errors.0 }}</span>
+              {% endif %}
             </div>
             <div class="form-group">
-                {{ form.stock.label_tag }}
-                {{ form.stock }}
+              {{ form.cantidad_presentacion.label_tag }}
+              {{ form.cantidad_presentacion }}
+              <span class="help">Opcional. Ej: 200 para bloque de 200 g, 1.5 para 1.5 L</span>
+              {% if form.cantidad_presentacion.errors %}
+                <span class="field-error">{{ form.cantidad_presentacion.errors.0 }}</span>
+              {% endif %}
             </div>
             <div class="form-group">
-                {{ form.estado.label_tag }}
-                {{ form.estado }}
+              {{ form.id_municipio.label_tag }}
+              {{ form.id_municipio }}
+              {% if form.id_municipio.errors %}
+                <span class="field-error">{{ form.id_municipio.errors.0 }}</span>
+              {% endif %}
             </div>
             <div class="form-group">
-                {{ form.image.label_tag }}
-                {{ form.image }}
-                <img id="image-preview" alt="Image preview" />
+              {{ form.fabricante.label_tag }}
+              {{ form.fabricante }}
+              {% if form.fabricante.errors %}
+                <span class="field-error">{{ form.fabricante.errors.0 }}</span>
+              {% endif %}
             </div>
-            <button type="submit">Add Product</button>
+          </div>
+
+          <div class="promo-block" style="margin-top: 20px;">
+            <div class="form-group">
+              <div class="checkbox-row">
+                {{ form.es_promocionado }}
+                <label for="id_es_promocionado">¿Producto en promoción?</label>
+              </div>
+              {% if form.es_promocionado.errors %}
+                <span class="field-error">{{ form.es_promocionado.errors.0 }}</span>
+              {% endif %}
+            </div>
+            <div class="js-descuento-toggle form-group" id="descuento-group" hidden>
+              {{ form.porcentaje_descuento.label_tag }}
+              {{ form.porcentaje_descuento }}
+              <span class="help">Ejemplo: 10 para 10% de descuento</span>
+              {% if form.porcentaje_descuento.errors %}
+                <span class="field-error">{{ form.porcentaje_descuento.errors.0 }}</span>
+              {% endif %}
+              <div class="precio-preview" id="precio-preview" style="display: none;">
+                <strong>Precio original:</strong> <span id="precio-original-display"></span><br />
+                <strong>Descuento:</strong> <span id="descuento-display"></span><br />
+                <strong>Precio con descuento:</strong> <span id="precio-nuevo-display" style="color: var(--color-success); font-weight: 600;"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-grid" style="margin-top: 20px;">
+            <div class="form-group">
+              {{ form.estado.label_tag }}
+              {{ form.estado }}
+              {% if form.estado.errors %}
+                <span class="field-error">{{ form.estado.errors.0 }}</span>
+              {% endif %}
+            </div>
+            <div class="form-group full-width">
+              {{ form.image.label_tag }}
+              {{ form.image }}
+              <img id="image-preview" alt="Vista previa" />
+            </div>
+          </div>
+
+          <p style="margin-top: 24px;">
+            <button type="submit" class="btn btn-primary">Añadir producto</button>
+          </p>
         </form>
-        <h2>Existing Products</h2>
-        <table>
+      </div>
+
+      <div class="card" id="productos-lista">
+        <h2 class="card-title">Productos existentes</h2>
+        <div class="table-wrap">
+          <table>
             <thead>
-                <tr>
-                    <th>Image</th>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Price</th>
-                    <th>Stock</th>
-                    <th>Actions</th>
-                </tr>
+              <tr>
+                <th class="table-img">Imagen</th>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Presentación</th>
+                <th>Municipio</th>
+                <th>Fabricante</th>
+                <th>Promoción</th>
+                <th></th>
+              </tr>
             </thead>
             <tbody>
-            {% for producto in productos %}
-                <tr>
-                    <td>
-                        {% with producto.imagenproducto_set.first as img %}
-                            {% if img %}<img src="{{ img.url_imagen.url }}" alt="{{ producto.nombre }}" style="max-width:60px;"/>{% endif %}
-                        {% endwith %}
-                    </td>
-                    <td>{{ producto.nombre }}</td>
-                    <td>{{ producto.id_categoria.nombre }}</td>
-                    <td>{{ producto.precio }}</td>
-                    <td>{{ producto.stock }}</td>
-                    <td><a href="{% url 'product-update' producto.pk %}">Edit</a></td>
-                </tr>
-            {% empty %}
-                <tr><td colspan="6">No products yet.</td></tr>
-            {% endfor %}
+              {% for producto in productos %}
+              <tr>
+                <td class="table-img">
+                  {% with producto.imagenproducto_set.first as img %}
+                    {% if img and img.url_imagen %}
+                      <img src="{{ img.url_imagen.url }}" alt="{{ producto.nombre }}" />
+                    {% else %}
+                      —
+                    {% endif %}
+                  {% endwith %}
+                </td>
+                <td>{{ producto.nombre }}</td>
+                <td>{{ producto.id_categoria.nombre }}</td>
+                <td>
+                  {% if producto.es_promocionado and producto.porcentaje_descuento %}
+                    <span style="text-decoration: line-through; color: var(--color-text-muted);">{{ producto.precio|format_precio }}</span><br />
+                    <span style="color: var(--color-success); font-weight: 600;">{{ producto.precio_con_descuento|format_precio }}</span>
+                    <small style="color: var(--color-error);">(-{{ producto.porcentaje_descuento }}%)</small>
+                  {% else %}
+                    {{ producto.precio|format_precio }}
+                  {% endif %}
+                </td>
+                <td>{{ producto.stock }}</td>
+                <td>{{ producto.get_presentacion_completa }}</td>
+                <td>
+                  {% if producto.id_municipio %}
+                    {{ producto.id_municipio.nombre }} ({{ producto.id_municipio.id_departamento.nombre }})
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                <td>{{ producto.fabricante|default:"—" }}</td>
+                <td>
+                  {% if producto.es_promocionado and producto.porcentaje_descuento %}
+                    <span style="color: var(--color-success); font-weight: 600;">{{ producto.porcentaje_descuento|floatformat:"-1" }}%</span>
+                  {% else %}
+                    <span style="color: var(--color-text-muted);">—</span>
+                  {% endif %}
+                </td>
+                <td><a href="{% url 'product-update' producto.pk %}" class="btn btn-primary btn-sm">Editar</a></td>
+              </tr>
+              {% empty %}
+              <tr class="empty-row">
+                <td colspan="10">Aún no hay productos. Añade el primero arriba.</td>
+              </tr>
+              {% endfor %}
             </tbody>
-        </table>
+          </table>
+        </div>
+        {% if page.paginator.num_pages > 1 %}
+        <nav class="pagination" aria-label="Paginación">
+          <p class="pagination-info">
+            Mostrando {{ page.start_index }}–{{ page.end_index }} de {{ page.paginator.count }} productos
+          </p>
+          <div class="pagination-links">
+            {% if page.has_previous %}
+              <a href="?page=1#productos-lista" class="btn btn-sm">Primera</a>
+              <a href="?page={{ page.previous_page_number }}#productos-lista" class="btn btn-sm">Anterior</a>
+            {% endif %}
+            <span class="pagination-current">
+              Página {{ page.number }} de {{ page.paginator.num_pages }}
+            </span>
+            {% if page.has_next %}
+              <a href="?page={{ page.next_page_number }}#productos-lista" class="btn btn-sm">Siguiente</a>
+              <a href="?page={{ page.paginator.num_pages }}#productos-lista" class="btn btn-sm">Última</a>
+            {% endif %}
+          </div>
+        </nav>
+        {% endif %}
+      </div>
     </div>
+
     <script>
-        const imageInput = document.getElementById('id_image');
-        const preview = document.getElementById('image-preview');
-        if (imageInput) {
-            imageInput.addEventListener('change', function (e) {
-                const [file] = imageInput.files;
-                if (file) {
-                    preview.src = URL.createObjectURL(file);
-                    preview.style.display = 'block';
-                } else {
-                    preview.src = '';
-                    preview.style.display = 'none';
-                }
-            });
+      (function () {
+        const imageInput = document.getElementById("id_image");
+        const preview = document.getElementById("image-preview");
+        if (imageInput && preview) {
+          imageInput.addEventListener("change", function () {
+            const file = imageInput.files && imageInput.files[0];
+            if (file) {
+              preview.src = URL.createObjectURL(file);
+              preview.style.display = "block";
+            } else {
+              preview.src = "";
+              preview.style.display = "none";
+            }
+          });
         }
+
+        function formatearNumero(numero) {
+          const s = String(numero).replace(/[^\d]/g, "");
+          if (!s) return "0";
+          return s.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        const precioInput = document.getElementById("id_precio");
+        if (precioInput) {
+          precioInput.addEventListener("input", function () {
+            let v = this.value.replace(/[^\d]/g, "");
+            this.value = v ? formatearNumero(v) : "";
+          });
+          precioInput.addEventListener("paste", function (e) {
+            e.preventDefault();
+            const text = (e.clipboardData || window.clipboardData).getData("text");
+            const v = text.replace(/[^\d]/g, "");
+            if (v) this.value = formatearNumero((this.value.replace(/[^\d]/g, "")) + v);
+          });
+          document.getElementById("product-form")?.addEventListener("submit", function () {
+            precioInput.value = precioInput.value.replace(/\./g, "");
+          });
+        }
+
+        const checkbox = document.getElementById("id_es_promocionado");
+        const descuentoGroup = document.getElementById("descuento-group");
+        const porcentajeInput = document.getElementById("id_porcentaje_descuento");
+        const precioPreview = document.getElementById("precio-preview");
+        const precioOriginalDisplay = document.getElementById("precio-original-display");
+        const descuentoDisplay = document.getElementById("descuento-display");
+        const precioNuevoDisplay = document.getElementById("precio-nuevo-display");
+
+        function toggleDescuento() {
+          if (!checkbox || !descuentoGroup) return;
+          if (checkbox.checked) {
+            descuentoGroup.removeAttribute("hidden");
+            if (porcentajeInput && porcentajeInput.value) calcularPrecio();
+          } else {
+            descuentoGroup.setAttribute("hidden", "");
+            if (precioPreview) precioPreview.style.display = "none";
+            if (porcentajeInput) porcentajeInput.value = "";
+          }
+        }
+
+        function calcularPrecio() {
+          if (!precioInput || !porcentajeInput || !precioOriginalDisplay || !descuentoDisplay || !precioNuevoDisplay || !precioPreview) return;
+          const precio = parseFloat(precioInput.value.replace(/\./g, "")) || 0;
+          const porcentaje = parseFloat(porcentajeInput.value) || 0;
+          if (precio > 0 && porcentaje > 0 && porcentaje <= 100) {
+            const descuento = precio * (porcentaje / 100);
+            const nuevo = precio - descuento;
+            precioOriginalDisplay.textContent = formatearNumero(precio);
+            descuentoDisplay.textContent = formatearNumero(Math.round(descuento));
+            precioNuevoDisplay.textContent = formatearNumero(Math.round(nuevo));
+            precioPreview.style.display = "block";
+          } else {
+            precioPreview.style.display = "none";
+          }
+        }
+
+        if (checkbox) {
+          checkbox.addEventListener("change", toggleDescuento);
+          toggleDescuento();
+        }
+        if (porcentajeInput) porcentajeInput.addEventListener("input", calcularPrecio);
+        if (precioInput) precioInput.addEventListener("input", function () { if (checkbox && checkbox.checked) calcularPrecio(); });
+      })();
     </script>
-</body>
+  </body>
 </html>

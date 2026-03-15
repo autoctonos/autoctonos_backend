@@ -20,14 +20,25 @@ class ImagenProductoSerializer(serializers.ModelSerializer):
         
 class ProductoConImagenSerializer(serializers.ModelSerializer):
     imagenes = serializers.SerializerMethodField()
+    precio_con_descuento = serializers.SerializerMethodField()
 
     class Meta:
         model = Producto
-        fields = ['id_producto', 'id_categoria', 'nombre', 'descripcion', 'precio', 'stock', 'imagenes']
+        fields = [
+            'id_producto', 'id_categoria', 'nombre', 'descripcion',
+            'precio', 'precio_con_descuento', 'es_promocionado', 'porcentaje_descuento',
+            'stock', 'imagenes',
+        ]
 
     def get_imagenes(self, obj):
         imagenes = ImagenProducto.objects.filter(id_producto=obj.id_producto)
         return ImagenProductoSerializer(imagenes, many=True).data
+
+    def get_precio_con_descuento(self, obj):
+        """Returns the discounted price as a string, or null when there is no active promotion."""
+        if obj.es_promocionado and obj.porcentaje_descuento:
+            return str(obj.precio_con_descuento())
+        return None
 
 class ProductoByCategoriaSerializer(serializers.ModelSerializer):
     productos_categoria = serializers.SerializerMethodField()
