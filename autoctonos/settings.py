@@ -164,9 +164,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://autoctonos_frontend-app-1:3000",
     "http://autoctonos_frontend-app-1:3001",
     "http://localhost:4321",
-    "http://localhost:4322",
-    "http://127.0.0.1:4321",
-    "http://127.0.0.1:4322"
+    "http://127.0.0.1:4321"
 ]
 
 if os.environ.get("DISABLE_MIGRATIONS"):
