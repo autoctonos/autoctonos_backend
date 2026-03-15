@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'drf_yasg',    
     'corsheaders',
     'rest_framework_simplejwt',
+    'cities_light',
 ]
 
 MIDDLEWARE = [
@@ -176,3 +177,6 @@ if os.environ.get("DISABLE_MIGRATIONS"):
             return None
 
     MIGRATION_MODULES = DisableMigrations()
+
+CITIES_LIGHT_INCLUDE_COUNTRIES = ['CO']
+CITIES_LIGHT_TRANSLATION_LANGUAGES = ['es']
