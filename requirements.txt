@@ -22,3 +22,5 @@ whitenoise
 dj-database-url
 gunicorn
 requests
+cloudinary
+django-cloudinary-storage

@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'drf_yasg',    
     'corsheaders',
     'rest_framework_simplejwt',
+    'cloudinary_storage',
+    'cloudinary',
 ]
 
 MIDDLEWARE = [
@@ -167,6 +169,18 @@ CORS_ALLOWED_ORIGINS = [
     "https://autoctonos.vercel.app",
     "https://www.autoctonos.vercel.app",
 ]
+
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 if os.environ.get("DISABLE_MIGRATIONS"):
     class DisableMigrations(dict):
