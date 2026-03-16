@@ -20,3 +20,4 @@ django-storages
 boto3
 whitenoise
 dj-database-url
+gunicorn
