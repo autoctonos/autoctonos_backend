@@ -21,3 +21,4 @@ boto3
 whitenoise
 dj-database-url
 gunicorn
+requests
