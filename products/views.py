@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.paginator import Paginator
 from django.http import HttpResponseForbidden
+from django.conf import settings
 from rest_framework import viewsets, permissions
 from django.contrib import messages
 from .models import Producto, Categoria, ImagenProducto
@@ -83,16 +85,24 @@ def product_dashboard(request):
             messages.success(request, 'Product added successfully!')
             return redirect('product-dashboard')
         else:
+            if hasattr(settings, 'DEBUG') and settings.DEBUG:
+                import pprint
+                print("Form errors:", pprint.pformat(form.errors))
+                print("Form data:", pprint.pformat(form.data))
             messages.error(request, 'Please correct the errors below.')
     else:
         form = ProductoForm()
 
-    productos = Producto.objects.all()
+    queryset = Producto.objects.all().order_by("-created_at")
+    paginator = Paginator(queryset, 15)
+    page_number = request.GET.get("page", 1)
+    page = paginator.get_page(page_number)
     context = {
-        'form': form,
-        'productos': productos,
+        "form": form,
+        "page": page,
+        "productos": page.object_list,
     }
-    return render(request, 'products/dashboard.html', context)
+    return render(request, "products/dashboard.html", context)
 
 
 @login_required(login_url='/admin/login/')
@@ -113,15 +123,19 @@ def product_update(request, pk):
                     imagen.save()
                 else:
                     ImagenProducto.objects.create(id_producto=producto, url_imagen=image)
-            messages.success(request, 'Product updated successfully!')
+            messages.success(request, 'Producto actualizado correctamente!')
             return redirect('product-dashboard')
         else:
-            messages.error(request, 'Please correct the errors below.')
+            messages.error(request, 'Por favor, corrija los errores abajo.')
     else:
         initial = {}
         if imagen:
             initial['image'] = imagen.url_imagen
         form = ProductoForm(instance=producto, initial=initial)
 
-    context = {'form': form, 'producto': producto, 'imagen': imagen}
+    context = {
+        'form': form, 
+        'producto': producto, 
+        'imagen': imagen,
+    }
     return render(request, 'products/product_form.html', context)

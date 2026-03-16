@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
+import dj_database_url
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -26,6 +27,7 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 DEBUG = os.environ.get("DEBUG", default=True)
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1").split(",")
+API_BASE = os.getenv("API_BASE")
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
@@ -47,18 +49,18 @@ INSTALLED_APPS = [
     'drf_yasg',    
     'corsheaders',
     'rest_framework_simplejwt',
-    'cities_light',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'autoctonos.urls'
@@ -86,16 +88,10 @@ WSGI_APPLICATION = 'autoctonos.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.{}'.format(
-            os.getenv('DATABASE_ENGINE', 'sqlite3')
-        ),
-        'NAME': os.getenv('DATABASE_NAME', 'polls'),
-        'USER': os.getenv('DATABASE_USERNAME', 'myprojectuser'),
-        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'password'),
-        'HOST': os.getenv('DATABASE_HOST', '127.0.0.1'),
-        'PORT': os.getenv('DATABASE_PORT', 5432),
-    }
+    'default': dj_database_url.config(
+        default=f"postgresql://{os.getenv('DATABASE_USERNAME', 'myprojectuser')}:{os.getenv('DATABASE_PASSWORD', 'password')}@{os.getenv('DATABASE_HOST', '127.0.0.1')}:{os.getenv('DATABASE_PORT', '5432')}/{os.getenv('DATABASE_NAME', 'polls')}",
+        conn_max_age=600,
+    )
 }
 
 # Password validation
@@ -165,7 +161,12 @@ CORS_ALLOWED_ORIGINS = [
     "http://autoctonos_frontend-app-1:3000",
     "http://autoctonos_frontend-app-1:3001",
     "http://localhost:4321",
-    "http://127.0.0.1:4321"
+    "http://127.0.0.1:4321",
+    # Producción ✅
+    "https://productosautoctonos.shop",
+    "https://www.productosautoctonos.shop",
+    "https://autoctonos.vercel.app",
+    "https://www.autoctonos.vercel.app",
 ]
 
 if os.environ.get("DISABLE_MIGRATIONS"):
@@ -177,6 +178,3 @@ if os.environ.get("DISABLE_MIGRATIONS"):
             return None
 
     MIGRATION_MODULES = DisableMigrations()
-
-CITIES_LIGHT_INCLUDE_COUNTRIES = ['CO']
-CITIES_LIGHT_TRANSLATION_LANGUAGES = ['es']
