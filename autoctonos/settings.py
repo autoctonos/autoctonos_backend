@@ -50,14 +50,15 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'autoctonos.urls'
@@ -83,18 +84,22 @@ WSGI_APPLICATION = 'autoctonos.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+import dj_database_url
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.{}'.format(
-            os.getenv('DATABASE_ENGINE', 'sqlite3')
-        ),
-        'NAME': os.getenv('DATABASE_NAME', 'polls'),
-        'USER': os.getenv('DATABASE_USERNAME', 'myprojectuser'),
-        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'password'),
-        'HOST': os.getenv('DATABASE_HOST', '127.0.0.1'),
-        'PORT': os.getenv('DATABASE_PORT', 5432),
-    }
+    'default': dj_database_url.config(
+        default={
+            'ENGINE': 'django.db.backends.{}'.format(
+                os.getenv('DATABASE_ENGINE', 'sqlite3')
+            ),
+            'NAME': os.getenv('DATABASE_NAME', 'polls'),
+            'USER': os.getenv('DATABASE_USERNAME', 'myprojectuser'),
+            'PASSWORD': os.getenv('DATABASE_PASSWORD', 'password'),
+            'HOST': os.getenv('DATABASE_HOST', '127.0.0.1'),
+            'PORT': os.getenv('DATABASE_PORT', 5432),
+        },
+        conn_max_age=600,
+    )
 }
 
 # Password validation
@@ -164,7 +169,12 @@ CORS_ALLOWED_ORIGINS = [
     "http://autoctonos_frontend-app-1:3000",
     "http://autoctonos_frontend-app-1:3001",
     "http://localhost:4321",
-    "http://127.0.0.1:4321"
+    "http://127.0.0.1:4321",
+    # Producción ✅
+    "https://productosautoctonos.shop",
+    "https://www.productosautoctonos.shop",
+    "https://autoctonos.vercel.app",
+    "https://www.autoctonos.vercel.app",
 ]
 
 if os.environ.get("DISABLE_MIGRATIONS"):
