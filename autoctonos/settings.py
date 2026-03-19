@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'products',
     'commerce',
+    'producers',
     'users',
     'drf_yasg',
     'corsheaders',
