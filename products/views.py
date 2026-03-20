@@ -3,6 +3,7 @@ from django.core.paginator import Paginator
 from django.http import HttpResponseForbidden
 from django.conf import settings
 from rest_framework import viewsets, permissions
+from rest_framework.permissions import BasePermission, SAFE_METHODS
 from django.contrib import messages
 from .models import Producto, Categoria, ImagenProducto
 from .serializers import (
@@ -20,27 +21,43 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from .forms import ProductoForm
 
+
+class IsAdminOrReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        return request.user and request.user.is_staff
+
+
 class ProductoViewSet(viewsets.ModelViewSet):
     queryset = Producto.objects.all()
     serializer_class = ProductoSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
 
 class CategoriaViewSet(viewsets.ModelViewSet):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
 
 class ImagenProductoViewSet(viewsets.ModelViewSet):
     queryset = ImagenProducto.objects.all()
     serializer_class = ImagenProductoSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
 
 class ProductosConImagenView(APIView):
     def get(self, request):
-        productos = Producto.objects.all()[:8]  
+        productos = Producto.objects.all()[:8]
         serializer = ProductoConImagenSerializer(productos, many=True)
         return Response(serializer.data)
+
 
 class ProductoDetalleView(viewsets.ModelViewSet):
     queryset = Producto.objects.all()
     serializer_class = ProductoConImagenSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
     def retrieve(self, request, pk=None):
         try:
@@ -50,19 +67,17 @@ class ProductoDetalleView(viewsets.ModelViewSet):
         except Producto.DoesNotExist:
             return Response({"message": "Producto no encontrado."})
 
+
 class ProductosCategoriaView(APIView):
     def get(self, request):
         value = (request.query_params.get('id_categoria') or '').strip()
         qs = Producto.objects.all()
-
         if value:
-            # si es numérico, filtra por ID; si no, por nombre (case-insensitive)
             if value.isdigit():
-                qs = qs.filter(id_categoria=value)  # FK → acepta el PK directamente
+                qs = qs.filter(id_categoria=value)
             else:
                 qs = qs.filter(id_categoria__nombre__iexact=value)
-
-        serializer = ProductoConImagenSerializer(qs, many=True)  # ← NO tocamos lógica de imágenes
+        serializer = ProductoConImagenSerializer(qs, many=True)
         return Response(serializer.data)
 
 
@@ -72,7 +87,6 @@ def admin_check(user):
 
 @login_required(login_url='/admin/login/')
 def product_dashboard(request):
-    """Dashboard to add and list products with optional image upload."""
     if not admin_check(request.user):
         return HttpResponseForbidden()
     if request.method == 'POST':
@@ -92,7 +106,6 @@ def product_dashboard(request):
             messages.error(request, 'Please correct the errors below.')
     else:
         form = ProductoForm()
-
     queryset = Producto.objects.all().order_by("-created_at")
     paginator = Paginator(queryset, 15)
     page_number = request.GET.get("page", 1)
@@ -111,7 +124,6 @@ def product_update(request, pk):
         return HttpResponseForbidden()
     producto = get_object_or_404(Producto, pk=pk)
     imagen = ImagenProducto.objects.filter(id_producto=producto).first()
-
     if request.method == 'POST':
         form = ProductoForm(request.POST, request.FILES, instance=producto)
         if form.is_valid():
@@ -132,10 +144,9 @@ def product_update(request, pk):
         if imagen:
             initial['image'] = imagen.url_imagen
         form = ProductoForm(instance=producto, initial=initial)
-
     context = {
-        'form': form, 
-        'producto': producto, 
+        'form': form,
+        'producto': producto,
         'imagen': imagen,
     }
     return render(request, 'products/product_form.html', context)
