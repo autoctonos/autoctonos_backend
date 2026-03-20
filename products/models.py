@@ -22,19 +22,24 @@ presentacion_choices = [
 
 class Categoria(models.Model):
     id_categoria = models.AutoField(primary_key=True)
-    nombre = models.CharField(max_length=100, null=False)
+    nombre = models.CharField(max_length=100, null=False, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(default=None, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.nombre
+
+    class Meta:
+        verbose_name = "Categoría"
+        verbose_name_plural = "Categorías"
+        ordering = ['nombre']
 
 
 class Departamento(models.Model):
     id_departamento = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100, null=False, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(default=None, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.nombre
@@ -77,14 +82,19 @@ class Producto(models.Model):
     fabricante = models.CharField(max_length=200, null=True, blank=True)
     es_promocionado = models.BooleanField(default=False, verbose_name="Promocionado")
     porcentaje_descuento = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, default=0, verbose_name="Porcentaje de Descuento (%)")
-    estado = models.CharField(max_length=10, choices=estado_choices, default='Revisión')
+    estado = models.CharField(max_length=10, choices=estado_choices, default='revisión')
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(default=None, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(default=None, null=True)
 
     def __str__(self):
         return self.nombre
-    
+
+    class Meta:
+        verbose_name = "Producto"
+        verbose_name_plural = "Productos"
+        ordering = ['-created_at']
+
     def precio_con_descuento(self):
         """Calcula el precio con descuento si el producto está promocionado"""
         if self.es_promocionado and self.porcentaje_descuento:
@@ -115,8 +125,15 @@ class ImagenProducto(models.Model):
     id_producto = models.ForeignKey(Producto, on_delete=models.CASCADE, null=False)
     url_imagen = models.ImageField(upload_to='productos_imagenes/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(default=None, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(default=None, null=True)
+
+    def __str__(self):
+        return f"Imagen {self.id_imagen} - {self.id_producto.nombre}"
+
+    class Meta:
+        verbose_name = "Imagen de Producto"
+        verbose_name_plural = "Imágenes de Productos"
 
 class Post(models.Model):
     id_post = models.AutoField(primary_key=True)
@@ -126,10 +143,18 @@ class Post(models.Model):
     descripcion = models.TextField(null=False)
     precio = models.DecimalField(max_digits=10, decimal_places=2, null=False)
     stock = models.IntegerField(null=False)
-    estado = models.CharField(max_length=10, choices=estado_choices, default='Revisión')
+    estado = models.CharField(max_length=10, choices=estado_choices, default='revisión')
     mensaje = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(default=None, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(default=None, null=True)
     producto = models.OneToOneField(Producto, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"Post: {self.nombre} ({self.estado})"
+
+    class Meta:
+        verbose_name = "Post"
+        verbose_name_plural = "Posts"
+        ordering = ['-created_at']
 

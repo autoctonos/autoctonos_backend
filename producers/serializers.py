@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from .models import Productor
 from .models import Productor, Municipio, Departamento
 
 class DepartamentoSerializer(serializers.ModelSerializer):

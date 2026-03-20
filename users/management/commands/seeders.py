@@ -23,8 +23,7 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(
             f"✅ Listo: {n_usuarios} usuarios, {n_categorias} categorías, "
-            #TODO: ARREGLAR ALGO 
-            f"posts, {n_productos} productos, {n_imgs} imágenes."
+            f"{n_productos} productos, {n_imgs} imágenes."
         ))
 
     # ---------- Utilidades ----------
@@ -93,11 +92,12 @@ class Command(BaseCommand):
         return total
 
     def create_productos_desde_posts_aprobados(self) -> int:
-        aprobados = Post.objects.select_related("id_categoria").filter(estado="Aprobado")
+        aprobados = Post.objects.select_related("id_categoria").filter(estado="aprobado")
 
         creados_o_actualizados = 0
         for post in aprobados:
-            _, _created = Producto.objects.update_or_create(
+            producto, _created = Producto.objects.update_or_create(
+                id_producto=post.producto.id_producto if post.producto else None,
                 defaults={
                     "id_categoria": post.id_categoria,
                     "nombre": post.nombre,
@@ -105,7 +105,16 @@ class Command(BaseCommand):
                     "precio": post.precio,
                     "stock": post.stock,
                 },
-            )
+            ) if post.producto else (Producto.objects.create(
+                id_categoria=post.id_categoria,
+                nombre=post.nombre,
+                descripcion=post.descripcion,
+                precio=post.precio,
+                stock=post.stock,
+            ), True)
+            if not post.producto:
+                post.producto = producto
+                post.save(update_fields=['producto'])
             creados_o_actualizados += 1
 
         self.stdout.write(self.style.SUCCESS(
@@ -114,14 +123,15 @@ class Command(BaseCommand):
         return creados_o_actualizados
 
     def create_imagenes_para_posts_con_producto(self) -> int:
-        # Una imagen demo por cada Post que ya tenga Producto
-        posts_con_producto = Post.objects.filter(producto__isnull=False)
+        posts_con_producto = Post.objects.filter(producto__isnull=False).select_related('producto')
         creadas = 0
         for post in posts_con_producto:
-            ImagenProducto.objects.get_or_create(
+            _, created = ImagenProducto.objects.get_or_create(
+                id_producto=post.producto,
                 defaults={"url_imagen": "https://picsum.photos/400/300"},
             )
-            creadas += 1
+            if created:
+                creadas += 1
         self.stdout.write(self.style.SUCCESS(f"🖼️ Imágenes creadas/asignadas: {creadas}"))
         return creadas
 

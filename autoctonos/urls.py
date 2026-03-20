@@ -22,8 +22,8 @@ schema_view = get_schema_view(
         contact=openapi.Contact(email="contact@myapi.com"),
         license=openapi.License(name="BSD License"),
     ),
-    public=True,
-    permission_classes=(permissions.AllowAny,),
+    public=False,
+    permission_classes=(permissions.IsAdminUser,),
 )
 
 router = routers.DefaultRouter()
