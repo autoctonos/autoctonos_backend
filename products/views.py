@@ -12,14 +12,15 @@ from .serializers import (
     CategoriaSerializer,
     ImagenProductoSerializer,
 )
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from rest_framework import generics
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+import logging
 from .forms import ProductoForm
+
+logger = logging.getLogger(__name__)
 
 
 class IsAdminOrReadOnly(BasePermission):
@@ -30,7 +31,7 @@ class IsAdminOrReadOnly(BasePermission):
 
 
 class ProductoViewSet(viewsets.ModelViewSet):
-    queryset = Producto.objects.all()
+    queryset = Producto.objects.select_related('id_categoria').prefetch_related('imagenproducto_set').all()
     serializer_class = ProductoSerializer
     permission_classes = [IsAdminOrReadOnly]
 
@@ -48,14 +49,16 @@ class ImagenProductoViewSet(viewsets.ModelViewSet):
 
 
 class ProductosConImagenView(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
     def get(self, request):
-        productos = Producto.objects.all()[:8]
+        productos = Producto.objects.select_related('id_categoria').prefetch_related('imagenproducto_set').all()[:8]
         serializer = ProductoConImagenSerializer(productos, many=True)
         return Response(serializer.data)
 
 
 class ProductoDetalleView(viewsets.ModelViewSet):
-    queryset = Producto.objects.all()
+    queryset = Producto.objects.select_related('id_categoria').prefetch_related('imagenproducto_set').all()
     serializer_class = ProductoConImagenSerializer
     permission_classes = [IsAdminOrReadOnly]
 
@@ -65,16 +68,18 @@ class ProductoDetalleView(viewsets.ModelViewSet):
             serializer = self.get_serializer(producto)
             return Response(serializer.data)
         except Producto.DoesNotExist:
-            return Response({"message": "Producto no encontrado."})
+            return Response({"error": "Producto no encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
 
 class ProductosCategoriaView(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
     def get(self, request):
         value = (request.query_params.get('id_categoria') or '').strip()
-        qs = Producto.objects.all()
+        qs = Producto.objects.select_related('id_categoria').prefetch_related('imagenproducto_set').all()
         if value:
             if value.isdigit():
-                qs = qs.filter(id_categoria=value)
+                qs = qs.filter(id_categoria=int(value))
             else:
                 qs = qs.filter(id_categoria__nombre__iexact=value)
         serializer = ProductoConImagenSerializer(qs, many=True)
@@ -99,10 +104,7 @@ def product_dashboard(request):
             messages.success(request, 'Product added successfully!')
             return redirect('product-dashboard')
         else:
-            if hasattr(settings, 'DEBUG') and settings.DEBUG:
-                import pprint
-                print("Form errors:", pprint.pformat(form.errors))
-                print("Form data:", pprint.pformat(form.data))
+            logger.warning("Form errors: %s", form.errors)
             messages.error(request, 'Please correct the errors below.')
     else:
         form = ProductoForm()
