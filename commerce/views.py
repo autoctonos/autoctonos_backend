@@ -20,6 +20,7 @@ class IsAdminOrOwner(BasePermission):
 
 
 class PedidoViewSet(viewsets.ModelViewSet):
+    queryset = Pedido.objects.all()
     serializer_class = PedidoSerializer
     permission_classes = [IsAdminOrOwner]
 
@@ -31,6 +32,7 @@ class PedidoViewSet(viewsets.ModelViewSet):
 
 
 class DetallePedidoViewSet(viewsets.ModelViewSet):
+    queryset = DetallePedido.objects.all()
     serializer_class = DetallePedidoSerializer
     permission_classes = [IsAdminOrOwner]
 
@@ -42,6 +44,7 @@ class DetallePedidoViewSet(viewsets.ModelViewSet):
 
 
 class PagoViewSet(viewsets.ModelViewSet):
+    queryset = Pago.objects.all()
     serializer_class = PagoSerializer
     permission_classes = [IsAdminOrOwner]
 
@@ -53,6 +56,7 @@ class PagoViewSet(viewsets.ModelViewSet):
 
 
 class EnvioViewSet(viewsets.ModelViewSet):
+    queryset = Envio.objects.all()
     serializer_class = EnvioSerializer
     permission_classes = [IsAdminOrOwner]
 
