@@ -16,6 +16,8 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+from dotenv import load_dotenv
+load_dotenv(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -24,10 +26,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG", default=True)
+DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1").split(",")
 API_BASE = os.getenv("API_BASE")
+
+# Requerido para CSRF con HTTPS (panel admin, DRF browsable)
+_trusted = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
+if _trusted:
+    CSRF_TRUSTED_ORIGINS = [o.strip() for o in _trusted.split(",")]
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
@@ -88,12 +95,27 @@ WSGI_APPLICATION = 'autoctonos.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+DATABASE_URL = os.getenv("DATABASE_URL")
+LOCAL_DATABASE_URL = (
+    f"postgresql://{os.getenv('DATABASE_USERNAME', 'myprojectuser')}:"
+    f"{os.getenv('DATABASE_PASSWORD', 'password')}@"
+    f"{os.getenv('DATABASE_HOST', '127.0.0.1')}:"
+    f"{os.getenv('DATABASE_PORT', '5432')}/"
+    f"{os.getenv('DATABASE_NAME', 'polls')}"
+)
+
 DATABASES = {
-    'default': dj_database_url.config(
-        default=f"postgresql://{os.getenv('DATABASE_USERNAME', 'myprojectuser')}:{os.getenv('DATABASE_PASSWORD', 'password')}@{os.getenv('DATABASE_HOST', '127.0.0.1')}:{os.getenv('DATABASE_PORT', '5432')}/{os.getenv('DATABASE_NAME', 'polls')}",
-        conn_max_age=600,
+    "default": dj_database_url.parse(
+        DATABASE_URL or LOCAL_DATABASE_URL,
+        conn_max_age=int(os.getenv("DB_CONN_MAX_AGE", "600")),
+        ssl_require=os.getenv("DB_SSL_REQUIRE", "True").lower() == "true",
     )
 }
+
+# Requerido para Supabase Transaction Pooler (puerto 6543)
+# No necesario con Session Pooler (puerto 5432, recomendado)
+if os.getenv("DB_DISABLE_SERVER_SIDE_CURSORS", "False").lower() == "true":
+    DATABASES["default"]["DISABLE_SERVER_SIDE_CURSORS"] = True
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
