@@ -1,0 +1,305 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Producto</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 40px auto; background: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #555; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { margin-top: 15px; padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        img.preview { max-width: 100%; margin-bottom: 10px; border-radius: 4px; }
+        a { display: inline-block; margin-top: 10px; color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .messages { margin-bottom: 20px; }
+        .alert { padding: 10px 15px; border-radius: 4px; margin-bottom: 10px; }
+        .alert.success { background-color: #d4edda; color: #155724; }
+        .alert.error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Editar Producto</h1>
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ form.id_categoria.label_tag }}
+                {{ form.id_categoria }}
+            </div>
+            <div class="form-group">
+                {{ form.nombre.label_tag }}
+                {{ form.nombre }}
+            </div>
+            <div class="form-group">
+                {{ form.descripcion.label_tag }}
+                {{ form.descripcion }}
+            </div>
+            <div class="form-group">
+                {{ form.precio.label_tag }}
+                {{ form.precio }}
+            </div>
+            <div class="form-group">
+                {{ form.stock.label_tag }}
+                {{ form.stock }}
+            </div>
+            <div class="form-group">
+                {{ form.presentacion.label_tag }}
+                {{ form.presentacion }}
+                <small style="color: #666;">Unidad de venta (Gramos, Litros, etc.)</small>
+            </div>
+            <div class="form-group">
+                {{ form.cantidad_presentacion.label_tag }}
+                {{ form.cantidad_presentacion }}
+                <small style="color: #666;">Opcional. Ej: 200 (para 200 g), 1.5 (para 1.5 L)</small>
+            </div>
+            <div class="form-group">
+                {{ form.id_municipio.label_tag }}
+                {{ form.id_municipio }}
+            </div>
+            <div class="form-group">
+                {{ form.fabricante.label_tag }}
+                {{ form.fabricante }}
+            </div>
+            <div class="form-group">
+                {{ form.es_promocionado.label_tag }}
+                {{ form.es_promocionado }}
+            </div>
+            <div class="form-group" id="descuento-group" style="display: none;">
+                {{ form.porcentaje_descuento.label_tag }}
+                {{ form.porcentaje_descuento }}
+                <small style="color: #666;">Ingrese el porcentaje de descuento (ej: 10 para 10%)</small>
+                <div id="precio-preview" style="margin-top: 10px; padding: 10px; background-color: #f0f0f0; border-radius: 4px; display: none;">
+                    <strong>Precio Original:</strong> <span id="precio-original-display"></span><br>
+                    <strong>Descuento:</strong> <span id="descuento-display"></span><br>
+                    <strong>Nuevo Precio:</strong> <span id="precio-nuevo-display" style="color: green; font-weight: bold;"></span>
+                </div>
+            </div>
+            <div class="form-group">
+                {{ form.estado.label_tag }}
+                {{ form.estado }}
+            </div>
+            <div class="form-group">
+                {% if imagen and imagen.url_imagen %}
+                    <img src="{{ imagen.url_imagen.url }}" alt="{{ producto.nombre }}" class="preview"/>
+                {% else %}
+                    <img class="preview" style="display:none;"/>
+                {% endif %}
+                {{ form.image.label_tag }}
+                {{ form.image }}
+            </div>
+            <button type="submit">Guardar</button>
+        </form>
+        <a href="{% url 'product-dashboard' %}">Volver al dashboard</a>
+    </div>
+    <script>
+        const imageInput = document.getElementById('id_image');
+        const preview = document.querySelector('img.preview');
+        if (imageInput) {
+            imageInput.addEventListener('change', function (e) {
+                const [file] = imageInput.files;
+                if (file) {
+                    preview.src = URL.createObjectURL(file);
+                    preview.style.display = 'block';
+                }
+            });
+        }
+
+        // Formatear el campo de precio mientras se escribe (solo números enteros)
+        const precioInput = document.getElementById('id_precio');
+        if (precioInput) {
+            // Función para formatear número con puntos
+            function formatearNumero(numero) {
+                // Si el número tiene decimales, convertirlo a entero primero
+                let numeroLimpio = numero.toString().trim();
+                
+                // Si tiene punto decimal, tomar solo la parte entera
+                if (numeroLimpio.includes('.')) {
+                    numeroLimpio = numeroLimpio.split('.')[0];
+                }
+                
+                // Eliminar todo excepto dígitos
+                let soloNumeros = numeroLimpio.replace(/[^\d]/g, '');
+                if (!soloNumeros) return '';
+                
+                // Formatear con puntos cada 3 dígitos desde la derecha
+                return soloNumeros.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            }
+
+            // Formatear el valor inicial si existe (cuando se edita un producto)
+            // Esto elimina los .00 y formatea con puntos
+            if (precioInput.value) {
+                precioInput.value = formatearNumero(precioInput.value);
+            }
+
+            precioInput.addEventListener('input', function (e) {
+                // Obtener solo números del valor actual
+                let soloNumeros = this.value.replace(/[^\d]/g, '');
+                
+                // Si no hay números, limpiar el campo
+                if (!soloNumeros) {
+                    this.value = '';
+                    return;
+                }
+                
+                // Guardar la posición del cursor antes de formatear
+                let cursorPos = this.selectionStart;
+                let valorOriginal = this.value;
+                
+                // Contar cuántos dígitos hay antes de la posición del cursor
+                let digitosAntes = 0;
+                for (let i = 0; i < cursorPos && i < valorOriginal.length; i++) {
+                    if (/\d/.test(valorOriginal[i])) {
+                        digitosAntes++;
+                    }
+                }
+                
+                // Formatear el número completo
+                let valorFormateado = formatearNumero(soloNumeros);
+                
+                // Calcular la nueva posición del cursor en el valor formateado
+                let nuevaPosicion = valorFormateado.length;
+                let digitosContados = 0;
+                
+                for (let i = 0; i < valorFormateado.length; i++) {
+                    if (/\d/.test(valorFormateado[i])) {
+                        digitosContados++;
+                        if (digitosContados === digitosAntes) {
+                            nuevaPosicion = i + 1;
+                            break;
+                        }
+                    }
+                }
+                
+                // Si estamos al final, mantener la posición al final
+                if (digitosAntes >= soloNumeros.length) {
+                    nuevaPosicion = valorFormateado.length;
+                }
+                
+                // Actualizar el valor
+                this.value = valorFormateado;
+                
+                // Restaurar la posición del cursor después de que el DOM se actualice
+                setTimeout(() => {
+                    try {
+                        let pos = Math.min(Math.max(0, nuevaPosicion), this.value.length);
+                        this.setSelectionRange(pos, pos);
+                    } catch (err) {
+                        // Si hay error, simplemente poner al final
+                        this.setSelectionRange(this.value.length, this.value.length);
+                    }
+                }, 0);
+            });
+
+            // Prevenir que se peguen caracteres no numéricos
+            precioInput.addEventListener('paste', function (e) {
+                e.preventDefault();
+                let texto = (e.clipboardData || window.clipboardData).getData('text');
+                let soloNumeros = texto.replace(/[^\d]/g, '');
+                if (soloNumeros) {
+                    let valorActual = this.value.replace(/[^\d]/g, '');
+                    let nuevoValor = valorActual + soloNumeros;
+                    this.value = formatearNumero(nuevoValor);
+                }
+            });
+
+            // Antes de enviar el formulario, eliminar los puntos para enviar solo números
+            const form = precioInput.closest('form');
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    precioInput.value = precioInput.value.replace(/\./g, '');
+                });
+            }
+        }
+
+        // Mostrar/ocultar campo de descuento según el checkbox de promocionado
+        const esPromocionadoCheckbox = document.getElementById('id_es_promocionado');
+        const descuentoGroup = document.getElementById('descuento-group');
+        const porcentajeDescuentoInput = document.getElementById('id_porcentaje_descuento');
+        const precioPreview = document.getElementById('precio-preview');
+        const precioOriginalDisplay = document.getElementById('precio-original-display');
+        const descuentoDisplay = document.getElementById('descuento-display');
+        const precioNuevoDisplay = document.getElementById('precio-nuevo-display');
+
+        function toggleDescuentoField() {
+            if (esPromocionadoCheckbox && descuentoGroup) {
+                if (esPromocionadoCheckbox.checked) {
+                    descuentoGroup.style.display = 'block';
+                    if (porcentajeDescuentoInput && porcentajeDescuentoInput.value) {
+                        calcularPrecioConDescuento();
+                    }
+                } else {
+                    descuentoGroup.style.display = 'none';
+                    precioPreview.style.display = 'none';
+                    if (porcentajeDescuentoInput) {
+                        porcentajeDescuentoInput.value = '';
+                    }
+                }
+            }
+        }
+
+        function calcularPrecioConDescuento() {
+            const precioInput = document.getElementById('id_precio');
+            const porcentajeInput = porcentajeDescuentoInput;
+            
+            if (!precioInput || !porcentajeInput) return;
+            
+            // Obtener precio sin puntos
+            let precioStr = precioInput.value.replace(/\./g, '');
+            let precio = parseFloat(precioStr) || 0;
+            let porcentaje = parseFloat(porcentajeInput.value) || 0;
+            
+            if (precio > 0 && porcentaje > 0 && porcentaje <= 100) {
+                let descuento = precio * (porcentaje / 100);
+                let precioNuevo = precio - descuento;
+                
+                // Formatear números con puntos
+                precioOriginalDisplay.textContent = formatearNumero(precio.toString());
+                descuentoDisplay.textContent = formatearNumero(descuento.toFixed(0));
+                precioNuevoDisplay.textContent = formatearNumero(precioNuevo.toFixed(0));
+                
+                precioPreview.style.display = 'block';
+            } else {
+                precioPreview.style.display = 'none';
+            }
+        }
+
+        function formatearNumero(numero) {
+            let soloNumeros = numero.toString().replace(/[^\d]/g, '');
+            if (!soloNumeros) return '0';
+            return soloNumeros.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        if (esPromocionadoCheckbox) {
+            esPromocionadoCheckbox.addEventListener('change', toggleDescuentoField);
+            // Ejecutar al cargar para mostrar si ya está marcado
+            toggleDescuentoField();
+        }
+
+        if (porcentajeDescuentoInput) {
+            porcentajeDescuentoInput.addEventListener('input', calcularPrecioConDescuento);
+        }
+
+        // También calcular cuando cambia el precio
+        const precioInputForDescuento = document.getElementById('id_precio');
+        if (precioInputForDescuento) {
+            precioInputForDescuento.addEventListener('input', function() {
+                if (esPromocionadoCheckbox && esPromocionadoCheckbox.checked) {
+                    calcularPrecioConDescuento();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

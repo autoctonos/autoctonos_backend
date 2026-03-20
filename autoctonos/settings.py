@@ -10,11 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
+import dj_database_url
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+from dotenv import load_dotenv
+load_dotenv(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -23,10 +26,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG", default=True)
+DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS","127.0.0.1").split(",")
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1").split(",")
+API_BASE = os.getenv("API_BASE")
 
+# Requerido para CSRF con HTTPS (panel admin, DRF browsable)
+_trusted = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
+if _trusted:
+    CSRF_TRUSTED_ORIGINS = [o.strip() for o in _trusted.split(",")]
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Application definition
 
@@ -37,11 +48,21 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary',
     'rest_framework',
+    'products',
+    'commerce',
+    'producers',
+    'users',
+    'drf_yasg',
+    'corsheaders',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -74,18 +95,27 @@ WSGI_APPLICATION = 'autoctonos.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+DATABASE_URL = os.getenv("DATABASE_URL")
+LOCAL_DATABASE_URL = (
+    f"postgresql://{os.getenv('DATABASE_USERNAME', 'myprojectuser')}:"
+    f"{os.getenv('DATABASE_PASSWORD', 'password')}@"
+    f"{os.getenv('DATABASE_HOST', '127.0.0.1')}:"
+    f"{os.getenv('DATABASE_PORT', '5432')}/"
+    f"{os.getenv('DATABASE_NAME', 'polls')}"
+)
+
 DATABASES = {
-     'default': {
-         'ENGINE': 'django.db.backends.{}'.format(
-             os.getenv('DATABASE_ENGINE', 'sqlite3')
-         ),
-         'NAME': os.getenv('DATABASE_NAME', 'polls'),
-         'USER': os.getenv('DATABASE_USERNAME', 'myprojectuser'),
-         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'password'),
-         'HOST': os.getenv('DATABASE_HOST', '127.0.0.1'),
-         'PORT': os.getenv('DATABASE_PORT', 5432),
-     }
- }
+    "default": dj_database_url.parse(
+        DATABASE_URL or LOCAL_DATABASE_URL,
+        conn_max_age=int(os.getenv("DB_CONN_MAX_AGE", "600")),
+        ssl_require=os.getenv("DB_SSL_REQUIRE", "True").lower() == "true",
+    )
+}
+
+# Requerido para Supabase Transaction Pooler (puerto 6543)
+# No necesario con Session Pooler (puerto 5432, recomendado)
+if os.getenv("DB_DISABLE_SERVER_SIDE_CURSORS", "False").lower() == "true":
+    DATABASES["default"]["DISABLE_SERVER_SIDE_CURSORS"] = True
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -129,3 +159,64 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+AUTH_USER_MODEL = "users.Usuario"
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://autoctonos_frontend-app-1:3000",
+    "http://autoctonos_frontend-app-1:3001",
+    "http://localhost:4321",
+    "http://127.0.0.1:4321",
+    # Producción ✅
+    "https://productosautoctonos.shop",
+    "https://www.productosautoctonos.shop",
+    "https://autoctonos.vercel.app",
+    "https://www.autoctonos.vercel.app",
+]
+
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+}
+
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+if os.environ.get("DISABLE_MIGRATIONS"):
+    class DisableMigrations(dict):
+        def __contains__(self, item):
+            return True
+
+        def __getitem__(self, item):
+            return None
+
+    MIGRATION_MODULES = DisableMigrations()
