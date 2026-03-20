@@ -8,3 +8,6 @@ productos_imagenes/
 productos/
 venv/
 CLAUDE.md
+.idea/
+autoctonos-env
+media/

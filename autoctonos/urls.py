@@ -39,6 +39,7 @@ urlpatterns = [
     path('api/commerce/', include(commerce_url)),
     path('dashboard/', products_views.product_dashboard, name='product-dashboard'),
     path('dashboard/<int:pk>/edit/', products_views.product_update, name='product-update'),
+    path('api/productores/', include('producers.urls'))
 ]
 
 if settings.DEBUG:

@@ -6,6 +6,7 @@ from django.db import transaction
 from django.conf import settings
 
 from products.models import Departamento, Municipio
+from producers.models import Departamento, Municipio
 
 class Command(BaseCommand):
     help = "Seed Departamento and Municipio tables from api-colombia.com"

@@ -23,7 +23,8 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(
             f"✅ Listo: {n_usuarios} usuarios, {n_categorias} categorías, "
-            f"{n_posts} posts, {n_productos} productos, {n_imgs} imágenes."
+            #TODO: ARREGLAR ALGO 
+            f"posts, {n_productos} productos, {n_imgs} imágenes."
         ))
 
     # ---------- Utilidades ----------
