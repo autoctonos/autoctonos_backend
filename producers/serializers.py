@@ -9,11 +9,14 @@ class DepartamentoSerializer(serializers.ModelSerializer):
 class MunicipioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Municipio
-        fields = ['id_municipio', 'nombre']
+        fields = ['id_municipio', 'id_departamento', 'nombre']
 
 class ProductorSerializer(serializers.ModelSerializer):
-
     ubicacion = serializers.CharField(source='ubicacion_completa', read_only=True)
+    municipio_nombre = serializers.CharField(source='id_municipio.nombre', read_only=True, default=None)
+    departamento_nombre = serializers.CharField(
+        source='id_municipio.id_departamento.nombre', read_only=True, default=None
+    )
 
     class Meta:
         model = Productor
@@ -23,6 +26,8 @@ class ProductorSerializer(serializers.ModelSerializer):
             'descripcion',
             'imagen',
             'id_municipio',
+            'municipio_nombre',
+            'departamento_nombre',
             'ubicacion',
-            'created_at'
+            'created_at',
         ]

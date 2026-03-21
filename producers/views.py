@@ -12,15 +12,16 @@ class IsAdminOrReadOnly(BasePermission):
 
 
 class DepartamentoViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Departamento.objects.all()
+    queryset = Departamento.objects.filter(municipios__productores__isnull=False).distinct()
     serializer_class = DepartamentoSerializer
 
 
 class MunicipioViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Municipio.objects.filter(productores__isnull=False).select_related('id_departamento').distinct()
     serializer_class = MunicipioSerializer
 
     def get_queryset(self):
-        queryset = Municipio.objects.all()
+        queryset = Municipio.objects.filter(productores__isnull=False).select_related('id_departamento').distinct()
         dep_id = self.request.query_params.get('departamento_id', None)
         if dep_id is not None:
             queryset = queryset.filter(id_departamento=dep_id)
@@ -28,11 +29,12 @@ class MunicipioViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ProductorViewSet(viewsets.ModelViewSet):
+    queryset = Productor.objects.select_related('id_municipio__id_departamento').all()
     serializer_class = ProductorSerializer
     permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
-        queryset = Productor.objects.all()
+        queryset = Productor.objects.select_related('id_municipio__id_departamento').all()
         municipio_id = self.request.query_params.get('id_municipio', None)
         departamento_id = self.request.query_params.get('departamento_id', None)
         if municipio_id:
