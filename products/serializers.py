@@ -17,7 +17,7 @@ class ImagenProductoSerializer(serializers.ModelSerializer):
 class ProductoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Producto
-        fields = ['id_producto', 'id_categoria', 'nombre', 'descripcion', 'precio', 'stock', 'estado', 'created_at']
+        fields = ['id_producto', 'id_categoria', 'nombre', 'descripcion', 'precio', 'stock', 'created_at']
 
     def validate_precio(self, value):
         if value < 0:
@@ -46,7 +46,7 @@ class ProductoConImagenSerializer(serializers.ModelSerializer):
             'id_producto', 'id_categoria', 'nombre', 'descripcion',
             'precio', 'precio_con_descuento', 'es_promocionado', 'porcentaje_descuento',
             'stock', 'presentacion', 'cantidad_presentacion', 'presentacion_completa',
-            'fabricante', 'estado', 'imagenes', 'created_at',
+            'fabricante','imagenes', 'created_at',
         ]
 
     def get_imagenes(self, obj):
