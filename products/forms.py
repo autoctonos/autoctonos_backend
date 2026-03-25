@@ -29,7 +29,6 @@ class ProductoForm(forms.ModelForm):
             "fabricante",
             "es_promocionado",
             "porcentaje_descuento",
-            "estado",
         ]
         labels = {
             "id_categoria": "Categoría",
@@ -43,7 +42,6 @@ class ProductoForm(forms.ModelForm):
             "fabricante": "Fabricante",
             "es_promocionado": "Promocionado",
             "porcentaje_descuento": "Porcentaje de Descuento (%)",
-            "estado": "Estado",
         }
         widgets = {
             "id_categoria": forms.Select(attrs={"class": "form-control"}),
@@ -65,7 +63,6 @@ class ProductoForm(forms.ModelForm):
             "fabricante": forms.TextInput(attrs={"class": "form-control", "maxlength": "200"}),
             "es_promocionado": forms.CheckboxInput(attrs={"class": "form-control", "id": "id_es_promocionado"}),
             "porcentaje_descuento": forms.NumberInput(attrs={"class": "form-control", "id": "id_porcentaje_descuento", "step": "0.01", "min": "0", "max": "100"}),
-            "estado": forms.Select(attrs={"class": "form-control"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -79,7 +76,6 @@ class ProductoForm(forms.ModelForm):
         self.fields['presentacion'].required = True
         self.fields['cantidad_presentacion'].required = False
         self.fields['fabricante'].required = True
-        self.fields['estado'].required = True
         self.fields['porcentaje_descuento'].required = False
         
         self.fields['id_municipio'].queryset = Municipio.objects.select_related('id_departamento').all().order_by('id_departamento__nombre', 'nombre')

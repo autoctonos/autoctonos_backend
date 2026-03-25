@@ -77,16 +77,11 @@ class ProductoAdminForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Hacer que los campos opcionales nunca sean requeridos
-        # Estos campos ya son opcionales en el modelo (null=True, blank=True)
-        self.fields['updated_at'].required = False
+        if 'updated_at' in self.fields:
+            self.fields['updated_at'].required = False
         self.fields['id_municipio'].required = False
         self.fields['fabricante'].required = False
 
-
-# -----------------------
-# Admin de Producto
-# -----------------------
 @admin.register(Producto)
 class ProductoAdmin(admin.ModelAdmin):
     form = ProductoAdminForm
