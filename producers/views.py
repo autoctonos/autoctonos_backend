@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.permissions import BasePermission, SAFE_METHODS
-from .models import Productor, Municipio, Departamento
+from .models import Productor
+from locations.models import Departamento, Municipio
 from .serializers import ProductorSerializer, MunicipioSerializer, DepartamentoSerializer
 
 

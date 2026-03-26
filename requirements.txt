@@ -25,3 +25,4 @@ requests
 cloudinary
 django-cloudinary-storage
 python-dotenv
+dotenv
