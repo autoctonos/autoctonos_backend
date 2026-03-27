@@ -1,5 +1,6 @@
 from django import forms
-from .models import Producto, Departamento, Municipio
+from .models import Producto
+from locations.models import Municipio
 
 
 class ProductoForm(forms.ModelForm):

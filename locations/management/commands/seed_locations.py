@@ -5,8 +5,8 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.conf import settings
 
-from products.models import Departamento, Municipio
-from producers.models import Departamento, Municipio
+from locations.models import Departamento, Municipio
+
 
 class Command(BaseCommand):
     help = "Seed Departamento and Municipio tables from api-colombia.com"
@@ -46,9 +46,7 @@ class Command(BaseCommand):
 
         with transaction.atomic():
             for dep in departments:
-                obj, created = Departamento.objects.get_or_create(
-                    nombre=dep["name"],
-                )
+                obj, created = Departamento.objects.get_or_create(nombre=dep["name"])
                 api_id_to_dep[dep["id"]] = obj
                 if created:
                     dep_created += 1

@@ -2,7 +2,7 @@
 from django.contrib import admin, messages
 from django.utils import timezone
 from django import forms
-from .models import Categoria, Producto, Departamento, Municipio
+from .models import Categoria, Producto
 
 # -----------------------
 # Admin de Categoria (NECESARIO para autocomplete_fields en ProductoAdmin)
@@ -12,21 +12,6 @@ class CategoriaAdmin(admin.ModelAdmin):
     search_fields = ("nombre",)         # <- requerido para que autocomplete_fields funcione
     list_display = ("nombre",)
     ordering = ("nombre",)
-
-
-@admin.register(Departamento)
-class DepartamentoAdmin(admin.ModelAdmin):
-    list_display = ("nombre", "created_at")
-    search_fields = ("nombre",)  # Requerido para autocomplete_fields en MunicipioAdmin
-    ordering = ("nombre",)
-
-@admin.register(Municipio)
-class MunicipioAdmin(admin.ModelAdmin):
-    list_display = ("nombre", "id_departamento", "created_at")
-    list_filter = ("id_departamento",)
-    search_fields = ("nombre",)  # Requerido para autocomplete_fields en ProductoAdmin
-    ordering = ("id_departamento__nombre", "nombre")
-    autocomplete_fields = ("id_departamento",)
 
 
 # -----------------------
