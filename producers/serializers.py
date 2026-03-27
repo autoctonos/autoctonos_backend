@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Productor, Municipio, Departamento
+from .models import Productor
+from locations.models import Departamento, Municipio
 
 class DepartamentoSerializer(serializers.ModelSerializer):
     class Meta:

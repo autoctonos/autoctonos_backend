@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'cloudinary',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
+    'locations',
     'products',
     'commerce',
     'producers',
