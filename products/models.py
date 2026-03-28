@@ -58,6 +58,7 @@ class Producto(models.Model):
     fabricante = models.CharField(max_length=200, null=True, blank=True)
     es_promocionado = models.BooleanField(default=False, verbose_name="Promocionado")
     porcentaje_descuento = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, default=0, verbose_name="Porcentaje de Descuento (%)")
+    estado = models.CharField(max_length=10, choices=estado_choices, default='revisión', verbose_name="Estado")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(default=None, null=True)
