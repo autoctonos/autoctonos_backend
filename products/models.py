@@ -99,7 +99,7 @@ class Producto(models.Model):
 class ImagenProducto(models.Model):
     id_imagen = models.AutoField(primary_key=True)
     id_producto = models.ForeignKey(Producto, on_delete=models.CASCADE, null=False)
-    url_imagen = models.ImageField(upload_to='productos_imagenes/', null=True, blank=True)
+    url_imagen = models.ImageField(upload_to='productos_imagenes/', null=True, blank=True, max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(default=None, null=True)

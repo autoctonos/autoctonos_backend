@@ -31,7 +31,7 @@ class IsAdminOrReadOnly(BasePermission):
 
 
 class ProductoViewSet(viewsets.ModelViewSet):
-    queryset = Producto.objects.select_related('id_categoria').prefetch_related('imagenproducto_set').all()
+    queryset = Producto.objects.select_related('id_categoria').prefetch_related('imagenproducto_set').filter(estado='aprobado', deleted_at__isnull=True)
     serializer_class = ProductoSerializer
     permission_classes = [IsAdminOrReadOnly]
 
@@ -52,13 +52,13 @@ class ProductosConImagenView(APIView):
     permission_classes = [IsAdminOrReadOnly]
 
     def get(self, request):
-        productos = Producto.objects.select_related('id_categoria').prefetch_related('imagenproducto_set').all()[:8]
+        productos = Producto.objects.select_related('id_categoria').prefetch_related('imagenproducto_set').filter(estado='aprobado', deleted_at__isnull=True)[:8]
         serializer = ProductoConImagenSerializer(productos, many=True)
         return Response(serializer.data)
 
 
 class ProductoDetalleView(viewsets.ModelViewSet):
-    queryset = Producto.objects.select_related('id_categoria').prefetch_related('imagenproducto_set').all()
+    queryset = Producto.objects.select_related('id_categoria').prefetch_related('imagenproducto_set').filter(estado='aprobado', deleted_at__isnull=True)
     serializer_class = ProductoConImagenSerializer
     permission_classes = [IsAdminOrReadOnly]
 
@@ -76,7 +76,7 @@ class ProductosCategoriaView(APIView):
 
     def get(self, request):
         value = (request.query_params.get('id_categoria') or '').strip()
-        qs = Producto.objects.select_related('id_categoria').prefetch_related('imagenproducto_set').all()
+        qs = Producto.objects.select_related('id_categoria').prefetch_related('imagenproducto_set').filter(estado='aprobado', deleted_at__isnull=True)
         if value:
             if value.isdigit():
                 qs = qs.filter(id_categoria=int(value))
