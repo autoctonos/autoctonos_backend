@@ -7,8 +7,8 @@ from django.db import migrations, models
 def copy_locations_from_producers(apps, schema_editor):
     """Copy departamentos and municipios from producers tables to locations tables,
     preserving IDs so existing FK values in producers_productor remain valid."""
-    ProducersDepartamento = apps.get_model('producers', 'Departamento')
-    ProducersMunicipio = apps.get_model('producers', 'Municipio')
+    ProducersDepartamento = apps.get_model('productores', 'Departamento')
+    ProducersMunicipio = apps.get_model('productores', 'Municipio')
     LocationsDepartamento = apps.get_model('locations', 'Departamento')
     LocationsMunicipio = apps.get_model('locations', 'Municipio')
 
@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("locations", "0001_initial"),
-        ("producers", "0001_initial"),
+        ("productores", "0001_initial"),
     ]
 
     operations = [
