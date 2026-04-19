@@ -8,6 +8,9 @@ class Productor(models.Model):
     descripcion = models.TextField(null=False)
     imagen = models.ImageField(upload_to='productores_imagenes/', null=True, blank=True)
 
+    telefono = models.CharField(max_length=20, null=False, blank=False, verbose_name="Teléfono")
+    correo = models.EmailField(null=True, blank=True, verbose_name="Correo Electrónico")
+
     id_municipio = models.ForeignKey(
         Municipio,
         on_delete=models.SET_NULL,
@@ -21,6 +24,7 @@ class Productor(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        db_table = 'producers_productor'
         verbose_name = "Productor"
         verbose_name_plural = "Productores"
         ordering = ['nombre']
