@@ -1,6 +1,7 @@
 from django import forms
 from .models import Producto
 from locations.models import Municipio
+from producers.models import Productor
 
 
 class ProductoForm(forms.ModelForm):
@@ -16,9 +17,18 @@ class ProductoForm(forms.ModelForm):
         empty_label="Seleccione un municipio"
     )
 
+    id_productor = forms.ModelChoiceField(
+        queryset=Productor.objects.all().order_by('nombre'),
+        required=True,
+        widget=forms.Select(attrs={"class": "form-control"}),
+        label="Productor",
+        empty_label="Seleccione un productor"
+    )
+
     class Meta:
         model = Producto
         fields = [
+            "id_productor",
             "id_categoria",
             "nombre",
             "descripcion",
@@ -32,6 +42,7 @@ class ProductoForm(forms.ModelForm):
             "porcentaje_descuento",
         ]
         labels = {
+            "id_productor": "Productor",
             "id_categoria": "Categoría",
             "nombre": "Nombre",
             "descripcion": "Descripción",
@@ -68,7 +79,8 @@ class ProductoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+
+        self.fields['id_productor'].required = True
         self.fields['id_categoria'].required = True
         self.fields['nombre'].required = True
         self.fields['descripcion'].required = True
@@ -78,8 +90,10 @@ class ProductoForm(forms.ModelForm):
         self.fields['cantidad_presentacion'].required = False
         self.fields['fabricante'].required = True
         self.fields['porcentaje_descuento'].required = False
-        
+
+        self.fields['id_productor'].queryset = Productor.objects.all().order_by('nombre')
+        self.fields['id_productor'].label_from_instance = lambda obj: obj.nombre
+
         self.fields['id_municipio'].queryset = Municipio.objects.select_related('id_departamento').all().order_by('id_departamento__nombre', 'nombre')
-        
         self.fields['id_municipio'].label_from_instance = lambda obj: f"{obj.nombre} ({obj.id_departamento.nombre})"
 

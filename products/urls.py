@@ -6,7 +6,7 @@ from rest_framework import routers, permissions
 
 router = routers.DefaultRouter()
 
-router.register(r'productos', ProductoViewSet)
+router.register(r'productos', ProductoViewSet, basename='producto')
 router.register(r'categorias', CategoriaViewSet)
 router.register(r'imagenes_productos', ImagenProductoViewSet)
 
