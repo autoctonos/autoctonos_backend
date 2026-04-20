@@ -54,6 +54,14 @@ class Producto(models.Model):
         verbose_name="Cantidad por presentación",
         help_text="Ej: 200 para 200 g, 1.5 para 1.5 L. Opcional.",
     )
+    id_productor = models.ForeignKey(
+        'producers.Productor',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='productos',
+        verbose_name="Productor"
+    )
     id_municipio = models.ForeignKey(Municipio, on_delete=models.SET_NULL, null=True, blank=True, related_name='productos')
     fabricante = models.CharField(max_length=200, null=True, blank=True)
     es_promocionado = models.BooleanField(default=False, verbose_name="Promocionado")

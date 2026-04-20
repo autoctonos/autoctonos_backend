@@ -3,6 +3,7 @@ from django.contrib import admin, messages
 from django.utils import timezone
 from django import forms
 from .models import Categoria, Producto
+from producers.models import Productor
 
 # -----------------------
 # Admin de Categoria (NECESARIO para autocomplete_fields en ProductoAdmin)
@@ -59,11 +60,12 @@ class ProductoAdminForm(forms.ModelForm):
         model = Producto
         fields = '__all__'
         exclude = ['deleted_at']  # Ocultar deleted_at del formulario
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if 'updated_at' in self.fields:
             self.fields['updated_at'].required = False
+        self.fields['id_productor'].required = True
         self.fields['id_municipio'].required = False
         self.fields['fabricante'].required = False
 
@@ -72,6 +74,7 @@ class ProductoAdmin(admin.ModelAdmin):
     form = ProductoAdminForm
     list_display = (
         "nombre",
+        "get_productor",
         "id_categoria",
         "precio",
         "precio_con_descuento_display",
@@ -85,11 +88,11 @@ class ProductoAdmin(admin.ModelAdmin):
         "updated_at",
         "fecha_eliminacion",
     )
-    list_filter = ("id_categoria", EstadoPublicadoFilter, "es_promocionado", "created_at", "id_municipio__id_departamento", "id_municipio")
-    search_fields = ("nombre", "descripcion", "fabricante", "id_municipio__nombre", "id_municipio__id_departamento__nombre")
+    list_filter = ("id_productor", "id_categoria", EstadoPublicadoFilter, "es_promocionado", "created_at", "id_municipio__id_departamento", "id_municipio")
+    search_fields = ("nombre", "descripcion", "fabricante", "id_productor__nombre", "id_municipio__nombre", "id_municipio__id_departamento__nombre")
     actions = [publicar_productos, despublicar_productos, marcar_promocionados, desmarcar_promocionados]
-    list_select_related = ("id_categoria", "id_municipio", "id_municipio__id_departamento")
-    autocomplete_fields = ("id_categoria", "id_municipio")
+    list_select_related = ("id_productor", "id_categoria", "id_municipio", "id_municipio__id_departamento")
+    autocomplete_fields = ("id_productor", "id_categoria", "id_municipio")
     ordering = ("-created_at",)
 
     def get_queryset(self, request):
@@ -100,6 +103,11 @@ class ProductoAdmin(admin.ModelAdmin):
         if not request.GET.get('estado'):
             qs = qs.filter(deleted_at__isnull=True)
         return qs
+
+    def get_productor(self, obj):
+        return obj.id_productor.nombre if obj.id_productor else "-"
+    get_productor.short_description = "Productor"
+    get_productor.admin_order_field = "id_productor__nombre"
 
     def esta_publicado(self, obj):
         return obj.deleted_at is None
