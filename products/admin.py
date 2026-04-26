@@ -2,7 +2,7 @@
 from django.contrib import admin, messages
 from django.utils import timezone
 from django import forms
-from .models import Categoria, Producto
+from .models import Categoria, Producto, ImagenProducto
 
 # -----------------------
 # Admin de Categoria (NECESARIO para autocomplete_fields en ProductoAdmin)
@@ -67,8 +67,19 @@ class ProductoAdminForm(forms.ModelForm):
         self.fields['id_municipio'].required = False
         self.fields['fabricante'].required = False
 
+class ImagenProductoInline(admin.TabularInline):
+    model = ImagenProducto
+    extra = 2
+    min_num = 2
+    max_num = 4
+    fields = ('url_imagen',)
+    verbose_name = "Imagen"
+    verbose_name_plural = "Imágenes (mínimo 2, máximo 4)"
+
+
 @admin.register(Producto)
 class ProductoAdmin(admin.ModelAdmin):
+    inlines = [ImagenProductoInline]
     form = ProductoAdminForm
     list_display = (
         "nombre",
