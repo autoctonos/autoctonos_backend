@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'products',
     'commerce',
     'producers',
+    'shipping',
     'users',
     'drf_yasg',
     'corsheaders',
@@ -178,10 +179,18 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '100/hour',
         'user': '1000/hour',
+        'cotizacion': '120/hour',
+        'envios_destinos': '300/hour',
+        'crear_pedido': '60/hour',
+        'confirmar_pago': '600/hour',
     },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
 }
+
+# Verificación de la firma del webhook de confirmación de PayU (commerce/services/payu_confirmation.py).
+# El secreto vive sólo acá: el frontend (Astro) no lo conoce, sólo reenvía el payload crudo.
+PAYU_API_KEY = os.environ.get("PAYU_API_KEY")
 
 from datetime import timedelta
 

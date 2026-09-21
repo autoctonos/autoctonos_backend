@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator
 from django.db import models
 from decimal import Decimal
 from users.models import Usuario
@@ -26,6 +27,11 @@ presentacion_choices = [
 class Categoria(models.Model):
     id_categoria = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100, null=False, unique=True)
+    requiere_frio = models.BooleanField(
+        default=False,
+        verbose_name="Requiere cadena de frío",
+        help_text="Default para los productos de la categoría. Cada producto puede sobreescribirlo.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -54,7 +60,39 @@ class Producto(models.Model):
         verbose_name="Cantidad por presentación",
         help_text="Ej: 200 para 200 g, 1.5 para 1.5 L. Opcional.",
     )
-    id_municipio = models.ForeignKey(Municipio, on_delete=models.SET_NULL, null=True, blank=True, related_name='productos')
+    peso_kg = models.DecimalField(
+        max_digits=7,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal('0.001'))],
+        verbose_name="Peso de despacho (kg)",
+        help_text="Peso real de despacho con empaque. Sin él el producto no se puede cotizar.",
+    )
+    requiere_frio_override = models.BooleanField(
+        null=True,
+        blank=True,
+        default=None,
+        verbose_name="Cadena de frío (override)",
+        help_text="Vacío: hereda de la categoría.",
+    )
+    id_productor = models.ForeignKey(
+        'productores.Productor',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='productos',
+        verbose_name="Productor",
+        help_text=(
+            "Quien despacha. Define el origen del envío y agrupa los fletes del pedido. "
+            "Sin él el producto no se puede cotizar."
+        ),
+    )
+    id_municipio = models.ForeignKey(
+        Municipio, on_delete=models.SET_NULL, null=True, blank=True, related_name='productos',
+        verbose_name="Municipio de origen (override)",
+        help_text="Vacío: se despacha desde el municipio del productor.",
+    )
     fabricante = models.CharField(max_length=200, null=True, blank=True)
     es_promocionado = models.BooleanField(default=False, verbose_name="Promocionado")
     porcentaje_descuento = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, default=0, verbose_name="Porcentaje de Descuento (%)")
@@ -70,6 +108,27 @@ class Producto(models.Model):
         verbose_name = "Producto"
         verbose_name_plural = "Productos"
         ordering = ['-created_at']
+
+    @property
+    def requiere_frio(self):
+        if self.requiere_frio_override is not None:
+            return self.requiere_frio_override
+        return self.id_categoria.requiere_frio
+
+    @property
+    def municipio_origen(self):
+        """Desde dónde sale el paquete: el override del producto y, si no, el municipio
+        del productor. Única fuente de la tarifa de origen."""
+        if self.id_municipio_id is not None:
+            return self.id_municipio
+        if self.id_productor_id is not None:
+            return self.id_productor.id_municipio
+        return None
+
+    @property
+    def es_despachable(self):
+        """Tiene los datos mínimos para cotizar un envío."""
+        return self.peso_kg is not None and self.municipio_origen is not None
 
     def precio_con_descuento(self):
         """Calcula el precio con descuento si el producto está promocionado"""

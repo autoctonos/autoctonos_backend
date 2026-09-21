@@ -1,0 +1,1234 @@
+[
+  {
+    "municipio": "Chivatá",
+    "departamento": "Boyacá",
+    "provincia": "Centro",
+    "distancia_km_tunja": 11.1,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Chíquiza",
+    "departamento": "Boyacá",
+    "provincia": "Centro",
+    "distancia_km_tunja": 36.3,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Cucaita",
+    "departamento": "Boyacá",
+    "provincia": "Centro",
+    "distancia_km_tunja": 17.8,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Cómbita",
+    "departamento": "Boyacá",
+    "provincia": "Centro",
+    "distancia_km_tunja": 14.8,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Motavita",
+    "departamento": "Boyacá",
+    "provincia": "Centro",
+    "distancia_km_tunja": 6.6,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Oicatá",
+    "departamento": "Boyacá",
+    "provincia": "Centro",
+    "distancia_km_tunja": 15.3,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Samacá",
+    "departamento": "Boyacá",
+    "provincia": "Centro",
+    "distancia_km_tunja": 30.5,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Siachoque",
+    "departamento": "Boyacá",
+    "provincia": "Centro",
+    "distancia_km_tunja": 20.6,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Sora",
+    "departamento": "Boyacá",
+    "provincia": "Centro",
+    "distancia_km_tunja": 14.4,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Soracá",
+    "departamento": "Boyacá",
+    "provincia": "Centro",
+    "distancia_km_tunja": 6.2,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Sotaquirá",
+    "departamento": "Boyacá",
+    "provincia": "Centro",
+    "distancia_km_tunja": 41.5,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Toca",
+    "departamento": "Boyacá",
+    "provincia": "Centro",
+    "distancia_km_tunja": 26.1,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Tunja",
+    "departamento": "Boyacá",
+    "provincia": "Centro",
+    "distancia_km_tunja": 0.0,
+    "trayecto_origen": "urbano",
+    "trayecto_destino": "urbano"
+  },
+  {
+    "municipio": "Tuta",
+    "departamento": "Boyacá",
+    "provincia": "Centro",
+    "distancia_km_tunja": 24.6,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Ventaquemada",
+    "departamento": "Boyacá",
+    "provincia": "Centro",
+    "distancia_km_tunja": 32.3,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Cubará",
+    "departamento": "Boyacá",
+    "provincia": "Distrito Fronterizo",
+    "distancia_km_tunja": 397.6,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Chiscas",
+    "departamento": "Boyacá",
+    "provincia": "Gutiérrez",
+    "distancia_km_tunja": 227.0,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "El Cocuy",
+    "departamento": "Boyacá",
+    "provincia": "Gutiérrez",
+    "distancia_km_tunja": 242.0,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "El Espino",
+    "departamento": "Boyacá",
+    "provincia": "Gutiérrez",
+    "distancia_km_tunja": 223.0,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Guacamayas",
+    "departamento": "Boyacá",
+    "provincia": "Gutiérrez",
+    "distancia_km_tunja": 228.0,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Güicán",
+    "departamento": "Boyacá",
+    "provincia": "Gutiérrez",
+    "distancia_km_tunja": 245.0,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Panqueba",
+    "departamento": "Boyacá",
+    "provincia": "Gutiérrez",
+    "distancia_km_tunja": 234.0,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Labranzagrande",
+    "departamento": "Boyacá",
+    "provincia": "La Libertad",
+    "distancia_km_tunja": 168.6,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Pajarito",
+    "departamento": "Boyacá",
+    "provincia": "La Libertad",
+    "distancia_km_tunja": 222.6,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Paya",
+    "departamento": "Boyacá",
+    "provincia": "La Libertad",
+    "distancia_km_tunja": 193.0,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Pisba",
+    "departamento": "Boyacá",
+    "provincia": "La Libertad",
+    "distancia_km_tunja": 199.0,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Berbeo",
+    "departamento": "Boyacá",
+    "provincia": "Lengupá",
+    "distancia_km_tunja": 105.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Campohermoso",
+    "departamento": "Boyacá",
+    "provincia": "Lengupá",
+    "distancia_km_tunja": 133.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Miraflores",
+    "departamento": "Boyacá",
+    "provincia": "Lengupá",
+    "distancia_km_tunja": 96.3,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Páez",
+    "departamento": "Boyacá",
+    "provincia": "Lengupá",
+    "distancia_km_tunja": 111.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "San Eduardo",
+    "departamento": "Boyacá",
+    "provincia": "Lengupá",
+    "distancia_km_tunja": 98.4,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Zetaquira",
+    "departamento": "Boyacá",
+    "provincia": "Lengupá",
+    "distancia_km_tunja": 70.3,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Boyacá",
+    "departamento": "Boyacá",
+    "provincia": "Márquez",
+    "distancia_km_tunja": 16.4,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Ciénega",
+    "departamento": "Boyacá",
+    "provincia": "Márquez",
+    "distancia_km_tunja": 34.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Jenesano",
+    "departamento": "Boyacá",
+    "provincia": "Márquez",
+    "distancia_km_tunja": 29.7,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Nuevo Colón",
+    "departamento": "Boyacá",
+    "provincia": "Márquez",
+    "distancia_km_tunja": 32.8,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Ramiriquí",
+    "departamento": "Boyacá",
+    "provincia": "Márquez",
+    "distancia_km_tunja": 28.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Rondón",
+    "departamento": "Boyacá",
+    "provincia": "Márquez",
+    "distancia_km_tunja": 55.3,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Tibaná",
+    "departamento": "Boyacá",
+    "provincia": "Márquez",
+    "distancia_km_tunja": 38.4,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Turmequé",
+    "departamento": "Boyacá",
+    "provincia": "Márquez",
+    "distancia_km_tunja": 43.1,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Viracachá",
+    "departamento": "Boyacá",
+    "provincia": "Márquez",
+    "distancia_km_tunja": 21.4,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Úmbita",
+    "departamento": "Boyacá",
+    "provincia": "Márquez",
+    "distancia_km_tunja": 77.9,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Chinavita",
+    "departamento": "Boyacá",
+    "provincia": "Neira",
+    "distancia_km_tunja": 64.4,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Garagoa",
+    "departamento": "Boyacá",
+    "provincia": "Neira",
+    "distancia_km_tunja": 77.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Macanal",
+    "departamento": "Boyacá",
+    "provincia": "Neira",
+    "distancia_km_tunja": 100.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Pachavita",
+    "departamento": "Boyacá",
+    "provincia": "Neira",
+    "distancia_km_tunja": 78.3,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "San Luis de Gaceno",
+    "departamento": "Boyacá",
+    "provincia": "Neira",
+    "distancia_km_tunja": 144.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Santa María",
+    "departamento": "Boyacá",
+    "provincia": "Neira",
+    "distancia_km_tunja": 115.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Boavita",
+    "departamento": "Boyacá",
+    "provincia": "Norte",
+    "distancia_km_tunja": 178.0,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Covarachía",
+    "departamento": "Boyacá",
+    "provincia": "Norte",
+    "distancia_km_tunja": 189.0,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "La Uvita",
+    "departamento": "Boyacá",
+    "provincia": "Norte",
+    "distancia_km_tunja": 182.1,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "San Mateo",
+    "departamento": "Boyacá",
+    "provincia": "Norte",
+    "distancia_km_tunja": 202.0,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Sativanorte",
+    "departamento": "Boyacá",
+    "provincia": "Norte",
+    "distancia_km_tunja": 127.1,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Sativasur",
+    "departamento": "Boyacá",
+    "provincia": "Norte",
+    "distancia_km_tunja": 120.9,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Soatá",
+    "departamento": "Boyacá",
+    "provincia": "Norte",
+    "distancia_km_tunja": 153.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Susacón",
+    "departamento": "Boyacá",
+    "provincia": "Norte",
+    "distancia_km_tunja": 134.8,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Tipacoque",
+    "departamento": "Boyacá",
+    "provincia": "Norte",
+    "distancia_km_tunja": 168.0,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Briceño",
+    "departamento": "Boyacá",
+    "provincia": "Occidente",
+    "distancia_km_tunja": 122.4,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Buenavista",
+    "departamento": "Boyacá",
+    "provincia": "Occidente",
+    "distancia_km_tunja": 107.5,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Caldas",
+    "departamento": "Boyacá",
+    "provincia": "Occidente",
+    "distancia_km_tunja": 91.4,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Chiquinquirá",
+    "departamento": "Boyacá",
+    "provincia": "Occidente",
+    "distancia_km_tunja": 80.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Coper",
+    "departamento": "Boyacá",
+    "provincia": "Occidente",
+    "distancia_km_tunja": 137.2,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "La Victoria",
+    "departamento": "Boyacá",
+    "provincia": "Occidente",
+    "distancia_km_tunja": 197.0,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Maripí",
+    "departamento": "Boyacá",
+    "provincia": "Occidente",
+    "distancia_km_tunja": 115.5,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Muzo",
+    "departamento": "Boyacá",
+    "provincia": "Occidente",
+    "distancia_km_tunja": 145.9,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Otanche",
+    "departamento": "Boyacá",
+    "provincia": "Occidente",
+    "distancia_km_tunja": 169.4,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Pauna",
+    "departamento": "Boyacá",
+    "provincia": "Occidente",
+    "distancia_km_tunja": 120.2,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Quípama",
+    "departamento": "Boyacá",
+    "provincia": "Occidente",
+    "distancia_km_tunja": 184.0,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Saboyá",
+    "departamento": "Boyacá",
+    "provincia": "Occidente",
+    "distancia_km_tunja": 93.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "San Miguel de Sema",
+    "departamento": "Boyacá",
+    "provincia": "Occidente",
+    "distancia_km_tunja": 102.9,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "San Pablo de Borbur",
+    "departamento": "Boyacá",
+    "provincia": "Occidente",
+    "distancia_km_tunja": 144.1,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Tununguá",
+    "departamento": "Boyacá",
+    "provincia": "Occidente",
+    "distancia_km_tunja": 131.9,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Almeida",
+    "departamento": "Boyacá",
+    "provincia": "Oriente",
+    "distancia_km_tunja": 98.9,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Chivor",
+    "departamento": "Boyacá",
+    "provincia": "Oriente",
+    "distancia_km_tunja": 129.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Guateque",
+    "departamento": "Boyacá",
+    "provincia": "Oriente",
+    "distancia_km_tunja": 119.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Guayatá",
+    "departamento": "Boyacá",
+    "provincia": "Oriente",
+    "distancia_km_tunja": 113.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "La Capilla",
+    "departamento": "Boyacá",
+    "provincia": "Oriente",
+    "distancia_km_tunja": 92.4,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Somondoco",
+    "departamento": "Boyacá",
+    "provincia": "Oriente",
+    "distancia_km_tunja": 135.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Sutatenza",
+    "departamento": "Boyacá",
+    "provincia": "Oriente",
+    "distancia_km_tunja": 123.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Tenza",
+    "departamento": "Boyacá",
+    "provincia": "Oriente",
+    "distancia_km_tunja": 88.1,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Arcabuco",
+    "departamento": "Boyacá",
+    "provincia": "Ricaurte",
+    "distancia_km_tunja": 33.9,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Chitaraque",
+    "departamento": "Boyacá",
+    "provincia": "Ricaurte",
+    "distancia_km_tunja": 165.7,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Gachantivá",
+    "departamento": "Boyacá",
+    "provincia": "Ricaurte",
+    "distancia_km_tunja": 50.2,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Moniquirá",
+    "departamento": "Boyacá",
+    "provincia": "Ricaurte",
+    "distancia_km_tunja": 60.5,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Ráquira",
+    "departamento": "Boyacá",
+    "provincia": "Ricaurte",
+    "distancia_km_tunja": 111.1,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "San José de Pare",
+    "departamento": "Boyacá",
+    "provincia": "Ricaurte",
+    "distancia_km_tunja": 146.1,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Santa Sofía",
+    "departamento": "Boyacá",
+    "provincia": "Ricaurte",
+    "distancia_km_tunja": 126.9,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Santana",
+    "departamento": "Boyacá",
+    "provincia": "Ricaurte",
+    "distancia_km_tunja": 155.2,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Sutamarchán",
+    "departamento": "Boyacá",
+    "provincia": "Ricaurte",
+    "distancia_km_tunja": 112.9,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Sáchica",
+    "departamento": "Boyacá",
+    "provincia": "Ricaurte",
+    "distancia_km_tunja": 33.2,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Tinjacá",
+    "departamento": "Boyacá",
+    "provincia": "Ricaurte",
+    "distancia_km_tunja": 107.3,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Togüí",
+    "departamento": "Boyacá",
+    "provincia": "Ricaurte",
+    "distancia_km_tunja": 69.3,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Villa de Leyva",
+    "departamento": "Boyacá",
+    "provincia": "Ricaurte",
+    "distancia_km_tunja": 38.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Aquitania",
+    "departamento": "Boyacá",
+    "provincia": "Sugamuxi",
+    "distancia_km_tunja": 108.5,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Cuítiva",
+    "departamento": "Boyacá",
+    "provincia": "Sugamuxi",
+    "distancia_km_tunja": 95.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Firavitoba",
+    "departamento": "Boyacá",
+    "provincia": "Sugamuxi",
+    "distancia_km_tunja": 85.7,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Gámeza",
+    "departamento": "Boyacá",
+    "provincia": "Sugamuxi",
+    "distancia_km_tunja": 96.2,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Iza",
+    "departamento": "Boyacá",
+    "provincia": "Sugamuxi",
+    "distancia_km_tunja": 89.8,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Mongua",
+    "departamento": "Boyacá",
+    "provincia": "Sugamuxi",
+    "distancia_km_tunja": 97.7,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Monguí",
+    "departamento": "Boyacá",
+    "provincia": "Sugamuxi",
+    "distancia_km_tunja": 94.6,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Nobsa",
+    "departamento": "Boyacá",
+    "provincia": "Sugamuxi",
+    "distancia_km_tunja": 82.1,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Pesca",
+    "departamento": "Boyacá",
+    "provincia": "Sugamuxi",
+    "distancia_km_tunja": 98.7,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Sogamoso",
+    "departamento": "Boyacá",
+    "provincia": "Sugamuxi",
+    "distancia_km_tunja": 75.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Tibasosa",
+    "departamento": "Boyacá",
+    "provincia": "Sugamuxi",
+    "distancia_km_tunja": 84.4,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Tota",
+    "departamento": "Boyacá",
+    "provincia": "Sugamuxi",
+    "distancia_km_tunja": 100.8,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Tópaga",
+    "departamento": "Boyacá",
+    "provincia": "Sugamuxi",
+    "distancia_km_tunja": 91.2,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Belén",
+    "departamento": "Boyacá",
+    "provincia": "Tundama",
+    "distancia_km_tunja": 75.8,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Busbanzá",
+    "departamento": "Boyacá",
+    "provincia": "Tundama",
+    "distancia_km_tunja": 101.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Cerinza",
+    "departamento": "Boyacá",
+    "provincia": "Tundama",
+    "distancia_km_tunja": 70.6,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Corrales",
+    "departamento": "Boyacá",
+    "provincia": "Tundama",
+    "distancia_km_tunja": 95.4,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Duitama",
+    "departamento": "Boyacá",
+    "provincia": "Tundama",
+    "distancia_km_tunja": 50.0,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Floresta",
+    "departamento": "Boyacá",
+    "provincia": "Tundama",
+    "distancia_km_tunja": 73.4,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Paipa",
+    "departamento": "Boyacá",
+    "provincia": "Tundama",
+    "distancia_km_tunja": 64.1,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Santa Rosa de Viterbo",
+    "departamento": "Boyacá",
+    "provincia": "Tundama",
+    "distancia_km_tunja": 59.9,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Tutazá",
+    "departamento": "Boyacá",
+    "provincia": "Tundama",
+    "distancia_km_tunja": 90.1,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Betéitiva",
+    "departamento": "Boyacá",
+    "provincia": "Valderrama",
+    "distancia_km_tunja": 112.2,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Chita",
+    "departamento": "Boyacá",
+    "provincia": "Valderrama",
+    "distancia_km_tunja": 178.0,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Jericó",
+    "departamento": "Boyacá",
+    "provincia": "Valderrama",
+    "distancia_km_tunja": 176.0,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Paz de Río",
+    "departamento": "Boyacá",
+    "provincia": "Valderrama",
+    "distancia_km_tunja": 100.6,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Socha",
+    "departamento": "Boyacá",
+    "provincia": "Valderrama",
+    "distancia_km_tunja": 110.9,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Socotá",
+    "departamento": "Boyacá",
+    "provincia": "Valderrama",
+    "distancia_km_tunja": 158.8,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Tasco",
+    "departamento": "Boyacá",
+    "provincia": "Valderrama",
+    "distancia_km_tunja": 115.1,
+    "trayecto_origen": "zonal",
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Puerto Boyacá",
+    "departamento": "Boyacá",
+    "provincia": "Zona de Manejo Especial",
+    "distancia_km_tunja": 306.0,
+    "trayecto_origen": "territorial",
+    "trayecto_destino": "territorial"
+  },
+  {
+    "municipio": "Leticia",
+    "departamento": "Amazonas",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Medellín",
+    "departamento": "Antioquia",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Arauca",
+    "departamento": "Arauca",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Barranquilla",
+    "departamento": "Atlántico",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Cartagena de Indias",
+    "departamento": "Bolívar",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Manizales",
+    "departamento": "Caldas",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Florencia",
+    "departamento": "Caquetá",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Yopal",
+    "departamento": "Casanare",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Popayán",
+    "departamento": "Cauca",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Valledupar",
+    "departamento": "Cesar",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Quibdó",
+    "departamento": "Chocó",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Montería",
+    "departamento": "Córdoba",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Bogotá D.C.",
+    "departamento": "Cundinamarca",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "zonal"
+  },
+  {
+    "municipio": "Inírida",
+    "departamento": "Guainía",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "San José del Guaviare",
+    "departamento": "Guaviare",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Neiva",
+    "departamento": "Huila",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Riohacha",
+    "departamento": "La Guajira",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Santa Marta",
+    "departamento": "Magdalena",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Villavicencio",
+    "departamento": "Meta",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "San Juan de Pasto",
+    "departamento": "Nariño",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "San José de Cúcuta",
+    "departamento": "Norte de Santander",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Mocoa",
+    "departamento": "Putumayo",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Armenia",
+    "departamento": "Quindío",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Pereira",
+    "departamento": "Risaralda",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "San Andrés",
+    "departamento": "San Andrés, Providencia y Santa Catalina",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Bucaramanga",
+    "departamento": "Santander",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Sincelejo",
+    "departamento": "Sucre",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Ibagué",
+    "departamento": "Tolima",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Cali",
+    "departamento": "Valle del Cauca",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Mitú",
+    "departamento": "Vaupés",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  },
+  {
+    "municipio": "Puerto Carreño",
+    "departamento": "Vichada",
+    "provincia": null,
+    "distancia_km_tunja": null,
+    "trayecto_origen": null,
+    "trayecto_destino": "nacional"
+  }
+]

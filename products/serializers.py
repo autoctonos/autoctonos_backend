@@ -39,6 +39,11 @@ class ProductoConImagenSerializer(serializers.ModelSerializer):
     imagenes = serializers.SerializerMethodField()
     precio_con_descuento = serializers.SerializerMethodField()
     presentacion_completa = serializers.SerializerMethodField()
+    requiere_frio = serializers.BooleanField(read_only=True)
+    productor_nombre = serializers.CharField(source='id_productor.nombre', read_only=True, default=None)
+    # El origen efectivo: override del producto o, si está vacío, el municipio del productor.
+    municipio_nombre = serializers.SerializerMethodField()
+    departamento_nombre = serializers.SerializerMethodField()
 
     class Meta:
         model = Producto
@@ -46,12 +51,22 @@ class ProductoConImagenSerializer(serializers.ModelSerializer):
             'id_producto', 'id_categoria', 'nombre', 'descripcion',
             'precio', 'precio_con_descuento', 'es_promocionado', 'porcentaje_descuento',
             'stock', 'presentacion', 'cantidad_presentacion', 'presentacion_completa',
+            'peso_kg', 'requiere_frio', 'id_productor', 'productor_nombre',
+            'id_municipio', 'municipio_nombre', 'departamento_nombre',
             'fabricante','imagenes', 'created_at',
         ]
 
     def get_imagenes(self, obj):
         imagenes = obj.imagenproducto_set.all()
         return ImagenProductoSerializer(imagenes, many=True).data
+
+    def get_municipio_nombre(self, obj):
+        origen = obj.municipio_origen
+        return origen.nombre if origen else None
+
+    def get_departamento_nombre(self, obj):
+        origen = obj.municipio_origen
+        return origen.id_departamento.nombre if origen else None
 
     def get_precio_con_descuento(self, obj):
         if obj.es_promocionado and obj.porcentaje_descuento:

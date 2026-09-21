@@ -129,7 +129,12 @@ def product_dashboard(request):
             messages.error(request, 'Please correct the errors below.')
     else:
         form = ProductoForm()
-    queryset = Producto.objects.all().order_by("-created_at")
+    queryset = (
+        Producto.objects
+        .select_related('id_categoria', 'id_productor__id_municipio__id_departamento',
+                        'id_municipio__id_departamento')
+        .order_by("-created_at")
+    )
     paginator = Paginator(queryset, 15)
     page_number = request.GET.get("page", 1)
     page = paginator.get_page(page_number)

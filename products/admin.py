@@ -1,5 +1,6 @@
 # admin.py
 from django.contrib import admin, messages
+from django.db.models import Q
 from django.utils import timezone
 from django import forms
 from .models import Categoria, Producto, ImagenProducto
@@ -10,7 +11,9 @@ from .models import Categoria, Producto, ImagenProducto
 @admin.register(Categoria)
 class CategoriaAdmin(admin.ModelAdmin):
     search_fields = ("nombre",)         # <- requerido para que autocomplete_fields funcione
-    list_display = ("nombre",)
+    list_display = ("nombre", "requiere_frio")
+    list_editable = ("requiere_frio",)
+    list_filter = ("requiere_frio",)
     ordering = ("nombre",)
 
 
@@ -54,6 +57,46 @@ class EstadoPublicadoFilter(admin.SimpleListFilter):
             return queryset.filter(deleted_at__isnull=False)
         return queryset
 
+class ReadinessEnviosFilter(admin.SimpleListFilter):
+    """Qué le falta a un producto para poder cotizarse."""
+
+    title = "listo para envíos"
+    parameter_name = "envios"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("sin_peso", "Falta peso"),
+            ("sin_productor", "Falta productor"),
+            ("sin_origen", "Falta origen"),
+            ("origen_sin_cobertura", "Origen sin cobertura"),
+            ("despachable", "Despachable"),
+        )
+
+    def queryset(self, request, queryset):
+        # El origen es el override del producto y, si está vacío, el municipio del
+        # productor. Los dos Q de abajo son esa misma regla, escrita en el ORM.
+        tiene_origen = Q(id_municipio__isnull=False) | Q(id_productor__id_municipio__isnull=False)
+        cobertura_ok = Q(
+            id_municipio__cobertura__activo=True,
+            id_municipio__cobertura__trayecto_origen__isnull=False,
+        ) | Q(
+            id_municipio__isnull=True,
+            id_productor__id_municipio__cobertura__activo=True,
+            id_productor__id_municipio__cobertura__trayecto_origen__isnull=False,
+        )
+        if self.value() == "sin_peso":
+            return queryset.filter(peso_kg__isnull=True)
+        if self.value() == "sin_productor":
+            return queryset.filter(id_productor__isnull=True)
+        if self.value() == "sin_origen":
+            return queryset.exclude(tiene_origen)
+        if self.value() == "origen_sin_cobertura":
+            return queryset.filter(tiene_origen).exclude(cobertura_ok)
+        if self.value() == "despachable":
+            return queryset.filter(tiene_origen, cobertura_ok, peso_kg__isnull=False)
+        return queryset
+
+
 class ProductoAdminForm(forms.ModelForm):
     class Meta:
         model = Producto
@@ -64,6 +107,8 @@ class ProductoAdminForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if 'updated_at' in self.fields:
             self.fields['updated_at'].required = False
+        # El origen sale del productor; el municipio es sólo un override.
+        self.fields['id_productor'].required = True
         self.fields['id_municipio'].required = False
         self.fields['fabricante'].required = False
 
@@ -88,6 +133,9 @@ class ProductoAdmin(admin.ModelAdmin):
         "precio_con_descuento_display",
         "stock",
         "presentacion_completa_display",
+        "peso_kg",
+        "requiere_frio_display",
+        "id_productor",
         "id_municipio",
         "fabricante",
         "es_promocionado_display",
@@ -96,11 +144,12 @@ class ProductoAdmin(admin.ModelAdmin):
         "updated_at",
         "fecha_eliminacion",
     )
-    list_filter = ("id_categoria", EstadoPublicadoFilter, "es_promocionado", "created_at", "id_municipio__id_departamento", "id_municipio")
-    search_fields = ("nombre", "descripcion", "fabricante", "id_municipio__nombre", "id_municipio__id_departamento__nombre")
+    list_editable = ("peso_kg",)
+    list_filter = ("id_categoria", EstadoPublicadoFilter, ReadinessEnviosFilter, "requiere_frio_override", "es_promocionado", "created_at", "id_productor", "id_municipio__id_departamento", "id_municipio")
+    search_fields = ("nombre", "descripcion", "fabricante", "id_productor__nombre", "id_municipio__nombre", "id_municipio__id_departamento__nombre")
     actions = [publicar_productos, despublicar_productos, marcar_promocionados, desmarcar_promocionados]
-    list_select_related = ("id_categoria", "id_municipio", "id_municipio__id_departamento")
-    autocomplete_fields = ("id_categoria", "id_municipio")
+    list_select_related = ("id_categoria", "id_productor", "id_productor__id_municipio", "id_municipio", "id_municipio__id_departamento")
+    autocomplete_fields = ("id_categoria", "id_productor", "id_municipio")
     ordering = ("-created_at",)
 
     def get_queryset(self, request):
@@ -117,6 +166,11 @@ class ProductoAdmin(admin.ModelAdmin):
     esta_publicado.boolean = True
     esta_publicado.short_description = "Publicado"
     
+    def requiere_frio_display(self, obj):
+        return obj.requiere_frio
+    requiere_frio_display.boolean = True
+    requiere_frio_display.short_description = "Cadena de frío"
+
     def presentacion_completa_display(self, obj):
         return obj.get_presentacion_completa()
     presentacion_completa_display.short_description = "Presentación"

@@ -41,6 +41,7 @@ urlpatterns = [
     path('dashboard/<int:pk>/edit/', products_views.product_update, name='product-update'),
     path('api/productores/', include('producers.urls')),
     path('api/locations/', include('locations.urls')),
+    path('api/envios/', include('shipping.urls')),
 ]
 
 if settings.DEBUG:
