@@ -55,8 +55,17 @@ def cancelar_pedidos(modeladmin, request, queryset):
 class DetallePedidoInline(admin.TabularInline):
     model = DetallePedido
     extra = 0
-    fields = ("id_producto", "cantidad", "precio")
-    readonly_fields = ("id_producto", "cantidad", "precio")
+    fields = ("id_producto", "id_envio", "cantidad", "precio", "subtotal")
+    readonly_fields = ("id_producto", "id_envio", "cantidad", "precio", "subtotal")
+    can_delete = False
+    show_change_link = True
+
+
+class EnvioInline(admin.TabularInline):
+    model = Envio
+    extra = 0
+    fields = ("id_productor", "id_municipio_origen", "trayecto_aplicado", "flete", "sobreflete", "total_grupo", "estado")
+    readonly_fields = ("id_productor", "id_municipio_origen", "trayecto_aplicado", "flete", "sobreflete", "total_grupo")
     can_delete = False
     show_change_link = True
 
@@ -66,16 +75,16 @@ class DetallePedidoInline(admin.TabularInline):
 # -----------------------
 @admin.register(Pedido)
 class PedidoAdmin(admin.ModelAdmin):
-    list_display = ("id_pedido", "id_usuario", "estado", "num_items", "created_at", "updated_at")
+    list_display = ("id_pedido", "id_usuario", "comprador_nombre", "estado", "total", "num_items", "created_at", "updated_at")
     list_filter = (FechaRecenteFilter, "estado")
-    search_fields = ("id_usuario__username", "id_usuario__email")
+    search_fields = ("id_usuario__username", "id_usuario__email", "comprador_nombre", "comprador_email")
     ordering = ("-created_at",)
     list_select_related = ("id_usuario",)
     list_per_page = 20
     list_max_show_all = 100
     show_full_result_count = False
     actions = [marcar_entregado, cancelar_pedidos]
-    inlines = [DetallePedidoInline]
+    inlines = [EnvioInline, DetallePedidoInline]
     date_hierarchy = "created_at"
 
     def get_queryset(self, request):
@@ -108,9 +117,9 @@ class DetallePedidoAdmin(admin.ModelAdmin):
 # -----------------------
 @admin.register(Pago)
 class PagoAdmin(admin.ModelAdmin):
-    list_display = ("id_pago", "id_pedido", "id_usuario", "metodo_pago", "estado", "created_at")
-    list_filter = (FechaRecenteFilter, "estado", "metodo_pago")
-    search_fields = ("id_usuario__username", "id_usuario__email", "id_pedido__id_pedido")
+    list_display = ("id_pago", "id_pedido", "referencia_payu", "monto", "metodo_pago", "estado", "firma_valida", "created_at")
+    list_filter = (FechaRecenteFilter, "estado", "metodo_pago", "firma_valida")
+    search_fields = ("id_usuario__username", "id_usuario__email", "id_pedido__id_pedido", "referencia_payu", "transaction_id")
     ordering = ("-created_at",)
     list_select_related = ("id_pedido", "id_usuario")
     list_per_page = 20
@@ -124,11 +133,11 @@ class PagoAdmin(admin.ModelAdmin):
 # -----------------------
 @admin.register(Envio)
 class EnvioAdmin(admin.ModelAdmin):
-    list_display = ("id_envio", "id_pedido", "ciudad", "pais", "estado", "created_at")
-    list_filter = (FechaRecenteFilter, "estado", "pais")
-    search_fields = ("ciudad", "pais", "id_pedido__id_pedido", "id_pedido__id_usuario__username")
+    list_display = ("id_envio", "id_pedido", "id_productor", "id_municipio_origen", "trayecto_aplicado", "total_grupo", "estado", "created_at")
+    list_filter = (FechaRecenteFilter, "estado", "trayecto_aplicado")
+    search_fields = ("id_productor__nombre", "id_pedido__id_pedido", "id_pedido__id_usuario__username")
     ordering = ("-created_at",)
-    list_select_related = ("id_pedido", "id_pedido__id_usuario")
+    list_select_related = ("id_pedido", "id_pedido__id_usuario", "id_productor", "id_municipio_origen")
     list_per_page = 20
     list_max_show_all = 100
     show_full_result_count = False
