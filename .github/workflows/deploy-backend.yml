@@ -16,7 +16,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ubuntu/autoctonos_backend
+            cd /home/deploy/autoctonos_backend
             git pull origin main
             source venv/bin/activate
             pip install -r requirements.txt

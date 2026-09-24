@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                 ('nombre', models.CharField(max_length=100)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(default=None, null=True)),
-                ('id_departamento', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='municipios', to='producers.departamento')),
+                ('id_departamento', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='municipios', to='productores.departamento')),
             ],
             options={
                 'ordering': ['id_departamento__nombre', 'nombre'],
@@ -47,7 +47,7 @@ class Migration(migrations.Migration):
                 ('imagen', models.ImageField(blank=True, null=True, upload_to='productores_imagenes/')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('id_municipio', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='productores', to='producers.municipio', verbose_name='Ubicación (Municipio)')),
+                ('id_municipio', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='productores', to='productores.municipio', verbose_name='Ubicación (Municipio)')),
             ],
             options={
                 'verbose_name': 'Productor',

@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("locations", "0001_initial"),
-        ("producers", "0002_remove_municipio_id_departamento_and_more"),
+        ("productores", "0002_remove_municipio_id_departamento_and_more"),
         ("products", "0007_merge_20260325_0057"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]

@@ -47,6 +47,27 @@ class ImagenProductoViewSet(viewsets.ModelViewSet):
     serializer_class = ImagenProductoSerializer
     permission_classes = [IsAdminOrReadOnly]
 
+    def create(self, request, *args, **kwargs):
+        id_producto = request.data.get('id_producto')
+        if id_producto:
+            count = ImagenProducto.objects.filter(id_producto=id_producto).count()
+            if count >= 4:
+                return Response(
+                    {"error": "El producto ya tiene el máximo de 4 imágenes permitidas."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        return super().create(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        imagen = self.get_object()
+        count = ImagenProducto.objects.filter(id_producto=imagen.id_producto).count()
+        if count <= 2:
+            return Response(
+                {"error": "El producto debe mantener al menos 2 imágenes."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().destroy(request, *args, **kwargs)
+
 
 class ProductosConImagenView(APIView):
     permission_classes = [IsAdminOrReadOnly]
@@ -108,7 +129,12 @@ def product_dashboard(request):
             messages.error(request, 'Please correct the errors below.')
     else:
         form = ProductoForm()
-    queryset = Producto.objects.all().order_by("-created_at")
+    queryset = (
+        Producto.objects
+        .select_related('id_categoria', 'id_productor__id_municipio__id_departamento',
+                        'id_municipio__id_departamento')
+        .order_by("-created_at")
+    )
     paginator = Paginator(queryset, 15)
     page_number = request.GET.get("page", 1)
     page = paginator.get_page(page_number)

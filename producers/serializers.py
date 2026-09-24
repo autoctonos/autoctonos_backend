@@ -26,6 +26,8 @@ class ProductorSerializer(serializers.ModelSerializer):
             'nombre',
             'descripcion',
             'imagen',
+            'telefono',
+            'correo',
             'id_municipio',
             'municipio_nombre',
             'departamento_nombre',

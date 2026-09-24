@@ -1,0 +1,57 @@
+[
+  {
+    "codigo": "urbano",
+    "nombre": "Urbano",
+    "jerarquia": 1,
+    "valor_kilo_inicial": "8150",
+    "valor_kilo_adicional": "3850",
+    "sobreflete_minimo": "800",
+    "porcentaje_sobreflete": "0.0200",
+    "dias_entrega_min": 1,
+    "dias_entrega_max": 1
+  },
+  {
+    "codigo": "zonal",
+    "nombre": "Zonal",
+    "jerarquia": 2,
+    "valor_kilo_inicial": "11900",
+    "valor_kilo_adicional": "4400",
+    "sobreflete_minimo": "800",
+    "porcentaje_sobreflete": "0.0200",
+    "dias_entrega_min": 1,
+    "dias_entrega_max": 3
+  },
+  {
+    "codigo": "nacional",
+    "nombre": "Nacional",
+    "jerarquia": 3,
+    "valor_kilo_inicial": "18200",
+    "valor_kilo_adicional": "4800",
+    "sobreflete_minimo": "800",
+    "porcentaje_sobreflete": "0.0200",
+    "dias_entrega_min": 1,
+    "dias_entrega_max": 4
+  },
+  {
+    "codigo": "territorial",
+    "nombre": "Territorial",
+    "jerarquia": 4,
+    "valor_kilo_inicial": "19800",
+    "valor_kilo_adicional": "4850",
+    "sobreflete_minimo": "800",
+    "porcentaje_sobreflete": "0.0200",
+    "dias_entrega_min": 1,
+    "dias_entrega_max": 4
+  },
+  {
+    "codigo": "especial",
+    "nombre": "Especial",
+    "jerarquia": 5,
+    "valor_kilo_inicial": "38400",
+    "valor_kilo_adicional": "12450",
+    "sobreflete_minimo": "800",
+    "porcentaje_sobreflete": "0.0200",
+    "dias_entrega_min": 8,
+    "dias_entrega_max": 10
+  }
+]

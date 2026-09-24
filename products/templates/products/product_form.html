@@ -65,8 +65,24 @@
                 <small style="color: #666;">Opcional. Ej: 200 (para 200 g), 1.5 (para 1.5 L)</small>
             </div>
             <div class="form-group">
+                {{ form.peso_kg.label_tag }}
+                {{ form.peso_kg }}
+                <small style="color: #666;">Peso real de despacho con empaque. Sin él no se puede cotizar el envío.</small>
+            </div>
+            <div class="form-group">
+                {{ form.requiere_frio_override.label_tag }}
+                {{ form.requiere_frio_override }}
+                <small style="color: #666;">Determina si el pedido paga empaque refrigerado.</small>
+            </div>
+            <div class="form-group">
+                {{ form.id_productor.label_tag }}
+                {{ form.id_productor }}
+                <small style="color: #666;">Quien despacha. Define el origen del envío y agrupa los fletes del pedido.</small>
+            </div>
+            <div class="form-group">
                 {{ form.id_municipio.label_tag }}
                 {{ form.id_municipio }}
+                <small style="color: #666;">Vacío: se despacha desde el municipio del productor.</small>
             </div>
             <div class="form-group">
                 {{ form.fabricante.label_tag }}

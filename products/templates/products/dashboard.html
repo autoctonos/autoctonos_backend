@@ -335,8 +335,33 @@
               {% endif %}
             </div>
             <div class="form-group">
+              {{ form.peso_kg.label_tag }}
+              {{ form.peso_kg }}
+              <span class="help">Peso real de despacho con empaque. Sin él no se puede cotizar el envío.</span>
+              {% if form.peso_kg.errors %}
+                <span class="field-error">{{ form.peso_kg.errors.0 }}</span>
+              {% endif %}
+            </div>
+            <div class="form-group">
+              {{ form.requiere_frio_override.label_tag }}
+              {{ form.requiere_frio_override }}
+              <span class="help">Determina si el pedido paga empaque refrigerado.</span>
+              {% if form.requiere_frio_override.errors %}
+                <span class="field-error">{{ form.requiere_frio_override.errors.0 }}</span>
+              {% endif %}
+            </div>
+            <div class="form-group">
+              {{ form.id_productor.label_tag }}
+              {{ form.id_productor }}
+              <span class="help">Quien despacha. Define el origen del envío y agrupa los fletes del pedido.</span>
+              {% if form.id_productor.errors %}
+                <span class="field-error">{{ form.id_productor.errors.0 }}</span>
+              {% endif %}
+            </div>
+            <div class="form-group">
               {{ form.id_municipio.label_tag }}
               {{ form.id_municipio }}
+              <span class="help">Vacío: se despacha desde el municipio del productor.</span>
               {% if form.id_municipio.errors %}
                 <span class="field-error">{{ form.id_municipio.errors.0 }}</span>
               {% endif %}
@@ -408,7 +433,10 @@
                 <th>Precio</th>
                 <th>Stock</th>
                 <th>Presentación</th>
-                <th>Municipio</th>
+                <th>Peso (kg)</th>
+                <th>Frío</th>
+                <th>Productor</th>
+                <th>Municipio de origen</th>
                 <th>Fabricante</th>
                 <th>Promoción</th>
                 <th></th>
@@ -440,10 +468,25 @@
                 <td>{{ producto.stock }}</td>
                 <td>{{ producto.get_presentacion_completa }}</td>
                 <td>
-                  {% if producto.id_municipio %}
-                    {{ producto.id_municipio.nombre }} ({{ producto.id_municipio.id_departamento.nombre }})
+                  {% if producto.peso_kg %}
+                    {{ producto.peso_kg }}
                   {% else %}
-                    —
+                    <span style="color: var(--color-error);">falta</span>
+                  {% endif %}
+                </td>
+                <td>{% if producto.requiere_frio %}sí{% else %}—{% endif %}</td>
+                <td>
+                  {% if producto.id_productor %}
+                    {{ producto.id_productor.nombre }}
+                  {% else %}
+                    <span style="color: var(--color-error);">falta</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if producto.municipio_origen %}
+                    {{ producto.municipio_origen.nombre }} ({{ producto.municipio_origen.id_departamento.nombre }})
+                  {% else %}
+                    <span style="color: var(--color-error);">falta</span>
                   {% endif %}
                 </td>
                 <td>{{ producto.fabricante|default:"—" }}</td>
@@ -458,7 +501,7 @@
               </tr>
               {% empty %}
               <tr class="empty-row">
-                <td colspan="10">Aún no hay productos. Añade el primero arriba.</td>
+                <td colspan="12">Aún no hay productos. Añade el primero arriba.</td>
               </tr>
               {% endfor %}
             </tbody>
