@@ -422,7 +422,10 @@
       </div>
 
       <div class="card" id="productos-lista">
-        <h2 class="card-title">Productos existentes</h2>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+          <h2 class="card-title">Productos existentes</h2>
+          <a href="{% url 'product-export' %}" class="btn btn-primary btn-sm">Exportar a Excel</a>
+        </div>
         <div class="table-wrap">
           <table>
             <thead>
