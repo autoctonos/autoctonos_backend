@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponse
 from django.conf import settings
+from django.utils import timezone
+from openpyxl import Workbook
 from rest_framework import viewsets, permissions
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 from django.contrib import messages
@@ -178,3 +180,60 @@ def product_update(request, pk):
         'imagen': imagen,
     }
     return render(request, 'products/product_form.html', context)
+
+
+@login_required(login_url='/admin/login/')
+def product_export(request):
+    if not admin_check(request.user):
+        return HttpResponseForbidden()
+
+    queryset = (
+        Producto.objects
+        .select_related('id_categoria', 'id_productor__id_municipio__id_departamento',
+                        'id_municipio__id_departamento')
+        .order_by("-created_at")
+    )
+
+    wb = Workbook(write_only=True)
+    ws = wb.create_sheet("Productos")
+    ws.append([
+        "Nombre", "Categoría", "Precio", "Precio con descuento", "% Descuento",
+        "Stock", "Presentación", "Peso (kg)", "Requiere frío",
+        "Municipio de origen", "Departamento de origen", "Fabricante", "Estado", "Creado",
+        "Productor", "Correo productor", "Teléfono productor", "Ubicación productor",
+    ])
+
+    for producto in queryset.iterator():
+        municipio_origen = producto.municipio_origen
+        productor = producto.id_productor
+        precio_con_descuento = None
+        if producto.es_promocionado and producto.porcentaje_descuento:
+            precio_con_descuento = float(producto.precio_con_descuento())
+        ws.append([
+            producto.nombre,
+            producto.id_categoria.nombre if producto.id_categoria else "",
+            float(producto.precio),
+            precio_con_descuento,
+            float(producto.porcentaje_descuento) if producto.porcentaje_descuento else None,
+            producto.stock,
+            producto.get_presentacion_completa(),
+            float(producto.peso_kg) if producto.peso_kg else None,
+            "sí" if producto.requiere_frio else "no",
+            municipio_origen.nombre if municipio_origen else "",
+            municipio_origen.id_departamento.nombre if municipio_origen and municipio_origen.id_departamento else "",
+            producto.fabricante or "",
+            producto.estado,
+            timezone.localtime(producto.created_at).strftime("%Y-%m-%d %H:%M") if producto.created_at else "",
+            productor.nombre if productor else "",
+            productor.correo if productor else "",
+            productor.telefono if productor else "",
+            productor.ubicacion_completa if productor else "",
+        ])
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    filename = f"productos_productores_{timezone.localtime(timezone.now()).strftime('%Y%m%d_%H%M')}.xlsx"
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    wb.save(response)
+    return response

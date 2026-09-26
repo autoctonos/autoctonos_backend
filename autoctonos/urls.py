@@ -39,6 +39,7 @@ urlpatterns = [
     path('api/commerce/', include(commerce_url)),
     path('dashboard/', products_views.product_dashboard, name='product-dashboard'),
     path('dashboard/<int:pk>/edit/', products_views.product_update, name='product-update'),
+    path('dashboard/export/', products_views.product_export, name='product-export'),
     path('api/productores/', include('producers.urls')),
     path('api/locations/', include('locations.urls')),
     path('api/envios/', include('shipping.urls')),
