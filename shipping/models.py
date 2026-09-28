@@ -133,7 +133,11 @@ class CoberturaMunicipio(models.Model):
 
 
 class ConfiguracionEmpaque(models.Model):
-    """Costo del empaque refrigerado. Singleton: una sola fila activa."""
+    """Capacidad de la nevera del empaque refrigerado. Singleton: una sola fila activa.
+
+    El empaque no se cobra (va incluido en el flete); la capacidad sólo sirve para contar
+    cuántas neveras necesita cada guía.
+    """
 
     id_configuracion = models.AutoField(primary_key=True)
     capacidad_kg = models.DecimalField(
@@ -142,16 +146,20 @@ class ConfiguracionEmpaque(models.Model):
         verbose_name="Capacidad por nevera (kg)",
     )
     costo_nevera = models.DecimalField(
-        max_digits=12, decimal_places=2, default=Decimal('12000.00'),
+        max_digits=12, decimal_places=2, default=Decimal('0'),
         validators=[MinValueValidator(Decimal('0'))],
         verbose_name="Costo por nevera",
+        help_text=(
+            "OBSOLETO: el empaque va incluido en el flete y no se cobra. "
+            "El cálculo ya no lo lee; la columna se elimina en el próximo release."
+        ),
     )
     activo = models.BooleanField(default=True, verbose_name="Activo")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Nevera de {self.capacidad_kg} kg — ${self.costo_nevera}"
+        return f"Nevera de {self.capacidad_kg} kg"
 
     class Meta:
         verbose_name = "Configuración de empaque"
@@ -189,7 +197,13 @@ class PromocionEnvio(models.Model):
             "El cálculo ya no lo lee; la columna se elimina en el próximo release."
         ),
     )
-    cubre_empaque = models.BooleanField(default=False, verbose_name="Cubre el empaque refrigerado")
+    cubre_empaque = models.BooleanField(
+        default=False, verbose_name="Cubre el empaque refrigerado",
+        help_text=(
+            "OBSOLETO: el empaque ya no se cobra. "
+            "El cálculo ya no lo lee; la columna se elimina en el próximo release."
+        ),
+    )
     activo = models.BooleanField(default=True, verbose_name="Activo")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

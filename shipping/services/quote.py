@@ -1,4 +1,8 @@
-"""Cálculo de flete, sobreflete y empaque refrigerado.
+"""Cálculo de flete y sobreflete, y conteo de neveras para el empaque refrigerado.
+
+Réplica de la hoja «Módulo de Compra» del tarifario: total = subtotal + flete + sobreflete
+(F17). El empaque refrigerado no se cobra: va incluido en el flete que cobra el productor.
+Se sigue contando cuántas neveras necesita cada guía porque es información de despacho.
 
 Módulo puro: sin ORM, sin DRF, sin dependencias de Django. Todo el dinero es Decimal.
 """
@@ -70,12 +74,11 @@ class ItemCotizacion:
 @dataclass(frozen=True)
 class ConfigEmpaque:
     capacidad_kg: Decimal
-    costo_nevera: Decimal
 
 
 @dataclass(frozen=True)
 class PromocionCalculo:
-    """Envío gratis por monto. Cubre flete y, si se marca, empaque.
+    """Envío gratis por monto. Cubre sólo el flete.
 
     El sobreflete queda fuera a propósito: es la garantía del producto, no un costo de
     transporte, y siempre se cobra.
@@ -83,7 +86,6 @@ class PromocionCalculo:
     umbral_subtotal: Decimal
     jerarquia_maxima_cubierta: int | None = None
     tope_cubierto: Decimal | None = None
-    cubre_empaque: bool = False
 
 
 @dataclass(frozen=True)
@@ -142,6 +144,8 @@ class GrupoEnvio:
     sobreflete: Decimal
     peso_frio_kg: Decimal
     neveras: int
+    # Siempre 0: el empaque va incluido en el flete. Se conserva por compatibilidad del
+    # contrato de la API mientras haya clientes que lo lean.
     empaque: Decimal
     total_grupo: Decimal
 
@@ -158,7 +162,7 @@ class TotalesCotizacion:
     subtotal_productos: Decimal
     flete: Decimal
     sobreflete: Decimal
-    empaque: Decimal
+    empaque: Decimal  # Siempre 0, ver GrupoEnvio.empaque.
     descuento_envio: Decimal
     envio: Decimal
     total: Decimal
@@ -238,7 +242,6 @@ def _cotizar_grupo(items: tuple[ItemCotizacion, ...], destino: Destino,
         neveras = int((peso_frio / config_empaque.capacidad_kg).to_integral_value(rounding=ROUND_CEILING))
     else:
         neveras = 0
-    empaque = _money(neveras * config_empaque.costo_nevera)
 
     return GrupoEnvio(
         id_productor=referencia.id_productor,
@@ -261,8 +264,8 @@ def _cotizar_grupo(items: tuple[ItemCotizacion, ...], destino: Destino,
         sobreflete=sobreflete,
         peso_frio_kg=_kilos(peso_frio),
         neveras=neveras,
-        empaque=empaque,
-        total_grupo=_money(subtotal + flete + sobreflete + empaque),
+        empaque=_money(CERO),
+        total_grupo=_money(subtotal + flete + sobreflete),
     )
 
 
@@ -278,8 +281,6 @@ def _descuento_promocion(promocion: PromocionCalculo | None, grupos: tuple[Grupo
             continue
         # Sólo el flete: el sobreflete es la garantía del producto y nunca se descuenta.
         cubierto += grupo.flete
-        if promocion.cubre_empaque:
-            cubierto += grupo.empaque
 
     if promocion.tope_cubierto is not None:
         cubierto = min(cubierto, promocion.tope_cubierto)
@@ -312,11 +313,10 @@ def cotizar(entrada: EntradaCotizacion) -> ResultadoCotizacion:
     subtotal_productos = _money(sum((grupo.subtotal for grupo in grupos), CERO))
     flete = _money(sum((grupo.flete for grupo in grupos), CERO))
     sobreflete = _money(sum((grupo.sobreflete for grupo in grupos), CERO))
-    empaque = _money(sum((grupo.empaque for grupo in grupos), CERO))
 
     promocion = entrada.parametros.promocion
     descuento = _descuento_promocion(promocion, grupos, subtotal_productos)
-    envio = _money(max(CERO, flete + sobreflete + empaque - descuento))
+    envio = _money(max(CERO, flete + sobreflete - descuento))
 
     return ResultadoCotizacion(
         destino=entrada.destino,
@@ -331,7 +331,7 @@ def cotizar(entrada: EntradaCotizacion) -> ResultadoCotizacion:
             subtotal_productos=subtotal_productos,
             flete=flete,
             sobreflete=sobreflete,
-            empaque=empaque,
+            empaque=_money(CERO),
             descuento_envio=descuento,
             envio=envio,
             total=_money(subtotal_productos + envio),
