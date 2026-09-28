@@ -235,7 +235,7 @@ class Command(BaseCommand):
     def _sembrar_empaque(self):
         _, creado = ConfiguracionEmpaque.objects.get_or_create(
             activo=True,
-            defaults={'capacidad_kg': Decimal('6.000'), 'costo_nevera': Decimal('12000.00')},
+            defaults={'capacidad_kg': Decimal('6.000'), 'costo_nevera': Decimal('0')},
         )
         self.stdout.write(self.style.SUCCESS(
             "Empaque: configuración creada." if creado

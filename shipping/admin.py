@@ -75,8 +75,9 @@ class CoberturaMunicipioAdmin(admin.ModelAdmin):
 
 @admin.register(ConfiguracionEmpaque)
 class ConfiguracionEmpaqueAdmin(admin.ModelAdmin):
-    list_display = ("__str__", "capacidad_kg", "costo_nevera", "activo", "updated_at")
-    list_editable = ("capacidad_kg", "costo_nevera", "activo")
+    list_display = ("__str__", "capacidad_kg", "activo", "updated_at")
+    list_editable = ("capacidad_kg", "activo")
+    exclude = ("costo_nevera",)
 
 
 @admin.register(PromocionEnvio)
@@ -86,7 +87,6 @@ class PromocionEnvioAdmin(admin.ModelAdmin):
         "umbral_subtotal",
         "jerarquia_maxima_cubierta",
         "tope_cubierto",
-        "cubre_empaque",
         "activo",
         "updated_at",
     )
@@ -94,6 +94,5 @@ class PromocionEnvioAdmin(admin.ModelAdmin):
         "umbral_subtotal",
         "jerarquia_maxima_cubierta",
         "tope_cubierto",
-        "cubre_empaque",
         "activo",
     )

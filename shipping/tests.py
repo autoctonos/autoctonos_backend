@@ -39,7 +39,7 @@ TERRITORIAL = TarifaTrayecto('territorial', 'Territorial', 4, Decimal('19800'), 
                              Decimal('800'), Decimal('0.0200'), 1, 4)
 ESPECIAL = TarifaTrayecto('especial', 'Especial', 5, Decimal('38400'), Decimal('12450'),
                           Decimal('800'), Decimal('0.0200'), 8, 10)
-EMPAQUE = ConfigEmpaque(capacidad_kg=Decimal('6.000'), costo_nevera=Decimal('12000.00'))
+EMPAQUE = ConfigEmpaque(capacidad_kg=Decimal('6.000'))
 
 TUNJA = Destino(id_municipio=1104, nombre='Tunja', departamento='Boyacá', tarifa=URBANO)
 
@@ -91,6 +91,32 @@ class CalculoFleteTests(SimpleTestCase):
         self.assertEqual(grupo.total_grupo, Decimal('178100.00'))
         self.assertEqual(resultado.totales.envio, Decimal('28100.00'))
         self.assertEqual(resultado.totales.total, Decimal('178100.00'))
+
+    def test_caso_literal_de_la_hoja_modulo_de_compra(self):
+        """«Módulo de Compra» tal cual: 1 Queso Paipa (Paipa, zonal) a Yopal (nacional).
+
+        F14 = 18.200 (kilo inicial nacional), F15 = 800 (piso), F17 = 49.000.
+        """
+        yopal = Destino(id_municipio=85001, nombre='Yopal', departamento='Casanare',
+                        tarifa=NACIONAL)
+        resultado = cotizar(entrada([item()], destino=yopal))
+        grupo = resultado.grupos[0]
+        self.assertEqual(grupo.peso_facturable_kg, 1)
+        self.assertEqual(grupo.kilos_adicionales, 0)
+        self.assertEqual(grupo.flete, Decimal('18200.00'))
+        self.assertEqual(grupo.sobreflete, Decimal('800.00'))
+        self.assertEqual(resultado.totales.total, Decimal('49000.00'))
+
+    def test_varias_unidades_del_mismo_producto_son_un_solo_envio(self):
+        """El productor empaca todo en una caja: un kilo inicial y un sobreflete sobre el
+        peso y el subtotal sumados, no un envío por unidad."""
+        resultado = cotizar(entrada([item(cantidad=2, peso_unitario_kg=Decimal('2.000'))]))
+        self.assertEqual(len(resultado.grupos), 1)
+        grupo = resultado.grupos[0]
+        self.assertEqual(grupo.peso_facturable_kg, 4)
+        # 11.900 + 3 x 4.400. Por unidad serían 2 x (11.900 + 4.400) = 32.600.
+        self.assertEqual(grupo.flete, Decimal('25100.00'))
+        self.assertEqual(grupo.sobreflete, Decimal('1200.00'))
 
     def test_peso_exactamente_1kg_no_paga_adicional(self):
         """`SI(peso>=1; peso-1; peso)` del tarifario vigente."""
@@ -185,7 +211,7 @@ class CalculoFleteTests(SimpleTestCase):
         self.assertEqual(orden_a, ['Andes', 'medina', 'Zulia'])
         self.assertEqual(orden_a, orden_b)
 
-    def test_empaque_por_grupo(self):
+    def test_neveras_por_grupo(self):
         """Cada productor empaca lo suyo: no comparten nevera."""
         resultado = cotizar(entrada([
             item(id_producto=1, id_productor=1, productor='A', cantidad=4,
@@ -195,9 +221,8 @@ class CalculoFleteTests(SimpleTestCase):
                  cantidad=4, peso_unitario_kg=Decimal('1.000'), requiere_frio=True),
         ]))
         self.assertEqual([g.neveras for g in resultado.grupos], [1, 1])
-        self.assertEqual(resultado.totales.empaque, Decimal('24000.00'))
 
-        # 3 kg + 3 kg: agrupar globalmente daría 1 nevera y sub-cobraría.
+        # 3 kg + 3 kg: agrupar globalmente daría 1 nevera y faltaría una al despachar.
         resultado = cotizar(entrada([
             item(id_producto=1, id_productor=1, productor='A', cantidad=3,
                  peso_unitario_kg=Decimal('1.000'), requiere_frio=True),
@@ -206,16 +231,25 @@ class CalculoFleteTests(SimpleTestCase):
                  cantidad=3, peso_unitario_kg=Decimal('1.000'), requiere_frio=True),
         ]))
         self.assertEqual([g.neveras for g in resultado.grupos], [1, 1])
-        self.assertEqual(resultado.totales.empaque, Decimal('24000.00'))
+
+    def test_empaque_refrigerado_no_se_cobra(self):
+        """La nevera va incluida en el flete: con frío el total es el mismo que sin frío."""
+        frio = cotizar(entrada([item(cantidad=10, requiere_frio=True)]))
+        sin_frio = cotizar(entrada([item(cantidad=10, requiere_frio=False)]))
+        grupo = frio.grupos[0]
+        self.assertEqual(grupo.neveras, 2)
+        self.assertEqual(grupo.empaque, Decimal('0.00'))
+        self.assertEqual(grupo.total_grupo, grupo.subtotal + grupo.flete + grupo.sobreflete)
+        self.assertEqual(frio.totales.empaque, Decimal('0.00'))
+        self.assertEqual(frio.totales.envio, frio.totales.flete + frio.totales.sobreflete)
+        self.assertEqual(frio.totales.total, sin_frio.totales.total)
 
     def test_requiere_frio_override_gana_sobre_categoria(self):
         """El override viaja resuelto hasta el cálculo; aquí se pinea el efecto."""
         frio = cotizar(entrada([item(requiere_frio=True)]))
         sin_frio = cotizar(entrada([item(requiere_frio=False)]))
         self.assertEqual(frio.grupos[0].neveras, 1)
-        self.assertEqual(frio.grupos[0].empaque, Decimal('12000.00'))
         self.assertEqual(sin_frio.grupos[0].neveras, 0)
-        self.assertEqual(sin_frio.grupos[0].empaque, Decimal('0.00'))
 
     def test_promocion_solo_cubre_el_flete(self):
         """El sobreflete es la garantía del producto: nunca entra al descuento."""
@@ -227,8 +261,7 @@ class CalculoFleteTests(SimpleTestCase):
         grupo = resultado.grupos[0]
         self.assertTrue(resultado.promocion.aplicada)
         self.assertEqual(resultado.promocion.descuento, grupo.flete)
-        self.assertGreater(grupo.empaque, Decimal('0'))
-        self.assertEqual(resultado.totales.envio, grupo.sobreflete + grupo.empaque)
+        self.assertEqual(resultado.totales.envio, grupo.sobreflete)
 
     def test_promocion_nunca_deja_el_envio_en_cero(self):
         """Con el sobreflete siempre cobrado, «envío gratis» ya no existe."""
@@ -350,13 +383,9 @@ class DatosEnvioMixin:
             id_municipio=self.pajarito,
         )
 
-        ConfiguracionEmpaque.objects.create(
-            capacidad_kg=Decimal('6.000'), costo_nevera=Decimal('12000.00'))
-        PromocionEnvio.objects.create(
-            umbral_subtotal=Decimal('200000.00'), cubre_empaque=False)
+        ConfiguracionEmpaque.objects.create(capacidad_kg=Decimal('6.000'))
+        PromocionEnvio.objects.create(umbral_subtotal=Decimal('200000.00'))
 
-        # `requiere_frio=False` a propósito: si se cambia, los golden suman una nevera de
-        # $12.000 y dejan de cuadrar sin que se entienda por qué.
         self.categoria = Categoria.objects.create(nombre='Lácteos', requiere_frio=False)
         self.queso = Producto.objects.create(
             id_categoria=self.categoria, nombre='Queso Paipa', descripcion='Queso',
@@ -718,14 +747,14 @@ class SeedShippingTests(TestCase):
         filas = [{'municipio': 'Tunja', 'departamento': 'Boyacá', 'provincia': 'Centro',
                   'distancia_km_tunja': 0.0, 'trayecto_origen': 'urbano', 'trayecto_destino': 'urbano'}]
         self.sembrar(filas)
-        ConfiguracionEmpaque.objects.filter(activo=True).update(costo_nevera=Decimal('15000.00'))
+        ConfiguracionEmpaque.objects.filter(activo=True).update(capacidad_kg=Decimal('8.000'))
         PromocionEnvio.objects.filter(activo=True).update(umbral_subtotal=Decimal('300000.00'))
 
         self.sembrar(filas)
         self.assertEqual(CoberturaMunicipio.objects.count(), 1)
         self.assertEqual(Trayecto.objects.count(), 5)
         self.assertEqual(
-            ConfiguracionEmpaque.objects.get(activo=True).costo_nevera, Decimal('15000.00'))
+            ConfiguracionEmpaque.objects.get(activo=True).capacidad_kg, Decimal('8.000'))
         self.assertEqual(
             PromocionEnvio.objects.get(activo=True).umbral_subtotal, Decimal('300000.00'))
 

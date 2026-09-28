@@ -345,7 +345,7 @@
             <div class="form-group">
               {{ form.requiere_frio_override.label_tag }}
               {{ form.requiere_frio_override }}
-              <span class="help">Determina si el pedido paga empaque refrigerado.</span>
+              <span class="help">Requiere empaque refrigerado (incluido en el envío).</span>
               {% if form.requiere_frio_override.errors %}
                 <span class="field-error">{{ form.requiere_frio_override.errors.0 }}</span>
               {% endif %}

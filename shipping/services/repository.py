@@ -142,9 +142,9 @@ def _resolver_config_empaque() -> ConfigEmpaque:
     config = ConfiguracionEmpaque.objects.filter(activo=True).first()
     if config is None:
         raise EmpaqueNoConfigurado(
-            "El costo de empaque refrigerado no está configurado.", {},
+            "La capacidad de la nevera para el empaque refrigerado no está configurada.", {},
         )
-    return ConfigEmpaque(capacidad_kg=config.capacidad_kg, costo_nevera=config.costo_nevera)
+    return ConfigEmpaque(capacidad_kg=config.capacidad_kg)
 
 
 def _resolver_parametros() -> ParametrosCalculo:
@@ -155,7 +155,6 @@ def _resolver_parametros() -> ParametrosCalculo:
         umbral_subtotal=promocion.umbral_subtotal,
         jerarquia_maxima_cubierta=promocion.jerarquia_maxima_cubierta,
         tope_cubierto=promocion.tope_cubierto,
-        cubre_empaque=promocion.cubre_empaque,
     ))
 
 

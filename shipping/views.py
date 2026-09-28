@@ -37,8 +37,8 @@ class DestinosView(APIView):
 
 
 class CotizarView(APIView):
-    """Cotiza flete + sobreflete + empaque. Sólo acepta ids y cantidades: precios,
-    pesos y orígenes se resuelven contra la base de datos."""
+    """Cotiza flete + sobreflete; el empaque refrigerado va incluido en el flete. Sólo
+    acepta ids y cantidades: precios, pesos y orígenes se resuelven contra la base de datos."""
 
     permission_classes = [AllowAny]
     throttle_classes = [ScopedRateThrottle]
