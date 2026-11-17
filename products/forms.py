@@ -1,4 +1,5 @@
 from django import forms
+from .imagenes import GUIA as GUIA_FOTOS, validar_imagen_producto
 from .models import Producto
 from locations.models import Municipio
 from producers.models import Productor
@@ -6,7 +7,13 @@ from producers.models import Productor
 
 class ProductoForm(forms.ModelForm):
     image = forms.ImageField(
-        required=False, widget=forms.FileInput(attrs={"class": "form-control"})
+        required=False,
+        label="Foto",
+        help_text=GUIA_FOTOS,
+        validators=[validar_imagen_producto],
+        widget=forms.FileInput(
+            attrs={"class": "form-control", "accept": "image/jpeg,image/png,image/webp"}
+        ),
     )
 
     id_productor = forms.ModelChoiceField(

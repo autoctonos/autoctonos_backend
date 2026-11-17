@@ -1,0 +1,32 @@
+{% extends "admin/base.html" %}
+{% load static %}
+{% comment %}
+  Marca de Autóctonos en el admin: ícono de pestaña y emblema en el encabezado.
+  Los archivos viven en static/brand/ (copia de astro_frontend/public: si cambia el
+  logo, actualizar ambos).
+{% endcomment %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | Autóctonos admin{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <link rel="icon" href="{% static 'brand/favicon.ico' %}" sizes="48x48">
+  <link rel="icon" href="{% static 'brand/favicon.svg' %}" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{% static 'brand/apple-touch-icon.png' %}">
+  <style>
+    #site-name a { display: inline-flex; align-items: center; gap: 10px; }
+    #site-name img { width: 32px; height: 32px; flex-shrink: 0; }
+  </style>
+{% endblock %}
+
+{% block branding %}
+  <div id="site-name">
+    <a href="{% url 'admin:index' %}">
+      <img src="{% static 'brand/favicon.svg' %}" alt="" width="32" height="32">
+      {{ site_header }}
+    </a>
+  </div>
+  {% if user.is_anonymous %}{% include "admin/color_theme_toggle.html" %}{% endif %}
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

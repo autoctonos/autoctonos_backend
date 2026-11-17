@@ -5,6 +5,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="{% static 'brand/favicon.ico' %}" sizes="48x48">
+    <link rel="icon" href="{% static 'brand/favicon.svg' %}" type="image/svg+xml">
     <title>Dashboard de Productos</title>
     <style>
       :root {
@@ -411,6 +413,10 @@
             <div class="form-group full-width">
               {{ form.image.label_tag }}
               {{ form.image }}
+              <span class="help">{{ form.image.help_text }}</span>
+              {% if form.image.errors %}
+                <span class="field-error">{{ form.image.errors.0 }}</span>
+              {% endif %}
               <img id="image-preview" alt="Vista previa" />
             </div>
           </div>

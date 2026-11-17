@@ -3,18 +3,56 @@ from django.contrib import admin, messages
 from django.db.models import Q
 from django.utils import timezone
 from django import forms
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
+from .iconos import IconoError, descargar_svg
 from .models import Categoria, Producto, ImagenProducto
+from .widgets import SelectorIconoCategoria
 
 # -----------------------
 # Admin de Categoria (NECESARIO para autocomplete_fields en ProductoAdmin)
 # -----------------------
+class CategoriaAdminForm(forms.ModelForm):
+    class Meta:
+        model = Categoria
+        fields = ("nombre", "slug", "icono", "requiere_frio")
+        widgets = {"icono": SelectorIconoCategoria}
+
+    def clean_icono(self):
+        icono = (self.cleaned_data.get("icono") or "").strip()
+        if not icono:
+            self.instance.icono_svg = ""
+        elif icono != self.instance.icono or not self.instance.icono_svg:
+            try:
+                self.instance.icono_svg = descargar_svg(icono)
+            except IconoError as exc:
+                raise forms.ValidationError(str(exc)) from exc
+        return icono
+
+
 @admin.register(Categoria)
 class CategoriaAdmin(admin.ModelAdmin):
-    search_fields = ("nombre",)         # <- requerido para que autocomplete_fields funcione
-    list_display = ("nombre", "requiere_frio")
+    form = CategoriaAdminForm
+    prepopulated_fields = {"slug": ("nombre",)}
+    search_fields = ("nombre", "slug")         # <- requerido para que autocomplete_fields funcione
+    list_display = ("icono_preview", "nombre", "slug", "requiere_frio")
+    list_display_links = ("nombre",)
     list_editable = ("requiere_frio",)
     list_filter = ("requiere_frio",)
     ordering = ("nombre",)
+
+    @admin.display(description="Ícono")
+    def icono_preview(self, obj):
+        if not obj.icono_svg:
+            return format_html('<span style="color:var(--body-quiet-color)">Automático</span>')
+        # icono_svg ya viene saneado por products/iconos.py.
+        return format_html(
+            '<span title="{}" style="display:inline-grid;place-items:center;width:28px;height:28px;'
+            'border-radius:8px;background:rgb(167 201 87 / .22);color:#6A994E">'
+            '<span style="display:grid;width:16px;height:16px">{}</span></span>',
+            obj.icono,
+            mark_safe(obj.icono_svg.replace("<svg ", '<svg width="16" height="16" ', 1)),
+        )
 
 
 # -----------------------
@@ -117,9 +155,20 @@ class ImagenProductoInline(admin.TabularInline):
     extra = 2
     min_num = 2
     max_num = 4
-    fields = ('url_imagen',)
+    fields = ('vista_previa', 'url_imagen')
+    readonly_fields = ('vista_previa',)
     verbose_name = "Imagen"
-    verbose_name_plural = "Imágenes (mínimo 2, máximo 4)"
+    verbose_name_plural = "Imágenes (mínimo 2, máximo 4) · cuadradas, fondo blanco, mín. 800 px"
+
+    @admin.display(description="Así se ve en la tienda")
+    def vista_previa(self, obj):
+        if not obj or not obj.url_imagen:
+            return "—"
+        return format_html(
+            '<img src="{}" alt="" width="72" height="72" '
+            'style="object-fit:contain;background:#fff;border:1px solid #ddd;border-radius:6px">',
+            obj.url_imagen.url,
+        )
 
 
 @admin.register(Producto)

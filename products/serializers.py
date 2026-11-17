@@ -5,7 +5,9 @@ from .models import Producto, Categoria, ImagenProducto
 class CategoriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Categoria
-        fields = ['id_categoria', 'nombre']
+        fields = ['id_categoria', 'nombre', 'slug', 'icono', 'icono_svg']
+        # Sólo el admin elige el ícono (descarga y sanea el SVG) y la dirección pública.
+        read_only_fields = ['slug', 'icono', 'icono_svg']
 
 
 class ImagenProductoSerializer(serializers.ModelSerializer):
@@ -41,6 +43,9 @@ class ProductoConImagenSerializer(serializers.ModelSerializer):
     presentacion_completa = serializers.SerializerMethodField()
     requiere_frio = serializers.BooleanField(read_only=True)
     productor_nombre = serializers.CharField(source='id_productor.nombre', read_only=True, default=None)
+    # Para las migas de pan y el enlace a /categories/<slug> desde el detalle.
+    categoria_nombre = serializers.CharField(source='id_categoria.nombre', read_only=True)
+    categoria_slug = serializers.CharField(source='id_categoria.slug', read_only=True)
     # El origen efectivo: override del producto o, si está vacío, el municipio del productor.
     municipio_nombre = serializers.SerializerMethodField()
     departamento_nombre = serializers.SerializerMethodField()
@@ -48,7 +53,8 @@ class ProductoConImagenSerializer(serializers.ModelSerializer):
     class Meta:
         model = Producto
         fields = [
-            'id_producto', 'id_categoria', 'nombre', 'descripcion',
+            'id_producto', 'id_categoria', 'categoria_nombre', 'categoria_slug',
+            'nombre', 'descripcion',
             'precio', 'precio_con_descuento', 'es_promocionado', 'porcentaje_descuento',
             'stock', 'presentacion', 'cantidad_presentacion', 'presentacion_completa',
             'peso_kg', 'requiere_frio', 'id_productor', 'productor_nombre',

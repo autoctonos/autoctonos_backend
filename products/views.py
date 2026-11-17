@@ -104,7 +104,8 @@ class ProductosCategoriaView(APIView):
             if value.isdigit():
                 qs = qs.filter(id_categoria=int(value))
             else:
-                qs = qs.filter(id_categoria__nombre__iexact=value)
+                # Slug canónico (/categories/lacteos-quesos) o el nombre, por compatibilidad.
+                qs = qs.filter(Q(id_categoria__slug=value.lower()) | Q(id_categoria__nombre__iexact=value))
         serializer = ProductoConImagenSerializer(qs, many=True)
         return Response(serializer.data)
 
