@@ -1,0 +1,448 @@
+{% with base=widget.attrs.id|default:widget.name %}
+<div class="icp" data-icp data-api="{{ widget.iconify_api }}" data-prefix="{{ widget.coleccion }}">
+  <div class="icp-field">
+    <button type="button" class="icp-trigger" data-trigger aria-haspopup="listbox" aria-expanded="false" aria-controls="{{ base }}-panel">
+      <span class="icp-tile" aria-hidden="true">
+        <span class="icp-glyph" data-tile-glyph hidden></span>
+        <span class="icp-auto" data-tile-auto></span>
+      </span>
+      <span class="icp-text">
+        <span class="icp-name" data-name>Automático</span>
+        <span class="icp-sub" data-sub>La tienda asigna uno por defecto</span>
+      </span>
+      <svg class="icp-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <button type="button" class="icp-clear" data-clear aria-label="Quitar ícono (usar automático)" title="Quitar ícono" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  {# Sin JS o sin red: se escribe el nombre a mano y el form lo valida al guardar. #}
+  <input type="text" class="icp-value" data-value name="{{ widget.name }}" id="{{ base }}"
+         value="{{ widget.value|default_if_none:'' }}" maxlength="40" autocomplete="off"
+         spellcheck="false" placeholder="Nombre Lucide, ej. cheese">
+
+  <div class="icp-panel" id="{{ base }}-panel" data-panel hidden>
+    <div class="icp-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" data-search role="combobox" aria-expanded="true" aria-controls="{{ base }}-list"
+             aria-autocomplete="list" aria-label="Buscar ícono" autocomplete="off" spellcheck="false"
+             placeholder="Buscar: queso, pan, cheese…">
+      <kbd>Esc</kbd>
+    </div>
+    <div class="icp-list" id="{{ base }}-list" role="listbox" aria-label="Íconos" data-list></div>
+    <div class="icp-foot">
+      <span data-status aria-live="polite">Cargando íconos…</span>
+      <span class="icp-credit">Lucide · vía Iconify</span>
+    </div>
+  </div>
+
+<style>
+  .icp {
+    --icp-accent: #386641;
+    --icp-tint: rgb(167 201 87 / .24);
+    --icp-fg: var(--body-fg, #333);
+    --icp-quiet: var(--body-quiet-color, #666);
+    --icp-bg: var(--body-bg, #fff);
+    --icp-line: var(--border-color, #ccc);
+    --icp-hair: var(--hairline-color, #e8e8e8);
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 520px;
+    color: var(--icp-fg);
+  }
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) .icp { --icp-accent: #A7C957; --icp-tint: rgb(167 201 87 / .14); }
+  }
+  html[data-theme="dark"] .icp { --icp-accent: #A7C957; --icp-tint: rgb(167 201 87 / .14); }
+
+  .icp-field { display: flex; gap: 8px; align-items: stretch; }
+  .icp .icp-trigger {
+    flex: 1 1 auto; min-width: 0;
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px;
+    height: 48px; margin: 0; padding: 0 12px 0 7px;
+    border: 1px solid var(--icp-line); border-radius: 10px; background: var(--icp-bg);
+    color: inherit; font: inherit; text-align: left; cursor: pointer;
+    transition: border-color .15s;
+  }
+  .icp .icp-trigger:hover { border-color: var(--icp-quiet); }
+  .icp .icp-trigger[aria-expanded="true"] { border-color: var(--icp-accent); }
+  .icp button:focus-visible { outline: 2px solid var(--icp-accent); outline-offset: 2px; }
+
+  .icp-tile {
+    display: grid; place-items: center; width: 34px; height: 34px; border-radius: 8px;
+    background: var(--icp-tint); color: var(--icp-accent);
+  }
+  .icp-glyph { display: block; width: 20px; height: 20px; }
+  .icp-glyph svg { display: block; width: 100%; height: 100%; }
+  .icp-opt .icp-glyph:empty { border-radius: 5px; background: var(--icp-hair); }
+  .icp-glyph[hidden], .icp-auto[hidden] { display: none; }
+  .icp-auto { width: 16px; height: 16px; border-radius: 50%; border: 1.5px dashed currentColor; opacity: .8; }
+  .icp-text { display: grid; gap: 1px; min-width: 0; }
+  .icp-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .icp-sub { font-size: 12px; color: var(--icp-quiet); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .icp-chevron { width: 16px; height: 16px; color: var(--icp-quiet); transition: transform .2s cubic-bezier(.16, 1, .3, 1); }
+  .icp-trigger[aria-expanded="true"] .icp-chevron { transform: rotate(180deg); }
+
+  .icp .icp-clear {
+    display: grid; place-items: center; width: 48px; flex: none; margin: 0; padding: 0;
+    border: 1px solid var(--icp-line); border-radius: 10px; background: var(--icp-bg);
+    color: var(--icp-quiet); cursor: pointer;
+  }
+  .icp .icp-clear[hidden] { display: none; }
+  .icp .icp-clear:hover { color: var(--icp-fg); border-color: var(--icp-quiet); }
+  .icp .icp-clear svg { width: 16px; height: 16px; }
+
+  .icp--js .icp-value { display: none; }
+
+  .icp-panel {
+    margin-top: 8px; border: 1px solid var(--icp-line); border-radius: 12px;
+    background: var(--icp-bg); overflow: hidden;
+  }
+  .icp-panel[hidden] { display: none; }
+  .icp-search {
+    display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 12px;
+    border-bottom: 1px solid var(--icp-hair);
+  }
+  .icp-search > svg { width: 16px; height: 16px; flex: none; color: var(--icp-quiet); }
+  .icp .icp-search input {
+    flex: 1 1 auto; min-width: 0; height: 100%; margin: 0; padding: 0;
+    border: 0; outline: 0; box-shadow: none; background: transparent;
+    color: var(--icp-fg); font-size: 14px;
+  }
+  .icp .icp-search input::placeholder { color: var(--icp-quiet); opacity: 1; }
+  .icp-search kbd {
+    flex: none; padding: 2px 6px; border: 1px solid var(--icp-hair); border-radius: 5px;
+    font: 11px/1.2 inherit; color: var(--icp-quiet); background: transparent;
+  }
+
+  .icp-list {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 4px;
+    padding: 8px; min-height: 112px; max-height: 288px; overflow-y: auto; overscroll-behavior: contain;
+    align-content: start; scrollbar-width: thin; scrollbar-color: var(--icp-hair) transparent;
+  }
+  .icp .icp-opt {
+    display: grid; place-items: center; aspect-ratio: 1; margin: 0; padding: 0;
+    border: 0; border-radius: 8px; background: transparent; color: var(--icp-fg); cursor: pointer;
+    transition: background-color .12s, color .12s;
+  }
+  .icp .icp-opt:hover, .icp .icp-opt.is-active { background: var(--icp-tint); color: var(--icp-accent); }
+  .icp .icp-opt.is-active { outline: 2px solid var(--icp-accent); outline-offset: -2px; }
+  .icp .icp-opt[aria-selected="true"] { background: var(--icp-tint); color: var(--icp-accent); box-shadow: inset 0 0 0 1.5px var(--icp-accent); }
+  .icp-sentinel { grid-column: 1 / -1; height: 1px; }
+  .icp-empty { grid-column: 1 / -1; align-self: center; padding: 48px 16px; text-align: center; font-size: 13px; line-height: 1.5; color: var(--icp-quiet); }
+
+  .icp-foot {
+    display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px;
+    border-top: 1px solid var(--icp-hair); font-size: 12px; color: var(--icp-quiet);
+  }
+  .icp-foot [data-status] { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .icp-foot strong { color: var(--icp-fg); font-weight: 600; }
+  .icp-credit { flex: none; }
+
+  @media (prefers-reduced-motion: reduce) { .icp * { transition: none !important; } }
+</style>
+
+<script>
+(function () {
+  var root = document.currentScript.parentElement;
+  if (!root || root.dataset.ready) return;
+  root.dataset.ready = "1";
+  root.classList.add("icp--js");
+
+  var API = root.dataset.api, PREFIX = root.dataset.prefix;
+  var $ = function (s) { return root.querySelector(s); };
+  var trigger = $("[data-trigger]"), clearBtn = $("[data-clear]"), valueInput = $("[data-value]");
+  var panel = $("[data-panel]"), search = $("[data-search]"), list = $("[data-list]"), status = $("[data-status]");
+  var tileGlyph = $("[data-tile-glyph]"), tileAuto = $("[data-tile-auto]"), nameEl = $("[data-name]"), subEl = $("[data-sub]");
+
+  var BATCH = 120, SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+  var all = null, loading = null, results = [], rendered = 0, active = -1, searchSeq = 0, timer = 0;
+
+  // Iconify busca en inglés; esto traduce lo que más se va a buscar en una tienda campesina.
+  var ES = {
+    queso: "cheese milk", leche: "milk", lacteo: "milk cheese", huevo: "egg", pan: "croissant sandwich wheat",
+    amasijo: "donut cookie croissant", arepa: "circle donut", galleta: "cookie", torta: "cake", ponque: "cake",
+    postre: "cake dessert ice-cream", dulce: "candy lollipop", chocolate: "candy cookie", cafe: "coffee bean",
+    cacao: "bean coffee", te: "coffee leaf", aromatica: "leaf sprout", fruta: "apple cherry citrus grape banana",
+    verdura: "carrot salad leafy", hortaliza: "carrot salad", aguacate: "avocado", tocino: "bacon",
+    carne: "beef ham drumstick", res: "beef", pollo: "drumstick egg", pescado: "fish", miel: "droplet",
+    aceite: "droplet", salsa: "droplet soup", vino: "wine", cerveza: "beer", licor: "wine martini",
+    bebida: "cup-soda coffee wine", jugo: "citrus cup-soda", agua: "glass-water droplet", hoja: "leaf",
+    planta: "sprout leaf flower", flor: "flower", semilla: "sprout bean", grano: "bean wheat", trigo: "wheat",
+    maiz: "wheat", nuez: "nut", tejido: "spool shirt scissors", hilo: "spool", ropa: "shirt",
+    bolso: "shopping-bag backpack", mochila: "backpack", ceramica: "amphora", barro: "amphora",
+    madera: "tree hammer axe", arbol: "tree", joya: "gem", arte: "palette brush", pintura: "palette paintbrush",
+    regalo: "gift", canasta: "shopping-basket", mascota: "paw-print dog cat", perro: "dog", gato: "cat",
+    jabon: "soap", cosmetico: "flask", vela: "flame", fuego: "flame", picante: "flame", ahumado: "flame",
+    sol: "sun", montana: "mountain", casa: "house", hogar: "house", cocina: "cooking-pot chef-hat utensils",
+    olla: "cooking-pot", sopa: "soup", helado: "ice-cream", conserva: "cooking-pot", mano: "hand",
+    artesania: "hand-heart palette scissors", tienda: "store", insecto: "bug", abeja: "bug", mar: "waves shell",
+    zapato: "footprints", libro: "book", campo: "tractor wheat sprout", granja: "tractor fence"
+  };
+
+  function norm(s) { return (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim(); }
+  function human(n) { var s = n.replace(/-/g, " "); return s.charAt(0).toUpperCase() + s.slice(1); }
+  function store(k, v) { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function recall(k) { try { return JSON.parse(sessionStorage.getItem(k)); } catch (e) { return null; } }
+
+  /* ------------------------------------------------------------ SVG inline */
+  // Los cuerpos se piden en lote (`/lucide.json?icons=a,b,c`, 1 request cada 120 íconos):
+  // un request por ícono dispara el rate-limit de Iconify al scrollear el catálogo. Inline
+  // hereda currentColor, así que sigue el tema claro/oscuro del admin sin más trabajo.
+  var bodies = new Map(), missing = new Set(), inflight = new Map();
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var OK_TAGS = { svg: 1, g: 1, path: 1, circle: 1, ellipse: 1, line: 1, polyline: 1, polygon: 1, rect: 1 };
+  var OK_ATTRS = /^(d|cx|cy|r|rx|ry|x|y|x1|x2|y1|y2|width|height|points|fill|fill-rule|clip-rule|stroke|stroke-width|stroke-linecap|stroke-linejoin|stroke-miterlimit|opacity|fill-opacity|stroke-opacity|transform|viewBox)$/;
+  (recall("icp-bodies:" + PREFIX) || []).forEach(function (e) { bodies.set(e[0], e[1]); });
+
+  function clean(node) {
+    Array.prototype.slice.call(node.children).forEach(function (c) {
+      if (!OK_TAGS[c.localName]) { c.remove(); return; }
+      Array.prototype.slice.call(c.attributes).forEach(function (a) {
+        if (!OK_ATTRS.test(a.name) || /url\s*\(|javascript:/i.test(a.value)) c.removeAttribute(a.name);
+      });
+      clean(c);
+    });
+    return node;
+  }
+  function svgFor(n) {
+    var b = bodies.get(n); if (!b) return null;
+    var doc = new DOMParser().parseFromString('<svg xmlns="' + SVGNS + '" viewBox="0 0 24 24">' + b + "</svg>", "image/svg+xml");
+    var svg = doc.documentElement;
+    if (svg.localName !== "svg") return null;
+    svg = document.importNode(clean(svg), true);
+    svg.setAttribute("aria-hidden", "true"); svg.setAttribute("focusable", "false");
+    return svg;
+  }
+  function paintGlyph(el, n) {
+    var svg = svgFor(n); el.textContent = ""; if (svg) el.appendChild(svg);
+  }
+  function persistBodies() {
+    var arr = []; bodies.forEach(function (v, k) { if (arr.length < 900) arr.push([k, v]); });
+    store("icp-bodies:" + PREFIX, arr);
+  }
+  function fetchBodies(names) {
+    var need = names.filter(function (n) { return !bodies.has(n) && !missing.has(n) && !inflight.has(n); });
+    if (!need.length) return Promise.all(names.map(function (n) { return inflight.get(n); }));
+    var p = fetch(API + "/" + PREFIX + ".json?icons=" + need.map(encodeURIComponent).join(","))
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (d) {
+        var icons = d.icons || {};
+        need.forEach(function (n) { icons[n] && icons[n].body ? bodies.set(n, icons[n].body) : missing.add(n); });
+        persistBodies();
+      })
+      .catch(function () {})
+      .finally(function () { need.forEach(function (n) { inflight.delete(n); }); });
+    need.forEach(function (n) { inflight.set(n, p); });
+    return p;
+  }
+
+  /* ---------------------------------------------------------- valor actual */
+  function paintValue() {
+    var v = valueInput.value.trim();
+    if (v) {
+      tileGlyph.hidden = false; tileAuto.hidden = true;
+      nameEl.textContent = human(v); subEl.textContent = PREFIX + ":" + v;
+      if (bodies.has(v)) paintGlyph(tileGlyph, v);
+      else { tileGlyph.textContent = ""; fetchBodies([v]).then(function () { if (valueInput.value.trim() === v) paintGlyph(tileGlyph, v); }); }
+    } else {
+      tileGlyph.hidden = true; tileAuto.hidden = false;
+      nameEl.textContent = "Automático"; subEl.textContent = "La tienda asigna uno por defecto";
+    }
+    clearBtn.hidden = !v;
+  }
+
+  function choose(n) {
+    valueInput.value = n;
+    valueInput.dispatchEvent(new Event("change", { bubbles: true }));
+    paintValue();
+    close(true);
+  }
+
+  /* -------------------------------------------------------------- catálogo */
+  function loadAll() {
+    if (all) return Promise.resolve(all);
+    var cached = recall("icp:" + PREFIX);
+    if (cached && cached.length) { all = cached; return Promise.resolve(all); }
+    if (loading) return loading;
+    loading = fetch(API + "/collection?prefix=" + PREFIX)
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (d) {
+        var names = (d.uncategorized || []).slice();
+        Object.keys(d.categories || {}).forEach(function (c) { names = names.concat(d.categories[c]); });
+        all = Array.from(new Set(names)).sort();
+        store("icp:" + PREFIX, all);
+        return all;
+      })
+      .finally(function () { loading = null; });
+    return loading;
+  }
+
+  function remoteSearch(term) {
+    return fetch(API + "/search?prefix=" + PREFIX + "&limit=64&query=" + encodeURIComponent(term))
+      .then(function (r) { return r.ok ? r.json() : { icons: [] }; })
+      .then(function (d) { return (d.icons || []).map(function (i) { return i.split(":").pop(); }); })
+      .catch(function () { return []; });
+  }
+
+  /* --------------------------------------------------------------- render */
+  var observer = new IntersectionObserver(function (entries) {
+    if (entries.some(function (e) { return e.isIntersecting; })) renderMore();
+  }, { root: list, rootMargin: "120px" });
+
+  function option(n, i) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "icp-opt"; b.tabIndex = -1;
+    b.id = root.querySelector("[data-list]").id + "-" + i;
+    b.setAttribute("role", "option"); b.dataset.name = n; b.title = n;
+    b.setAttribute("aria-label", human(n));
+    b.setAttribute("aria-selected", String(n === valueInput.value.trim()));
+    var g = document.createElement("span");
+    g.className = "icp-glyph"; g.setAttribute("aria-hidden", "true");
+    if (bodies.has(n)) paintGlyph(g, n);
+    b.appendChild(g);
+    return b;
+  }
+
+  function renderMore() {
+    var sentinel = list.querySelector(".icp-sentinel");
+    if (sentinel) { observer.unobserve(sentinel); sentinel.remove(); }
+    var frag = document.createDocumentFragment(), end = Math.min(rendered + BATCH, results.length);
+    var batch = results.slice(rendered, end), nodes = [];
+    for (var i = rendered; i < end; i++) { var o = option(results[i], i); nodes.push(o); frag.appendChild(o); }
+    rendered = end;
+    fetchBodies(batch).then(function () {
+      nodes.forEach(function (o) { var g = o.firstChild; if (!g.firstChild && o.isConnected) paintGlyph(g, o.dataset.name); });
+    });
+    if (rendered < results.length) {
+      var s = document.createElement("div"); s.className = "icp-sentinel"; frag.appendChild(s);
+      list.appendChild(frag); observer.observe(s);
+    } else list.appendChild(frag);
+  }
+
+  function show(names, q) {
+    results = names; rendered = 0; active = -1;
+    list.textContent = ""; list.scrollTop = 0;
+    search.removeAttribute("aria-activedescendant");
+    if (!names.length) {
+      var e = document.createElement("p"); e.className = "icp-empty";
+      e.textContent = SLUG.test(q)
+        ? "Sin resultados para «" + q + "». Presiona Enter para usar ese nombre tal cual."
+        : "Sin resultados. Prueba otra palabra, en español o en inglés.";
+      list.appendChild(e);
+    } else renderMore();
+    setStatus();
+  }
+
+  function setStatus(n) {
+    if (n) { status.innerHTML = ""; var s = document.createElement("strong"); s.textContent = human(n); status.append(s, " · " + n); return; }
+    var c = results.length.toLocaleString("es-CO");
+    status.textContent = search.value.trim() ? c + " resultado" + (results.length === 1 ? "" : "s") : c + " íconos";
+  }
+
+  function filter() {
+    var q = norm(search.value), seq = ++searchSeq;
+    if (q.length === 1) return show(all.filter(function (n) { return n.indexOf(q) === 0; }), q);
+    if (!all) return;
+    if (!q) return show(all, "");
+    // Palabra española conocida → se busca sólo por sus traducciones ("pan" no debe traer
+    // "panel-left"); si no, se busca la palabra tal cual (inglés o nombre Lucide).
+    var terms = [];
+    Object.keys(ES).forEach(function (k) { if (k === q || (q.length > 2 && k.indexOf(q) === 0) || (q.length > 3 && q.indexOf(k) === 0)) terms = terms.concat(ES[k].split(" ")); });
+    terms = terms.length ? Array.from(new Set(terms)) : [q];
+    var seen = new Set(), ranked = [];
+    function add(n) { if (!seen.has(n)) { seen.add(n); ranked.push(n); } }
+    terms.forEach(function (t) { all.forEach(function (n) { if (n === t || n.indexOf(t + "-") === 0) add(n); }); });
+    terms.forEach(function (t) { all.forEach(function (n) { if (n.indexOf(t) !== -1) add(n); }); });
+    show(ranked.slice(), q);
+    // La búsqueda de Iconify entiende sinónimos y etiquetas: completa lo que el filtro local no ve.
+    Promise.all(terms.slice(0, 2).map(remoteSearch)).then(function (lists) {
+      if (seq !== searchSeq) return;
+      var before = ranked.length;
+      lists.forEach(function (l) { l.forEach(function (n) { if (all.indexOf(n) !== -1) add(n); }); });
+      if (ranked.length !== before) show(ranked, q);
+    });
+  }
+
+  /* ---------------------------------------------------- abrir / cerrar */
+  function open() {
+    panel.hidden = false; trigger.setAttribute("aria-expanded", "true");
+    search.value = ""; search.focus();
+    status.textContent = "Cargando íconos…";
+    loadAll().then(function () {
+      show(all, "");
+      var cur = all.indexOf(valueInput.value.trim());
+      if (cur !== -1) { while (rendered <= cur) renderMore(); setActive(cur, true); }
+    }).catch(function () {
+      list.textContent = "";
+      var e = document.createElement("p"); e.className = "icp-empty";
+      e.textContent = "No se pudo cargar el catálogo de íconos. Escribe el nombre en inglés (ej. cheese) y presiona Enter.";
+      list.appendChild(e); status.textContent = "Sin conexión con Iconify";
+    });
+  }
+
+  function close(focusTrigger) {
+    if (panel.hidden) return;
+    panel.hidden = true; trigger.setAttribute("aria-expanded", "false");
+    if (focusTrigger) trigger.focus();
+  }
+
+  /* ------------------------------------------------------------ teclado */
+  function opts() { return list.querySelectorAll(".icp-opt"); }
+  function columns() {
+    var o = opts(); if (o.length < 2) return 1;
+    var top = o[0].offsetTop, c = 0;
+    while (c < o.length && o[c].offsetTop === top) c++;
+    return c;
+  }
+  function setActive(i, center) {
+    var o = opts(); if (!o.length) return;
+    i = Math.max(0, Math.min(i, results.length - 1));
+    while (i >= rendered && rendered < results.length) renderMore();
+    o = opts();
+    if (o[active]) o[active].classList.remove("is-active");
+    active = i;
+    o[i].classList.add("is-active");
+    search.setAttribute("aria-activedescendant", o[i].id);
+    o[i].scrollIntoView({ block: center ? "center" : "nearest" });
+    setStatus(o[i].dataset.name);
+  }
+
+  search.addEventListener("keydown", function (e) {
+    var k = e.key, cols = columns();
+    if (k === "Escape") { e.preventDefault(); close(true); return; }
+    if (k === "Enter") {
+      e.preventDefault();
+      var q = norm(search.value);
+      if (active >= 0) choose(results[active]);
+      else if (results.length === 1) choose(results[0]);
+      else if (SLUG.test(q) && (!all || all.indexOf(q) !== -1 || !results.length)) choose(q);
+      return;
+    }
+    var step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: cols, ArrowUp: -cols }[k];
+    if (step && results.length) { e.preventDefault(); setActive(active < 0 ? 0 : active + step); }
+  });
+  search.addEventListener("input", function () { clearTimeout(timer); timer = setTimeout(filter, 220); });
+
+  list.addEventListener("click", function (e) {
+    var b = e.target.closest(".icp-opt"); if (b) choose(b.dataset.name);
+  });
+  list.addEventListener("mouseover", function (e) {
+    var b = e.target.closest(".icp-opt"); if (b) setStatus(b.dataset.name);
+  });
+  list.addEventListener("mouseleave", function () { setStatus(active >= 0 ? results[active] : null); });
+
+  trigger.addEventListener("click", function () { panel.hidden ? open() : close(false); });
+  trigger.addEventListener("keydown", function (e) {
+    if ((e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") && panel.hidden) { e.preventDefault(); open(); }
+  });
+  clearBtn.addEventListener("click", function () { choose(""); });
+  document.addEventListener("mousedown", function (e) { if (!root.contains(e.target)) close(false); });
+
+  paintValue();
+})();
+</script>
+</div>
+{% endwith %}

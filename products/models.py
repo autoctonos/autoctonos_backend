@@ -1,8 +1,13 @@
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.utils.text import slugify
 from decimal import Decimal
 from users.models import Usuario
 from locations.models import Municipio
+
+from .iconos import SLUG_RE
+from .imagenes import GUIA as GUIA_FOTOS, normalizar_imagen_producto, validar_imagen_producto
 
 estado_choices = [
     ('aprobado', 'Aprobado'),
@@ -24,6 +29,31 @@ presentacion_choices = [
 ]
 
 
+def validar_slug_categoria(valor):
+    if valor and not SLUG_RE.match(valor):
+        raise ValidationError(
+            "Usa sólo minúsculas, números y guiones (ej. lacteos-quesos).",
+            code="slug_invalido",
+        )
+
+
+def slug_unico_categoria(nombre, excluir_pk=None):
+    """`Lácteos / Quesos` → `lacteos-quesos`; si ya existe, `lacteos-quesos-2`, …"""
+    base = slugify(nombre)[:100] or "categoria"
+    candidato, n = base, 2
+    otras = Categoria.objects.exclude(pk=excluir_pk) if excluir_pk else Categoria.objects.all()
+    while otras.filter(slug=candidato).exists():
+        candidato, n = f"{base}-{n}", n + 1
+    return candidato
+
+
+def validar_icono_categoria(valor):
+    """Slug de un ícono Lucide (`milk`, `cake-slice`). Que exista lo comprueba el admin al
+    descargar el SVG (`products/iconos.py`)."""
+    if valor and not SLUG_RE.match(valor):
+        raise ValidationError("Nombre de ícono inválido: %(valor)s", params={"valor": valor})
+
+
 class Categoria(models.Model):
     id_categoria = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100, null=False, unique=True)
@@ -32,8 +62,36 @@ class Categoria(models.Model):
         verbose_name="Requiere cadena de frío",
         help_text="Default para los productos de la categoría. Cada producto puede sobreescribirlo.",
     )
+    icono = models.CharField(
+        max_length=40,
+        blank=True,
+        default="",
+        validators=[validar_icono_categoria],
+        verbose_name="Ícono",
+        help_text="Se muestra en la tienda junto al nombre. Vacío = ícono automático.",
+    )
+    # SVG saneado de `icono`, congelado al guardar desde el admin: la tienda lo pinta tal
+    # cual, sin pedirle nada a Iconify en runtime.
+    icono_svg = models.TextField(blank=True, default="", editable=False)
+    # Dirección pública en la tienda: /categories/<slug>. Se genera del nombre la primera
+    # vez y después NO cambia sola al renombrar (los enlaces compartidos seguirían rotos);
+    # si se quiere otra, se edita a mano en el admin.
+    slug = models.SlugField(
+        max_length=110,
+        unique=True,
+        blank=True,
+        validators=[validar_slug_categoria],
+        verbose_name="Dirección (URL)",
+        help_text="Minúsculas y guiones, ej. lacteos-quesos → /categories/lacteos-quesos. "
+                  "Vacío = se genera del nombre.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slug_unico_categoria(self.nombre, excluir_pk=self.pk)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.nombre
@@ -158,10 +216,21 @@ class Producto(models.Model):
 class ImagenProducto(models.Model):
     id_imagen = models.AutoField(primary_key=True)
     id_producto = models.ForeignKey(Producto, on_delete=models.CASCADE, null=False)
-    url_imagen = models.ImageField(upload_to='productos_imagenes/', null=True, blank=True, max_length=500)
+    url_imagen = models.ImageField(
+        upload_to='productos_imagenes/', null=True, blank=True, max_length=500,
+        validators=[validar_imagen_producto], verbose_name="Foto", help_text=GUIA_FOTOS,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(default=None, null=True)
+
+    def save(self, *args, **kwargs):
+        # Cualquier archivo nuevo (admin, dashboard o API) se guarda ya normalizado:
+        # cuadrado, fondo blanco, encuadre uniforme. Lo ya guardado no se toca.
+        archivo = self.url_imagen
+        if archivo and not archivo._committed:
+            self.url_imagen = normalizar_imagen_producto(archivo)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Imagen {self.id_imagen} - {self.id_producto.nombre}"

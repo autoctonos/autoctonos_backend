@@ -3,6 +3,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="{% static 'brand/favicon.ico' %}" sizes="48x48">
+    <link rel="icon" href="{% static 'brand/favicon.svg' %}" type="image/svg+xml">
     <title>Editar Producto</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
@@ -114,6 +116,10 @@
                 {% endif %}
                 {{ form.image.label_tag }}
                 {{ form.image }}
+                <small style="display:block; margin-top:4px; color:#555;">{{ form.image.help_text }}</small>
+                {% if form.image.errors %}
+                    <small style="display:block; margin-top:4px; color:#b91c1c;">{{ form.image.errors.0 }}</small>
+                {% endif %}
             </div>
             <button type="submit">Guardar</button>
         </form>

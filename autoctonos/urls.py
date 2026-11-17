@@ -28,6 +28,10 @@ schema_view = get_schema_view(
 
 router = routers.DefaultRouter()
 
+admin.site.site_header = "Autóctonos · Administración"
+admin.site.site_title = "Autóctonos admin"
+admin.site.index_title = "Panel de administración"
+
 urlpatterns = [
     path('api/', include(router.urls)),
     path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

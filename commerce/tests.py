@@ -9,6 +9,7 @@ from shipping.services.repository import construir_entrada
 from shipping.tests import DatosEnvioMixin
 
 from .models import DetallePedido, Envio, Pago, Pedido
+from .serializers import CompradorSerializer, digito_verificacion_nit
 from .services.order_creation import crear_pedido_pendiente
 from .services.payu_confirmation import procesar_confirmacion, verificar_firma
 
@@ -237,3 +238,53 @@ class ConfirmacionPayUAPITests(DatosEnvioMixin, TestCase):
         self.assertEqual(respuesta.status_code, 200)
         self.pago.refresh_from_db()
         self.assertEqual(self.pago.estado, 'aprobado')
+
+
+class CompradorSerializerTests(TestCase):
+    """Espejo de `astro_frontend/src/lib/validation/checkout.ts`."""
+
+    def validar(self, **cambios):
+        s = CompradorSerializer(data={**COMPRADOR, **cambios})
+        return s.is_valid(), s.validated_data if s.is_valid() else s.errors
+
+    def test_comprador_valido_se_normaliza(self):
+        ok, datos = self.validar(
+            nombre='  Ana   Pérez ', email='Ana@Example.com',
+            telefono='+57 300 999 8877', documento='1.012.345.678',
+        )
+        self.assertTrue(ok)
+        self.assertEqual(datos['nombre'], 'Ana Pérez')
+        self.assertEqual(datos['email'], 'ana@example.com')
+        self.assertEqual(datos['telefono'], '3009998877')
+        self.assertEqual(datos['documento'], '1012345678')
+
+    def test_celular_invalido(self):
+        for tel in ('0000000', '3401234567', '3000000000', '300123', '6012345678'):
+            with self.subTest(tel=tel):
+                ok, errores = self.validar(telefono=tel)
+                self.assertFalse(ok)
+                self.assertIn('telefono', errores)
+
+    def test_nombre_con_numeros(self):
+        ok, errores = self.validar(nombre='Fabian Prueba1')
+        self.assertFalse(ok)
+        self.assertIn('nombre', errores)
+
+    def test_documento_segun_tipo(self):
+        invalidos = [
+            ('CC', '0123456'), ('CC', '11111111'), ('CC', '1234'), ('CE', '12345678901'),
+            ('NIT', '900123456-0'), ('PP', 'ABCDEF'), ('Passport', 'AB123456'),
+        ]
+        for tipo, doc in invalidos:
+            with self.subTest(tipo=tipo, doc=doc):
+                ok, _ = self.validar(tipo_documento=tipo, documento=doc)
+                self.assertFalse(ok)
+        dv = digito_verificacion_nit('900123456')
+        for tipo, doc in [('NIT', f'900123456-{dv}'), ('NIT', '900123456'), ('PP', 'ab123456')]:
+            with self.subTest(tipo=tipo, doc=doc):
+                ok, _ = self.validar(tipo_documento=tipo, documento=doc)
+                self.assertTrue(ok)
+
+    def test_digito_verificacion_nit_conocido(self):
+        # NIT de la DIAN: 800197268-4.
+        self.assertEqual(digito_verificacion_nit('800197268'), 4)
