@@ -87,7 +87,7 @@ class CalculoFleteTests(SimpleTestCase):
         self.assertEqual(grupo.subtotal, Decimal('150000.00'))
         self.assertEqual(grupo.flete, Decimal('25100.00'))
         self.assertEqual(grupo.sobreflete, Decimal('3000.00'))
-        self.assertEqual(grupo.empaque, Decimal('0.00'))
+        self.assertEqual(grupo.valor_envio, Decimal('28100.00'))
         self.assertEqual(grupo.total_grupo, Decimal('178100.00'))
         self.assertEqual(resultado.totales.envio, Decimal('28100.00'))
         self.assertEqual(resultado.totales.total, Decimal('178100.00'))
@@ -164,6 +164,11 @@ class CalculoFleteTests(SimpleTestCase):
         self.assertEqual(len(resultado.grupos), 2)
         self.assertEqual(resultado.totales.sobreflete, Decimal('1600.00'))
         self.assertEqual(resultado.totales.flete, Decimal('23800.00'))
+        for grupo in resultado.grupos:
+            self.assertEqual(grupo.valor_envio, grupo.flete + grupo.sobreflete)
+        # Sin promoción, el envío total es la suma de los «Valor envío» que ve el comprador.
+        self.assertEqual(resultado.totales.envio,
+                         sum((g.valor_envio for g in resultado.grupos), Decimal('0')))
 
     def test_un_productor_varios_productos_es_un_solo_flete(self):
         """Todo lo del mismo productor viaja junto: peso y subtotal se suman."""
@@ -238,9 +243,7 @@ class CalculoFleteTests(SimpleTestCase):
         sin_frio = cotizar(entrada([item(cantidad=10, requiere_frio=False)]))
         grupo = frio.grupos[0]
         self.assertEqual(grupo.neveras, 2)
-        self.assertEqual(grupo.empaque, Decimal('0.00'))
         self.assertEqual(grupo.total_grupo, grupo.subtotal + grupo.flete + grupo.sobreflete)
-        self.assertEqual(frio.totales.empaque, Decimal('0.00'))
         self.assertEqual(frio.totales.envio, frio.totales.flete + frio.totales.sobreflete)
         self.assertEqual(frio.totales.total, sin_frio.totales.total)
 
@@ -310,12 +313,12 @@ class CalculoFleteTests(SimpleTestCase):
         resultado = cotizar(entrada([item(cantidad=5, requiere_frio=True)]))
         monetarios = [
             resultado.totales.subtotal_productos, resultado.totales.flete,
-            resultado.totales.sobreflete, resultado.totales.empaque,
+            resultado.totales.sobreflete,
             resultado.totales.descuento_envio, resultado.totales.envio,
             resultado.totales.total, resultado.promocion.descuento,
         ]
         grupo = resultado.grupos[0]
-        monetarios += [grupo.subtotal, grupo.flete, grupo.sobreflete, grupo.empaque,
+        monetarios += [grupo.subtotal, grupo.flete, grupo.sobreflete, grupo.valor_envio,
                        grupo.total_grupo, grupo.valor_kilo_inicial, grupo.valor_kilo_adicional,
                        grupo.peso_bruto_kg, grupo.peso_frio_kg]
         monetarios += [linea.precio_unitario for linea in grupo.items]
@@ -424,6 +427,7 @@ class CotizacionAPITests(DatosEnvioMixin, TestCase):
         self.assertEqual(cuerpo['grupos'][0]['trayecto_aplicado'], 'zonal')
         self.assertEqual(cuerpo['grupos'][0]['peso_bruto_kg'], '4.000')
         self.assertEqual(cuerpo['grupos'][0]['peso_facturable_kg'], 4)
+        self.assertEqual(cuerpo['grupos'][0]['valor_envio'], '28100.00')
 
     def test_ignora_precio_enviado_por_el_cliente(self):
         """Regresión del agujero de PayU: el precio del cliente no toca el total."""
@@ -662,7 +666,11 @@ class CotizacionAPITests(DatosEnvioMixin, TestCase):
             'id_municipio_destino': self.tunja.id_municipio,
             'items': [{'id_producto': self.queso.id_producto, 'cantidad': 1}],
         })
-        self.assertEqual(respuesta.json()['grupos'][0]['neveras'], 1)
+        cuerpo = respuesta.json()
+        self.assertEqual(cuerpo['grupos'][0]['neveras'], 1)
+        # El empaque va incluido en el flete: el contrato ya no expone un cobro aparte.
+        self.assertNotIn('empaque', cuerpo['grupos'][0])
+        self.assertNotIn('empaque', cuerpo['totales'])
 
 
 class DestinosAPITests(DatosEnvioMixin, TestCase):

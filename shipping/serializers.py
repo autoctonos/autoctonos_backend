@@ -85,9 +85,9 @@ class GrupoEnvioSerializer(serializers.Serializer):
     valor_kilo_adicional = serializers.DecimalField(max_digits=12, decimal_places=2)
     flete = serializers.DecimalField(max_digits=14, decimal_places=2)
     sobreflete = serializers.DecimalField(max_digits=14, decimal_places=2)
+    valor_envio = serializers.DecimalField(max_digits=14, decimal_places=2)
     peso_frio_kg = serializers.DecimalField(max_digits=10, decimal_places=3)
     neveras = serializers.IntegerField()
-    empaque = serializers.DecimalField(max_digits=14, decimal_places=2)
     total_grupo = serializers.DecimalField(max_digits=14, decimal_places=2)
 
 
@@ -101,7 +101,6 @@ class TotalesSerializer(serializers.Serializer):
     subtotal_productos = serializers.DecimalField(max_digits=14, decimal_places=2)
     flete = serializers.DecimalField(max_digits=14, decimal_places=2)
     sobreflete = serializers.DecimalField(max_digits=14, decimal_places=2)
-    empaque = serializers.DecimalField(max_digits=14, decimal_places=2)
     descuento_envio = serializers.DecimalField(max_digits=14, decimal_places=2)
     envio = serializers.DecimalField(max_digits=14, decimal_places=2)
     total = serializers.DecimalField(max_digits=14, decimal_places=2)

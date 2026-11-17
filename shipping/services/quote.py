@@ -4,6 +4,11 @@ Réplica de la hoja «Módulo de Compra» del tarifario: total = subtotal + flet
 (F17). El empaque refrigerado no se cobra: va incluido en el flete que cobra el productor.
 Se sigue contando cuántas neveras necesita cada guía porque es información de despacho.
 
+Al comprador el sobreflete NO se le muestra como línea aparte: se presenta sumado al flete
+como `valor_envio` de cada guía (también se le paga a la transportadora, y como «garantía»
+separada confundía en pruebas con usuarios). El desglose flete/sobreflete se conserva en el
+contrato y en `Pedido`/`Envio` para conciliación.
+
 Módulo puro: sin ORM, sin DRF, sin dependencias de Django. Todo el dinero es Decimal.
 """
 
@@ -142,11 +147,10 @@ class GrupoEnvio:
     valor_kilo_adicional: Decimal
     flete: Decimal
     sobreflete: Decimal
+    # flete + sobreflete: lo único que ve el comprador como «Valor envío» de la guía.
+    valor_envio: Decimal
     peso_frio_kg: Decimal
     neveras: int
-    # Siempre 0: el empaque va incluido en el flete. Se conserva por compatibilidad del
-    # contrato de la API mientras haya clientes que lo lean.
-    empaque: Decimal
     total_grupo: Decimal
 
 
@@ -162,7 +166,6 @@ class TotalesCotizacion:
     subtotal_productos: Decimal
     flete: Decimal
     sobreflete: Decimal
-    empaque: Decimal  # Siempre 0, ver GrupoEnvio.empaque.
     descuento_envio: Decimal
     envio: Decimal
     total: Decimal
@@ -262,9 +265,9 @@ def _cotizar_grupo(items: tuple[ItemCotizacion, ...], destino: Destino,
         valor_kilo_adicional=_money(tarifa.valor_kilo_adicional),
         flete=flete,
         sobreflete=sobreflete,
+        valor_envio=_money(flete + sobreflete),
         peso_frio_kg=_kilos(peso_frio),
         neveras=neveras,
-        empaque=_money(CERO),
         total_grupo=_money(subtotal + flete + sobreflete),
     )
 
@@ -331,7 +334,6 @@ def cotizar(entrada: EntradaCotizacion) -> ResultadoCotizacion:
             subtotal_productos=subtotal_productos,
             flete=flete,
             sobreflete=sobreflete,
-            empaque=_money(CERO),
             descuento_envio=descuento,
             envio=envio,
             total=_money(subtotal_productos + envio),
