@@ -150,8 +150,8 @@ class ConfiguracionEmpaque(models.Model):
         validators=[MinValueValidator(Decimal('0'))],
         verbose_name="Costo por nevera",
         help_text=(
-            "OBSOLETO: el empaque va incluido en el flete y no se cobra. "
-            "El cálculo ya no lo lee; la columna se elimina en el próximo release."
+            "RESERVADO, sin uso: el empaque va incluido en el flete y no se cobra. "
+            "Se conserva por si se retoma el cobro de la nevera."
         ),
     )
     activo = models.BooleanField(default=True, verbose_name="Activo")
@@ -200,8 +200,8 @@ class PromocionEnvio(models.Model):
     cubre_empaque = models.BooleanField(
         default=False, verbose_name="Cubre el empaque refrigerado",
         help_text=(
-            "OBSOLETO: el empaque ya no se cobra. "
-            "El cálculo ya no lo lee; la columna se elimina en el próximo release."
+            "RESERVADO, sin uso: el empaque no se cobra. "
+            "Se conserva por si se retoma el cobro de la nevera."
         ),
     )
     activo = models.BooleanField(default=True, verbose_name="Activo")
