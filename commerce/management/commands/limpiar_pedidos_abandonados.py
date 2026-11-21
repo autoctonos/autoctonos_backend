@@ -33,7 +33,12 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         limite = timezone.now() - timedelta(hours=options['horas'])
-        candidatos = Pedido.objects.filter(estado='pendiente', created_at__lt=limite)
+        # Un pedido pagado sigue en `pendiente` (logística) hasta que se despacha: nunca
+        # se cancela por viejo.
+        candidatos = (
+            Pedido.objects.filter(estado='pendiente', created_at__lt=limite)
+            .exclude(pago__estado='aprobado')
+        )
         total = candidatos.count()
 
         if not options['apply']:

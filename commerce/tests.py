@@ -19,8 +19,16 @@ COMPRADOR = {
 }
 
 
+def new_value(valor):
+    """`new_value` de la doc de PayU (implementación independiente de la del servicio):
+    un decimal si el segundo es cero (`150.00` → `150.0`), si no dos."""
+    texto = f"{Decimal(valor):.2f}"
+    return texto[:-1] if texto.endswith('0') else texto
+
+
 def firmar(api_key, merchant_id, referencia, valor, moneda, estado):
-    base = f"{api_key}~{merchant_id}~{referencia}~{valor}~{moneda}~{estado}"
+    """Firma como la calcula PayU para la URL de confirmación: sobre `new_value`."""
+    base = f"{api_key}~{merchant_id}~{referencia}~{new_value(valor)}~{moneda}~{estado}"
     return hashlib.md5(base.encode('utf-8')).hexdigest()
 
 
@@ -149,7 +157,7 @@ class ConfirmacionPayUTests(DatosEnvioMixin, TestCase):
         payload = {
             'merchant_id': self.merchant_id,
             'reference_sale': self.pago.referencia_payu,
-            'TX_VALUE': valor,
+            'value': valor,
             'currency': 'COP',
             'state_pol': estado,
             'transaction_id': 'tx-1',
@@ -199,11 +207,74 @@ class ConfirmacionPayUTests(DatosEnvioMixin, TestCase):
         self.assertEqual(self.pago.estado, 'rechazado')
         self.assertEqual(self.pedido.estado, 'cancelado')
 
+    def test_firma_usa_new_value_de_un_decimal(self):
+        # Caso de la doc de PayU: `value` 150.00 se firma como 150.0. Con el string tal
+        # cual ("150.00") la firma no coincide y ningún pago real se aprobaría.
+        payload = self._payload(estado='4')
+        self.assertTrue(payload['value'].endswith('.00'))
+        self.assertTrue(verificar_firma(payload))
+        base = f"{self.api_key}~{self.merchant_id}~{payload['reference_sale']}~{payload['value']}~COP~4"
+        payload['sign'] = hashlib.md5(base.encode('utf-8')).hexdigest()
+        self.assertFalse(verificar_firma(payload))
+
+    def test_valor_para_firma(self):
+        from .services.payu_confirmation import valor_para_firma
+        for valor, esperado in [('150.00', '150.0'), ('150.25', '150.25'), ('150.50', '150.5'),
+                                ('150', '150.0'), ('150.5', '150.5'), ('18950.00', '18950.0'),
+                                ('150.20', '150.2'), ('150.05', '150.05')]:
+            self.assertEqual(valor_para_firma(valor), esperado, valor)
+
+    def test_webhook_sin_value_no_valida(self):
+        # El webhook trae `value`; `TX_VALUE` es de la URL de respuesta y no sirve acá.
+        payload = self._payload(estado='4')
+        payload['TX_VALUE'] = payload.pop('value')
+        self.assertFalse(verificar_firma(payload))
+
+    def test_sin_api_key_configurada_nunca_valida(self):
+        from django.test import override_settings
+        payload = self._payload(estado='4')
+        with override_settings(PAYU_API_KEY=None):
+            self.assertFalse(verificar_firma(payload))
+
+    def test_reintento_aprobado_tras_rechazo_reactiva_pedido(self):
+        rechazo = self._payload(estado='6')
+        procesar_confirmacion(rechazo, verificar_firma(rechazo))
+        self.pedido.refresh_from_db()
+        self.assertEqual(self.pedido.estado, 'cancelado')
+
+        aprobado = self._payload(estado='4')
+        aprobado['transaction_id'] = 'tx-2'
+        procesar_confirmacion(aprobado, verificar_firma(aprobado))
+        self.pago.refresh_from_db()
+        self.pedido.refresh_from_db()
+        self.assertEqual(self.pago.estado, 'aprobado')
+        self.assertEqual(self.pago.transaction_id, 'tx-2')
+        self.assertEqual(self.pedido.estado, 'pendiente')
+
+    def test_aprobado_es_final(self):
+        aprobado = self._payload(estado='4')
+        procesar_confirmacion(aprobado, verificar_firma(aprobado))
+        # Rechazo de un intento anterior que llega tarde: PayU dice que se ignora.
+        tardio = self._payload(estado='6')
+        procesar_confirmacion(tardio, verificar_firma(tardio))
+        self.pago.refresh_from_db()
+        self.pedido.refresh_from_db()
+        self.assertEqual(self.pago.estado, 'aprobado')
+        self.assertEqual(self.pedido.estado, 'pendiente')
+
+    def test_aprobado_con_monto_distinto_no_se_aplica(self):
+        payload = self._payload(estado='4', valor='1000.00')
+        self.assertTrue(verificar_firma(payload))
+        procesar_confirmacion(payload, True)
+        self.pago.refresh_from_db()
+        self.assertEqual(self.pago.estado, 'pendiente')
+        self.assertEqual(self.pago.raw_response['value'], '1000.00')
+
     def test_referencia_inexistente_no_falla(self):
         payload = self._payload(estado='4')
         payload['reference_sale'] = 'PEDIDO-999999'
         payload['sign'] = firmar(self.api_key, self.merchant_id, payload['reference_sale'],
-                                 payload['TX_VALUE'], 'COP', '4')
+                                 payload['value'], 'COP', '4')
         firma_valida = verificar_firma(payload)
         resultado = procesar_confirmacion(payload, firma_valida)
         self.assertIsNone(resultado)
@@ -229,7 +300,7 @@ class ConfirmacionPayUAPITests(DatosEnvioMixin, TestCase):
         payload = {
             'merchant_id': '999888',
             'reference_sale': self.pago.referencia_payu,
-            'TX_VALUE': valor,
+            'value': valor,
             'currency': 'COP',
             'state_pol': '4',
             'sign': firmar('test-api-key', '999888', self.pago.referencia_payu, valor, 'COP', '4'),
@@ -238,6 +309,34 @@ class ConfirmacionPayUAPITests(DatosEnvioMixin, TestCase):
         self.assertEqual(respuesta.status_code, 200)
         self.pago.refresh_from_db()
         self.assertEqual(self.pago.estado, 'aprobado')
+
+
+class LimpiarPedidosAbandonadosTests(DatosEnvioMixin, TestCase):
+
+    def setUp(self):
+        self.crear_datos()
+
+    def _pedido_viejo(self, estado_pago):
+        from datetime import timedelta
+        from django.utils import timezone
+        pedido, pago = crear_pedido_pendiente({
+            'comprador': COMPRADOR,
+            'id_municipio_destino': self.tunja.id_municipio,
+            'items': [{'id_producto': self.queso.id_producto, 'cantidad': 1}],
+        })
+        Pago.objects.filter(pk=pago.pk).update(estado=estado_pago)
+        Pedido.objects.filter(pk=pedido.pk).update(created_at=timezone.now() - timedelta(hours=48))
+        return pedido
+
+    def test_cancela_abandonados_pero_nunca_pagados(self):
+        from django.core.management import call_command
+        abandonado = self._pedido_viejo('pendiente')
+        pagado = self._pedido_viejo('aprobado')
+        call_command('limpiar_pedidos_abandonados', '--apply', stdout=open('/dev/null', 'w'))
+        abandonado.refresh_from_db()
+        pagado.refresh_from_db()
+        self.assertEqual(abandonado.estado, 'cancelado')
+        self.assertEqual(pagado.estado, 'pendiente')
 
 
 class CompradorSerializerTests(TestCase):

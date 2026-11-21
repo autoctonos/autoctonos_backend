@@ -38,6 +38,10 @@ MERCHANT_ID = '508029'
 
 
 def firma_payu(referencia, valor, estado):
+    """Firma de la URL de confirmación como la calcula PayU: sobre `new_value`
+    (`18950.00` → `18950.0`)."""
+    texto = f"{Decimal(valor):.2f}"
+    valor = texto[:-1] if texto.endswith('0') else texto
     base = f"{API_KEY}~{MERCHANT_ID}~{referencia}~{valor}~COP~{estado}"
     return hashlib.md5(base.encode('utf-8')).hexdigest()
 
@@ -108,7 +112,7 @@ class PedidosConTarifarioRealTests(TestCase):
         self.assertEqual(valor, cotizacion['totales']['total'])
         confirmacion = self.client.post(reverse('pagos-confirmar'), {
             'merchant_id': MERCHANT_ID, 'reference_sale': pago.referencia_payu,
-            'TX_VALUE': valor, 'currency': 'COP', 'state_pol': '4',
+            'value': valor, 'currency': 'COP', 'state_pol': '4',
             'sign': firma_payu(pago.referencia_payu, valor, '4'),
         }, content_type='application/json')
         self.assertEqual(confirmacion.status_code, 200)
