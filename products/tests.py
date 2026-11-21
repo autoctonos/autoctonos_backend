@@ -69,6 +69,8 @@ _STORAGES_SIN_MANIFEST = {
 
 @override_settings(STORAGES=_STORAGES_SIN_MANIFEST)
 class ProductDashboardTests(TestCase):
+    """`/dashboard/`: la puerta de staff al panel de productos."""
+
     def setUp(self):
         User = get_user_model()
         self.admin = User.objects.create_user(
@@ -101,26 +103,25 @@ class ProductDashboardTests(TestCase):
         self.client.login(username='admin', password='pass')
         response = self.client.get(reverse('product-dashboard'))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Dashboard de Productos')
+        self.assertContains(response, 'Agregar producto')
+        self.assertContains(response, 'Administración')
 
-    def _post_producto(self, image):
-        return self.client.post(
-            reverse('product-dashboard'),
-            {
-                'id_categoria': self.categoria.id_categoria,
-                'nombre': 'Prod',
-                'descripcion': 'Desc',
-                'precio': '10.00',
-                'stock': 5,
-                'presentacion': 'Un',
-                'peso_kg': '0.800',
-                'id_productor': self.productor.id_productor,
-                'fabricante': 'Fab',
-                'estado': 'aprobado',
-                'image': image,
-            },
-            follow=True,
-        )
+    def _post_producto(self, *fotos, **extra):
+        datos = {
+            'id_categoria': self.categoria.id_categoria,
+            'nombre': 'Prod',
+            'descripcion': 'Desc',
+            'precio': '10.000',
+            'stock': 5,
+            'presentacion': 'Un',
+            'peso_kg': '0.800',
+            'id_productor': self.productor.id_productor,
+            'fabricante': 'Fab',
+            'estado': 'aprobado',
+            'fotos': list(fotos),
+            **extra,
+        }
+        return self.client.post(reverse('product-dashboard'), datos, follow=True)
 
     def test_admin_can_add_product_with_image(self):
         self.client.login(username='admin', password='pass')
@@ -129,7 +130,11 @@ class ProductDashboardTests(TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(Producto.objects.count(), 1)
             self.assertEqual(ImagenProducto.objects.count(), 1)
-            self.assertEqual(Producto.objects.get().peso_kg, Decimal('0.800'))
+            producto = Producto.objects.get()
+            self.assertEqual(producto.peso_kg, Decimal('0.800'))
+            # El punto de miles no se lee como decimal.
+            self.assertEqual(producto.precio, Decimal('10000'))
+            self.assertEqual(producto.estado, 'aprobado')
             # Se guarda ya normalizada: JPEG cuadrado.
             guardada = ImagenProducto.objects.get().url_imagen
             self.assertTrue(guardada.name.endswith('.jpg'))
@@ -142,6 +147,7 @@ class ProductDashboardTests(TestCase):
             response = self._post_producto(_foto('mini.jpg', (500, 340)))
         self.assertEqual(Producto.objects.count(), 0)
         self.assertContains(response, 'lado más largo debe tener al menos 800 px')
+        self.assertContains(response, '«mini.jpg»')
 
     def test_admin_can_update_product(self):
         self.client.login(username='admin', password='pass')
@@ -159,7 +165,7 @@ class ProductDashboardTests(TestCase):
                 'id_categoria': self.categoria.id_categoria,
                 'nombre': 'New',
                 'descripcion': 'New Desc',
-                'precio': '15.00',
+                'precio': '15000',
                 'stock': 10,
                 'presentacion': 'Un',
                 'peso_kg': '1.250',
@@ -173,6 +179,192 @@ class ProductDashboardTests(TestCase):
         producto.refresh_from_db()
         self.assertEqual(producto.nombre, 'New')
         self.assertEqual(producto.peso_kg, Decimal('1.250'))
+
+    def test_filtro_por_productor(self):
+        otro = Productor.objects.create(nombre='Otro', descripcion='x', telefono='3000000000')
+        for nombre, productor in (('Del roble', self.productor), ('Del otro', otro)):
+            Producto.objects.create(id_categoria=self.categoria, nombre=nombre, descripcion='x',
+                                    precio=1000, stock=1, id_productor=productor)
+        self.client.login(username='admin', password='pass')
+        response = self.client.get(reverse('product-dashboard'), {'productor': otro.pk})
+        self.assertContains(response, 'Del otro')
+        self.assertNotContains(response, 'Del roble')
+
+
+@override_settings(STORAGES=_STORAGES_SIN_MANIFEST)
+class FormularioProductorTests(TestCase):
+    """`/panel/`: formulario abierto, sin cuenta. Solo crea, y todo queda en revisión."""
+
+    def setUp(self):
+        from django.core.cache import cache
+        cache.clear()
+        self.categoria = Categoria.objects.create(nombre='Lácteos')
+        dep = Departamento.objects.create(nombre='Boyacá')
+        self.municipio = Municipio.objects.create(id_departamento=dep, nombre='Paipa')
+        self.roble = Productor.objects.create(
+            nombre='Lácteos El Roble', descripcion='Quesos', telefono='3001112233',
+            id_municipio=self.municipio,
+        )
+        self.otro = Productor.objects.create(
+            nombre='Café La Esperanza', descripcion='Café', telefono='3005556677',
+            id_municipio=self.municipio,
+        )
+        self.url = reverse('panel-productor')
+
+    def _producto(self, productor, nombre, **extra):
+        return Producto.objects.create(
+            id_categoria=self.categoria, nombre=nombre, descripcion='x', precio=1000,
+            stock=1, id_productor=productor, **extra
+        )
+
+    def _datos(self, *fotos, **extra):
+        return {
+            'id_productor': self.roble.pk,
+            'id_categoria': self.categoria.id_categoria,
+            'nombre': 'Queso campesino',
+            'descripcion': 'Doble crema, hecho a mano.',
+            'precio': '$ 18.000',
+            'stock': 20,
+            'presentacion': 'Un',
+            'peso_kg': '0.6',
+            'fotos': list(fotos),
+            **extra,
+        }
+
+    def _dos_fotos(self):
+        return _foto('a.jpg', (1200, 1200), producto=(200, 30, 30)), _foto('b.jpg', (1200, 1200), producto=(30, 30, 200))
+
+    def test_abre_sin_login_y_sin_lista_hasta_elegir(self):
+        self._producto(self.roble, 'Producto ya enviado XYZ')
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Buscar productor')
+        self.assertContains(response, 'Lácteos El Roble')  # en el selector
+        self.assertNotContains(response, 'Producto ya enviado XYZ')
+        self.assertIn('noindex', response['X-Robots-Tag'])
+
+    def test_lista_del_productor_es_solo_consulta(self):
+        self._producto(self.roble, 'Queso Paipa')
+        self._producto(self.otro, 'Café de Pitalito')
+        response = self.client.get(reverse('panel-productos'), {'productor': self.roble.pk})
+        self.assertContains(response, 'Queso Paipa')
+        self.assertNotContains(response, 'Café de Pitalito')
+        self.assertNotContains(response, '/dashboard/')  # sin enlaces de edición
+        self.assertContains(response, 'productos.autoctonos25@gmail.com')  # a dónde pedir cambios
+
+    def test_crea_en_revision_con_el_productor_elegido_y_fotos_en_orden(self):
+        with _media_temporal():
+            response = self.client.post(self.url, self._datos(
+                *self._dos_fotos(),
+                orden_fotos='n1,n0',
+                # Lo que el formulario abierto no deja elegir se ignora aunque llegue.
+                estado='aprobado',
+            ))
+            self.assertEqual(response.status_code, 302)
+            self.assertIn(f'productor={self.roble.pk}', response.url)
+            producto = Producto.objects.get()
+            self.assertEqual(producto.estado, 'revisión')
+            self.assertEqual(producto.id_productor, self.roble)
+            self.assertEqual(producto.precio, Decimal('18000'))
+            fotos = list(producto.imagenproducto_set.all())
+            self.assertEqual([f.orden for f in fotos], [0, 1])
+            with fotos[0].url_imagen.open('rb') as f:
+                r, g, b = Image.open(f).convert('RGB').getpixel((800, 800))
+            self.assertGreater(b, r)  # la segunda subida («b», azul) quedó de portada
+
+    def test_aviso_flotante_al_crear_con_foto_y_nombre(self):
+        with _media_temporal():
+            response = self.client.post(self.url, self._datos(*self._dos_fotos()), follow=True)
+            portada = Producto.objects.get().imagenproducto_set.first()
+        self.assertContains(response, 'id="flotante"')
+        self.assertContains(response, '¡Listo! «Queso campesino» quedó en revisión.')
+        self.assertContains(response, portada.url_imagen.url)
+        # Se muestra una sola vez.
+        self.assertNotContains(self.client.get(self.url), 'id="flotante"')
+
+    def test_aviso_flotante_explica_el_error(self):
+        response = self.client.post(self.url, self._datos(id_productor='', peso_kg=''))
+        self.assertContains(response, 'No pudimos enviar el producto')
+        self.assertContains(response, '<strong>Productor:</strong>')
+        self.assertContains(response, 'Peso del paquete listo para enviar (kg):')
+
+    def test_exige_elegir_productor(self):
+        with _media_temporal():
+            response = self.client.post(self.url, self._datos(*self._dos_fotos(), id_productor=''))
+        self.assertEqual(Producto.objects.count(), 0)
+        self.assertContains(response, 'Elige el productor de la lista')
+
+    def test_productor_nuevo_se_registra_con_sus_datos(self):
+        with _media_temporal():
+            response = self.client.post(self.url, self._datos(
+                *self._dos_fotos(), id_productor='', no_estoy='on',
+                nuevo_nombre='Miel La Colmena', nuevo_telefono='+57 310 555 1234',
+                nuevo_municipio=self.municipio.pk,
+            ))
+        self.assertEqual(response.status_code, 302)
+        nuevo = Productor.objects.get(nombre='Miel La Colmena')
+        self.assertEqual(nuevo.telefono, '3105551234')
+        self.assertEqual(nuevo.id_municipio, self.municipio)
+        self.assertEqual(Producto.objects.get().id_productor, nuevo)
+
+    def test_productor_nuevo_valida_celular(self):
+        # Corto, largo (el caso que reportó el usuario), prefijo inexistente (36) y fijo.
+        for invalido in ('12345', '31939293845543', '3612345678', '6012345678'):
+            with self.subTest(invalido), _media_temporal():
+                response = self.client.post(self.url, self._datos(
+                    *self._dos_fotos(), id_productor='', no_estoy='on',
+                    nuevo_nombre='Miel La Colmena', nuevo_telefono=invalido, nuevo_municipio=self.municipio.pk,
+                ))
+                self.assertContains(response, 'El celular debe tener 10 dígitos')
+        self.assertFalse(Productor.objects.filter(nombre='Miel La Colmena').exists())
+        self.assertEqual(Producto.objects.count(), 0)
+
+    def test_trampa_para_bots(self):
+        with _media_temporal():
+            self.client.post(self.url, self._datos(*self._dos_fotos(), sitio_web='http://spam'))
+        self.assertEqual(Producto.objects.count(), 0)
+
+    def test_limite_de_envios_por_hora(self):
+        from . import panel
+        with self.settings():
+            for _ in range(panel.ENVIOS_POR_HORA):
+                self.client.post(self.url, {})
+            response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, 429)
+
+    def test_exige_minimo_de_fotos(self):
+        with _media_temporal():
+            response = self.client.post(self.url, self._datos(_foto('a.jpg', (1200, 1200))))
+        self.assertEqual(Producto.objects.count(), 0)
+        self.assertContains(response, 'Sube al menos 2 fotos')
+        self.assertContains(response, 'vuelve a elegir 1 foto')
+
+    def test_exige_peso(self):
+        with _media_temporal():
+            response = self.client.post(self.url, self._datos(*self._dos_fotos(), peso_kg=''))
+        self.assertEqual(Producto.objects.count(), 0)
+        self.assertContains(response, 'aria-invalid="true"')
+
+    def test_acepta_coma_decimal_y_limpia_cantidad_de_unidad(self):
+        with _media_temporal():
+            self.client.post(self.url, self._datos(
+                *self._dos_fotos(), peso_kg='0,6', presentacion='Un', cantidad_presentacion='500',
+            ))
+        producto = Producto.objects.get()
+        self.assertEqual(producto.peso_kg, Decimal('0.6'))
+        self.assertIsNone(producto.cantidad_presentacion)
+
+    def test_no_hay_rutas_de_edicion_publicas(self):
+        producto = self._producto(self.roble, 'Queso')
+        self.assertEqual(self.client.get(f'/panel/{producto.pk}/').status_code, 404)
+
+    def test_api_devuelve_fotos_en_orden(self):
+        with _media_temporal():
+            producto = self._producto(self.roble, 'Queso', estado='aprobado')
+            segunda = ImagenProducto.objects.create(id_producto=producto, url_imagen=_foto('a.jpg', (1200, 1200)), orden=1)
+            portada = ImagenProducto.objects.create(id_producto=producto, url_imagen=_foto('b.jpg', (1200, 1200)), orden=0)
+            ids = [i.pk for i in producto.imagenproducto_set.all()]
+        self.assertEqual(ids, [portada.pk, segunda.pk])
 
 
 class BackfillProductoresTests(TestCase):

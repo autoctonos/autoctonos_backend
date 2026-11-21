@@ -3,6 +3,7 @@ from rest_framework import routers, permissions
 from django.contrib import admin
 from users import views as users_views
 from products import views as products_views
+from products import panel as products_panel
 from commerce import views as commerce_views
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
@@ -41,8 +42,10 @@ urlpatterns = [
     path('api/productos/', include(product_url)),
     path('api/users/', include(user_url)),
     path('api/commerce/', include(commerce_url)),
-    path('dashboard/', products_views.product_dashboard, name='product-dashboard'),
-    path('dashboard/<int:pk>/edit/', products_views.product_update, name='product-update'),
+    path('dashboard/', products_panel.product_dashboard, name='product-dashboard'),
+    path('dashboard/<int:pk>/edit/', products_panel.product_update, name='product-update'),
+    path('panel/', products_panel.formulario_productor, name='panel-productor'),
+    path('panel/productos/', products_panel.productos_de_productor, name='panel-productos'),
     path('dashboard/export/', products_views.product_export, name='product-export'),
     path('api/productores/', include('producers.urls')),
     path('api/locations/', include('locations.urls')),

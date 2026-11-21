@@ -1,0 +1,71 @@
+{% load product_filters %}{% comment %}
+  Lista de productos. En el formulario abierto es solo consulta (sin enlaces de edición) y
+  se recarga por fetch al elegir productor; staff la ve con «Editar».
+{% endcomment %}
+{% if page is None %}
+  <div class="inventario__cabeza"><h2 id="inv-titulo">Productos del productor</h2></div>
+  <div class="vacio-inventario">
+    <strong>Elige el productor en el paso 1</strong>
+    y aquí verás sus productos y en qué estado están.
+  </div>
+{% else %}
+      <div class="inventario__cabeza">
+        <h2 id="inv-titulo">{% if productor %}Productos de {{ productor.nombre }}{% else %}Todos los productos{% endif %} <span class="contador">({{ total }})</span></h2>
+        {% if total %}
+          <ul class="conteos" aria-label="Productos por estado">
+            {% if resumen.aprobado %}<li class="estado estado--aprobado">{{ resumen.aprobado }} publicado{{ resumen.aprobado|pluralize }}</li>{% endif %}
+            {% if resumen.revisión %}<li class="estado estado--revisión">{{ resumen.revisión }} en revisión</li>{% endif %}
+            {% if resumen.rechazado %}<li class="estado estado--rechazado">{{ resumen.rechazado }} no aprobado{{ resumen.rechazado|pluralize }}</li>{% endif %}
+          </ul>
+        {% endif %}
+      </div>
+      {% if page.object_list %}
+        <ul class="productos">
+          {% for p in page.object_list %}
+            <li class="producto{% if producto and producto.pk == p.pk %} actual{% endif %}">
+              <div class="producto__foto">
+                {% if p.panel_portada and p.panel_portada.url_imagen %}
+                  <img src="{{ p.panel_portada.url_imagen.url }}" alt="" loading="lazy" decoding="async" width="320" height="240">
+                {% else %}
+                  <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width:32px;height:32px;stroke-width:1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+                {% endif %}
+              </div>
+              <div class="producto__cuerpo">
+                <span class="producto__nombre">
+                  {% if staff %}<a href="{% url 'product-update' p.pk %}#ficha">{{ p.nombre }}</a>{% else %}{{ p.nombre }}{% endif %}
+                </span>
+                <div class="producto__fila">
+                  <span class="producto__precio">$ {{ p.precio_con_descuento|format_precio }}</span>
+                  <span class="estado estado--{{ p.estado }}">{% if p.estado == "aprobado" %}Publicado{% elif p.estado == "rechazado" %}No aprobado{% else %}En revisión{% endif %}</span>
+                </div>
+                <span class="producto__meta">{{ p|presentacion_panel }} · {{ p.stock }} disponible{{ p.stock|pluralize }}{% if staff and not productor and p.id_productor %} · {{ p.id_productor.nombre }}{% endif %}</span>
+                {% if p.panel_faltantes %}
+                  <span class="producto__falta">
+                    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/></svg>
+                    Falta: {{ p.panel_faltantes|join:", " }}
+                  </span>
+                {% endif %}
+                {% if staff %}<span class="producto__editar" aria-hidden="true">Editar
+                  <svg class="ico" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="m9 18 6-6-6-6"/></svg>
+                </span>{% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+        {% if page.paginator.num_pages > 1 %}
+          <nav class="paginas" aria-label="Páginas de productos">
+            {% if page.has_previous %}<a class="boton boton--suave" href="{% if not staff %}{% url 'panel-productor' %}{% endif %}?page={{ page.previous_page_number }}{% if productor %}&productor={{ productor.pk }}{% endif %}#productos">Anteriores</a>{% endif %}
+            <span>Página {{ page.number }} de {{ page.paginator.num_pages }}</span>
+            {% if page.has_next %}<a class="boton boton--suave" href="{% if not staff %}{% url 'panel-productor' %}{% endif %}?page={{ page.next_page_number }}{% if productor %}&productor={{ productor.pk }}{% endif %}#productos">Siguientes</a>{% endif %}
+          </nav>
+        {% endif %}
+      {% else %}
+        <div class="vacio-inventario">
+          <strong>{% if staff %}No hay productos aquí.{% else %}Aún no hay productos de {{ productor.nombre }}.{% endif %}</strong>
+          {% if not staff %}El primero que envíes aparecerá aquí con su estado.{% endif %}
+        </div>
+      {% endif %}
+{% if not staff and page.object_list %}
+  <p class="nota-consulta">¿Hay que corregir un producto ya enviado? Escríbenos a <a href="mailto:{{ contacto_email }}">{{ contacto_email }}</a> con su nombre y el cambio.</p>
+{% endif %}
+{% endif %}

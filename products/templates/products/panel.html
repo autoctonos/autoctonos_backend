@@ -1,0 +1,1284 @@
+{% load static product_filters %}<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="same-origin">
+  <meta name="theme-color" content="#386641">
+  <link rel="icon" href="{% static 'brand/favicon.ico' %}" sizes="48x48">
+  <link rel="icon" href="{% static 'brand/favicon.svg' %}" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{% static 'brand/apple-touch-icon.png' %}">
+  <title>{% if producto %}Editar {{ producto.nombre }}{% else %}Agregar producto{% endif %} · {% if staff %}Panel de productos{% else %}Sube tu producto{% endif %} · Autóctonos</title>
+  <style>
+    :root {
+      --crema: #F2E8CF;
+      --crema-hondo: #E9DCBA;
+      --verde: #386641;
+      --verde-hover: #2E5536;
+      --verde-medio: #6A994E;
+      --verde-claro: #A7C957;
+      --verde-texto: #4F7A38;
+      --crema-tinta: #6B5A30;
+      --rojo: #BC4749;
+      --rojo-texto: #9A3335;
+      --tinta: #111111;
+      --tinta-2: #4A4A44;
+      --tinta-3: #66665D;
+      --linea: rgba(56, 102, 65, 0.14);
+      --linea-fuerte: rgba(17, 17, 17, 0.2);
+      --superficie: rgba(255, 255, 255, 0.82);
+      --campo: #FFFFFF;
+      --sombra: 0 1px 2px rgba(0, 0, 0, 0.04), 0 10px 32px -14px rgba(56, 102, 65, 0.22);
+      --sombra-alta: 0 2px 4px rgba(0, 0, 0, 0.05), 0 22px 48px -20px rgba(56, 102, 65, 0.35);
+      --radio: 20px;
+      --radio-campo: 12px;
+      --anillo: 0 0 0 3px rgba(106, 153, 78, 0.45);
+      --fuente: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --barra-alto: 0px;
+      color-scheme: light;
+      accent-color: var(--verde);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; scroll-padding-top: 88px; }
+    body {
+      margin: 0;
+      font-family: var(--fuente);
+      font-size: 16px;
+      line-height: 1.55;
+      color: var(--tinta);
+      background: var(--crema);
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: var(--barra-alto);
+    }
+    ::selection { background: rgba(167, 201, 87, 0.55); color: var(--tinta); }
+    :focus-visible { outline: none; box-shadow: var(--anillo); }
+    a { color: var(--verde); text-underline-offset: 3px; }
+    img { display: block; max-width: 100%; }
+    h1, h2, h3 { line-height: 1.2; text-wrap: balance; margin: 0; }
+    [hidden] { display: none !important; }
+    .solo-movil { display: none; }
+    @media (max-width: 1023px) { .solo-movil { display: inline; } .solo-escritorio { display: none; } }
+    .solo-lector { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    svg.ico { width: 20px; height: 20px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ---- Barra superior ---- */
+    .barra {
+      position: sticky; top: 0; z-index: 30;
+      background: rgba(242, 232, 207, 0.9);
+      backdrop-filter: saturate(1.4) blur(10px);
+      -webkit-backdrop-filter: saturate(1.4) blur(10px);
+      border-bottom: 1px solid var(--linea);
+    }
+    .barra__in {
+      max-width: 1240px; margin: 0 auto; padding: 12px 20px;
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    .marca { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--tinta); font-weight: 700; letter-spacing: -0.01em; }
+    .marca img { width: 36px; height: 36px; }
+    .barra__quien { margin-left: auto; display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .avatar {
+      width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+      background: var(--verde); color: #fff; font-weight: 700; flex-shrink: 0;
+    }
+    .barra__nombre { font-weight: 650; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .barra__lugar { font-size: 14px; color: var(--tinta-2); }
+    .barra__staff { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .barra__staff select { min-height: 40px; font-size: 15px; max-width: 16rem; }
+
+    /* ---- Estructura ---- */
+    main { max-width: 1240px; margin: 0 auto; padding: 28px 20px 64px; }
+    .encabezado { margin-bottom: 24px; max-width: 46rem; }
+    .encabezado h1 { font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.25rem); letter-spacing: -0.02em; }
+    .encabezado p { margin: 8px 0 0; color: var(--tinta-2); font-size: 16px; }
+    .volver { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; text-decoration: none; margin-bottom: 12px; }
+    .volver:hover { text-decoration: underline; }
+
+    .mesa { display: grid; gap: 28px; align-items: start; }
+    @media (min-width: 1024px) {
+      .mesa { grid-template-columns: minmax(0, 1fr) 360px; gap: 36px; }
+    }
+    @media (min-width: 1200px) {
+      .mesa { grid-template-columns: minmax(0, 1fr) 392px; }
+    }
+
+    /* ---- Avisos ---- */
+    .avisos { display: grid; gap: 10px; margin-bottom: 20px; }
+    .aviso {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 14px 16px; border-radius: 14px; font-weight: 500;
+      background: #fff; border: 1px solid var(--linea);
+    }
+    .aviso--success { background: #EEF5E2; border-color: rgba(106, 153, 78, 0.4); color: #24452B; }
+    .aviso--error { background: #FBECEC; border-color: rgba(188, 71, 73, 0.35); color: var(--rojo-texto); }
+    .aviso--info { background: #FFF1CF; border-color: rgba(122, 79, 0, 0.25); color: #7A4F00; }
+    .aviso svg { margin-top: 2px; }
+
+    /* ---- Secciones del formulario ---- */
+    .ficha { display: grid; gap: 20px; }
+    .seccion {
+      background: var(--superficie);
+      border: 1px solid var(--linea);
+      border-radius: var(--radio);
+      padding: 24px;
+      box-shadow: var(--sombra);
+      margin: 0; min-width: 0;
+    }
+    .seccion > legend { float: left; width: 100%; padding: 0; }
+    .seccion__titulo { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+    .seccion__paso {
+      flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
+      display: inline-grid; place-items: center; font-size: 15px; font-weight: 700;
+      background: var(--crema); color: var(--verde); border: 1px solid var(--linea);
+      transition: background .25s ease, color .25s ease;
+    }
+    .ficha { counter-reset: paso; }
+    .seccion[data-seccion] { counter-increment: paso; }
+    .seccion[data-seccion] .seccion__paso::before { content: counter(paso); }
+    .seccion.completa .seccion__paso { background: var(--verde); color: #fff; border-color: var(--verde); }
+    .seccion h2 { font-size: 1.25rem; letter-spacing: -0.01em; }
+    .seccion__intro { clear: both; margin: 4px 0 20px 42px; color: var(--tinta-2); }
+    .rejilla { display: grid; gap: 20px 18px; clear: both; align-items: start; }
+    @media (min-width: 640px) {
+      .rejilla--2 { grid-template-columns: 1fr 1fr; }
+      .rejilla--2.sin-cantidad > [data-campo="presentacion"] { grid-column: 1 / -1; }
+      /* Etiqueta, campo y ayuda comparten filas entre columnas: aunque una etiqueta o
+         una ayuda ocupe dos líneas, los campos de la misma fila quedan a la misma altura. */
+      @supports (grid-template-rows: subgrid) {
+        .rejilla--2 > .campo { grid-row: span 3; grid-template-rows: subgrid; row-gap: 6px; }
+        .rejilla--2 > .campo > label { align-self: end; }
+      }
+      .campo--ancho { grid-column: 1 / -1; }
+    }
+    @media (max-width: 639px) { .seccion { padding: 20px 16px; } .seccion__intro { margin-left: 0; } }
+
+    /* ---- Campos ---- */
+    .campo { display: grid; gap: 6px; min-width: 0; align-content: start; }
+    .campo > label { font-weight: 650; font-size: 15px; line-height: 1.3; min-height: 1.3em; }
+    .opcional { font-weight: 400; color: var(--tinta-3); }
+    .campo input:not([type=checkbox]):not([type=file]), .campo select, .campo textarea, .barra__staff select {
+      width: 100%; height: 48px; min-height: 48px; padding: 0 14px; line-height: 1.3;
+      font: inherit; font-size: 16px; color: var(--tinta);
+      background: var(--campo); border: 1.5px solid var(--linea-fuerte); border-radius: var(--radio-campo);
+      transition: border-color .15s ease, box-shadow .15s ease;
+      caret-color: var(--verde);
+    }
+    .campo textarea { height: auto; min-height: 128px; padding: 12px 14px; resize: vertical; line-height: 1.5; }
+    .campo select {
+      appearance: none; -webkit-appearance: none; padding-right: 42px; cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23386641' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 14px center;
+    }
+    .campo input::placeholder, .campo textarea::placeholder { color: #6B6B62; }
+    .campo input:hover, .campo select:hover, .campo textarea:hover { border-color: rgba(56, 102, 65, 0.5); }
+    .campo input:focus, .campo select:focus, .campo textarea:focus { outline: none; border-color: var(--verde-medio); box-shadow: var(--anillo); }
+    .campo--error input, .campo--error select, .campo--error textarea { border-color: var(--rojo); background: #FFFAFA; }
+    .ayuda { margin: 0; font-size: 14px; color: var(--tinta-2); display: grid; gap: 2px; }
+    .ayuda:empty { display: none; }
+    .error { color: var(--rojo-texto); font-weight: 600; display: flex; gap: 6px; }
+    .error::before { content: ""; width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; background: currentColor;
+      -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 8v4M12 16h.01'/%3E%3C/svg%3E") center/contain no-repeat;
+              mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 8v4M12 16h.01'/%3E%3C/svg%3E") center/contain no-repeat; }
+    .dato-vivo { color: var(--verde); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .dato-vivo:empty { display: none; }
+    .contador { font-variant-numeric: tabular-nums; color: var(--tinta-3); }
+    .con-afijo { display: flex; align-items: stretch; height: 48px; }
+    .con-afijo input { flex: 1; min-width: 0; }
+    .con-afijo input { border-radius: 0 var(--radio-campo) var(--radio-campo) 0 !important; font-variant-numeric: tabular-nums; }
+    .con-afijo .afijo {
+      display: grid; place-items: center; padding: 0 14px; font-weight: 650; color: var(--tinta-2);
+      background: var(--crema); border: 1.5px solid var(--linea-fuerte); border-right: 0;
+      border-radius: var(--radio-campo) 0 0 var(--radio-campo); min-width: 48px;
+    }
+    .con-afijo .afijo--fin { order: 2; border-right: 1.5px solid var(--linea-fuerte); border-left: 0; border-radius: 0 var(--radio-campo) var(--radio-campo) 0; }
+    .con-afijo:has(.afijo--fin) input { border-radius: var(--radio-campo) 0 0 var(--radio-campo) !important; }
+    .con-afijo:has(.afijo--fin):has(.afijo:not(.afijo--fin)) input { border-radius: 0 !important; }
+
+    /* ---- Fotos ---- */
+    .fotos { clear: both; display: grid; gap: 16px; }
+    .zona {
+      position: relative; display: grid; place-items: center; text-align: center; gap: 8px;
+      padding: 28px 16px; border-radius: 16px; cursor: pointer;
+      border: 2px dashed rgba(56, 102, 65, 0.35); background: rgba(242, 232, 207, 0.45);
+      transition: background .2s ease, border-color .2s ease, transform .2s ease;
+    }
+    .zona:hover, .zona.encima { background: rgba(167, 201, 87, 0.18); border-color: var(--verde-medio); }
+    .zona.encima { transform: scale(1.01); }
+    .zona:focus-within { box-shadow: var(--anillo); }
+    .zona input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+    .zona__icono { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: var(--verde); color: #fff; }
+    .zona__icono svg { width: 26px; height: 26px; }
+    .zona strong { font-size: 16px; }
+    .zona > span:not(.zona__icono) { color: var(--tinta-2); font-size: 14px; }
+    .zona[hidden] { display: none; }
+    .miniaturas:empty { display: none; }
+    .mini--agregar { cursor: default; border: 0; background: none; }
+    .mini--agregar .zona { height: 100%; padding: 8px; gap: 6px; border-radius: 14px; }
+    .mini--agregar .zona > span:not(.zona__icono) { display: none; }
+    .mini--agregar .zona strong { font-size: 14px; line-height: 1.2; }
+    .mini--agregar .zona__icono { width: 40px; height: 40px; }
+    .mini--agregar .zona__icono svg { width: 20px; height: 20px; }
+    .fotos__estado { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap; font-size: 14px; color: var(--tinta-2); }
+    .fotos__cuenta { font-weight: 700; color: var(--tinta); font-variant-numeric: tabular-nums; }
+    .miniaturas { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    @media (min-width: 560px) { .miniaturas { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    .mini {
+      position: relative; border-radius: 14px; overflow: hidden; background: #fff;
+      border: 1.5px solid var(--linea); aspect-ratio: 1; cursor: grab;
+      transition: transform .2s cubic-bezier(.2, .8, .2, 1), box-shadow .2s ease, opacity .2s ease;
+    }
+    .mini img { width: 100%; height: 100%; object-fit: cover; }
+    .mini.arrastrando { opacity: .4; }
+    .mini.destino { box-shadow: 0 0 0 3px var(--verde-medio); transform: scale(.97); }
+    .mini.cargando::after { content: "Preparando…"; position: absolute; inset: 0; display: grid; place-items: center; background: rgba(255,255,255,.8); font-size: 12px; font-weight: 600; color: var(--verde); }
+    .mini__portada {
+      position: absolute; left: 8px; top: 8px; padding: 3px 9px; border-radius: 999px;
+      background: var(--verde); color: #fff; font-size: 12px; font-weight: 700; /* micro */
+    }
+    .mini__acciones { position: absolute; inset: auto 6px 6px 6px; display: flex; justify-content: space-between; gap: 4px; }
+    .mini__btn {
+      width: 36px; height: 36px; border-radius: 50%; border: 0; cursor: pointer;
+      display: grid; place-items: center; color: var(--tinta);
+      background: rgba(255, 255, 255, 0.94); box-shadow: var(--sombra);
+    }
+    .mini__btn:hover { background: #fff; color: var(--verde); }
+    .mini__btn--quitar { position: absolute; right: 6px; top: 6px; }
+    .mini__btn--quitar:hover { color: var(--rojo); }
+    .mini__btn svg { width: 18px; height: 18px; }
+    .mini__btn:disabled { opacity: 0; pointer-events: none; }
+    .consejos { margin: 0; padding: 14px 16px; border-radius: var(--radio-campo); background: #EEF5E2; color: #24452B; font-size: 14px; }
+    .consejos h3 { margin: 0; font-size: 15px; font-weight: 650; display: flex; gap: 8px; align-items: center; color: var(--verde); }
+    .consejos ul { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 4px; }
+
+    /* ---- Interruptor de oferta ---- */
+    .oferta { clear: both; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--linea); display: grid; gap: 14px; }
+    .interruptor { display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; font-weight: 650; }
+    .interruptor small { display: block; font-weight: 400; color: var(--tinta-2); font-size: 14px; }
+    .interruptor input { appearance: none; -webkit-appearance: none; flex-shrink: 0; width: 52px; height: 30px; border-radius: 999px; background: rgba(17,17,17,.22); position: relative; cursor: pointer; transition: background .2s ease; margin: 0; }
+    .interruptor input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: var(--sombra); transition: transform .25s cubic-bezier(.2, .8, .2, 1); }
+    .interruptor input:checked { background: var(--verde); }
+    .interruptor input:checked::after { transform: translateX(22px); }
+    .oferta__detalle[hidden] { display: none; }
+    .oferta__detalle { display: grid; gap: 14px; }
+    @media (min-width: 640px) { .oferta__detalle { grid-template-columns: 200px 1fr; align-items: start; } }
+    .oferta__calculo { font-size: 15px; color: var(--tinta-2); margin: 0; }
+    .oferta__calculo:empty { display: none; }
+    @media (min-width: 640px) { .oferta__calculo { padding-top: 34px; } }
+    .oferta__calculo strong { color: var(--verde); font-size: 1.25rem; font-variant-numeric: tabular-nums; }
+
+    details.mas { clear: both; margin-top: 18px; border-top: 1px solid var(--linea); padding-top: 14px; }
+    details.mas > summary { cursor: pointer; font-weight: 650; color: var(--verde); list-style: none; display: flex; align-items: center; gap: 8px; min-height: 40px; }
+    details.mas > summary::-webkit-details-marker { display: none; }
+    details.mas > summary svg { transition: transform .2s ease; }
+    details.mas[open] > summary svg { transform: rotate(90deg); }
+    details.mas .campo { margin-top: 10px; }
+
+    /* ---- Columna de vista previa ---- */
+    .lado { display: grid; gap: 16px; }
+    @media (min-width: 1024px) { .lado { position: sticky; top: 84px; } }
+    .lado__titulo { font-size: 16px; font-weight: 700; }
+    .lado__sub { margin: 2px 0 0; font-size: 14px; color: var(--tinta-2); }
+    .tarjeta {
+      background: #fff; border: 1px solid rgba(56, 102, 65, 0.12); border-radius: 18px; padding: 12px;
+      box-shadow: var(--sombra-alta); transition: transform .3s cubic-bezier(.2, .8, .2, 1);
+    }
+    .tarjeta.pulso { animation: pulso .45s cubic-bezier(.2, .8, .2, 1); }
+    @keyframes pulso { 40% { transform: translateY(-3px) scale(1.012); } }
+    .tarjeta__foto { position: relative; aspect-ratio: 4 / 3; border-radius: 12px; overflow: hidden; background: var(--crema); }
+    .tarjeta__foto img { width: 100%; height: 100%; object-fit: cover; }
+    .tarjeta__vacia { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 6px; color: var(--tinta-3); font-size: 14px; text-align: center; padding: 12px; }
+    .tarjeta__vacia svg { width: 36px; height: 36px; stroke-width: 1.5; }
+    .tarjeta__descuento { position: absolute; left: 8px; top: 8px; border-radius: 999px; background: var(--verde); color: #fff; padding: 2px 9px; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .tarjeta__cuerpo { padding: 12px 2px 2px; display: grid; gap: 4px; }
+    .tarjeta__cat { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--verde-texto); min-height: 1em; }
+    .tarjeta__nombre { font-size: 16px; font-weight: 650; line-height: 1.3; min-height: 2.6em; overflow-wrap: anywhere;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .tarjeta__nombre.vacio, .tarjeta__cat.vacio { color: #6B6B62; font-weight: 500; }
+    .tarjeta__precio { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+    .tarjeta__precio strong { font-size: 1.25rem; color: var(--verde); }
+    .tarjeta__precio s { color: var(--tinta-3); font-size: 14px; }
+    .tarjeta__pres { font-size: 14px; color: var(--tinta-2); }
+    .tarjeta__boton { margin-top: 10px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--verde); color: #fff; font-size: 14px; font-weight: 650; opacity: .9; }
+
+    .pendientes { background: var(--superficie); border: 1px solid var(--linea); border-radius: 18px; padding: 16px 18px; }
+    .pendientes__cabeza { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+    .pendientes__cabeza strong { font-size: 15px; }
+    .progreso { height: 8px; border-radius: 999px; background: rgba(17,17,17,.08); overflow: hidden; margin: 10px 0 12px; }
+    .progreso span { display: block; height: 100%; width: 0; background: var(--verde-medio); border-radius: inherit; transition: width .4s cubic-bezier(.2, .8, .2, 1); }
+    .pendientes ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 14px; }
+    .pendientes li { display: flex; gap: 8px; align-items: center; }
+    .pendientes li a { color: inherit; text-decoration: none; }
+    .pendientes li a:hover { text-decoration: underline; }
+    .pendientes li svg { width: 18px; height: 18px; }
+    .pendientes li.hecho { color: var(--tinta-3); }
+    .pendientes li.hecho svg { color: var(--verde-medio); }
+    .pendientes li:not(.hecho) svg { color: #8A8A80; }
+
+    .boton {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      min-height: 52px; padding: 0 22px; border-radius: 14px; border: 0; cursor: pointer;
+      font: inherit; font-size: 16px; font-weight: 700; text-decoration: none;
+      background: var(--verde); color: #fff; box-shadow: 0 6px 16px -8px rgba(56, 102, 65, 0.8);
+      transition: background .15s ease, transform .15s ease;
+    }
+    .boton:hover { background: var(--verde-hover); }
+    .boton:active { transform: scale(.98); }
+    .boton[aria-busy=true] { opacity: .75; pointer-events: none; }
+    .boton--ancho { width: 100%; }
+    .boton--suave { background: #fff; color: var(--verde); border: 1.5px solid rgba(56, 102, 65, 0.3); box-shadow: none; min-height: 44px; font-size: 15px; }
+    .boton--suave:hover { background: rgba(167, 201, 87, 0.15); }
+    .lado__nota { margin: 0; font-size: 14px; color: var(--tinta-2); text-align: center; }
+
+    /* Celular: la vista previa se vuelve franja y la acción baja a una barra fija. */
+    .barra-accion { display: none; }
+    @media (max-width: 1023px) {
+      :root { --barra-alto: 84px; }
+      .mesa { display: flex; flex-direction: column-reverse; align-items: stretch; }
+      .lado { gap: 12px; position: sticky; top: 60px; z-index: 20; background: var(--crema); margin: -8px -20px 0; padding: 8px 20px 10px; }
+      .tarjeta::before { content: "Así lo verá el comprador"; grid-column: 1 / -1; font-size: 12px; font-weight: 650; color: var(--tinta-2); margin-bottom: -4px; }
+      .lado__cabecera, .lado__nota, .lado .boton--enviar { display: none; }
+      .tarjeta { display: grid; grid-template-columns: 64px 1fr; gap: 6px 12px; align-items: center; padding: 8px 10px; box-shadow: var(--sombra); }
+      .tarjeta__foto { border-radius: var(--radio-campo); }
+      .tarjeta__descuento { left: 2px; top: 2px; padding: 0 5px; }
+      .tarjeta__pres, .tarjeta__cat { display: none; }
+      .tarjeta__nombre { font-size: 15px; -webkit-line-clamp: 1; }
+      .tarjeta__precio strong { font-size: 16px; }
+      .tarjeta__cuerpo { gap: 0; }
+      .tarjeta__cuerpo { padding: 0; }
+      .tarjeta__boton { display: none; }
+      .tarjeta__nombre { min-height: 0; }
+      .tarjeta__vacia { font-size: 0; }
+      .tarjeta__vacia svg { width: 28px; height: 28px; }
+      .pendientes { display: none; }
+      .barra-accion {
+        display: flex; gap: 12px; align-items: center;
+        position: fixed; inset: auto 0 0 0; z-index: 40;
+        padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+        background: rgba(255, 255, 255, 0.96); border-top: 1px solid var(--linea);
+        box-shadow: 0 -8px 24px -12px rgba(0, 0, 0, 0.2);
+      }
+      .barra-accion__estado { flex: 1; min-width: 0; font-size: 14px; line-height: 1.3; }
+      .barra-accion__estado strong { display: block; font-size: 15px; }
+      .barra-accion .boton { min-height: 52px; padding: 0 18px; flex-shrink: 0; }
+    }
+
+    /* ---- Mis productos ---- */
+    .inventario { margin-top: 56px; scroll-margin-top: 80px; }
+    .inventario__cabeza { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 20px; margin-bottom: 18px; }
+    .inventario__cabeza h2 { font-size: 1.5rem; letter-spacing: -0.01em; }
+    .conteos { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+    .estado {
+      display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 999px;
+      font-size: 14px; font-weight: 650; white-space: nowrap;
+    }
+    .estado::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .estado--revisión { background: #FFF1CF; color: #7A4F00; }
+    .estado--aprobado { background: rgba(167, 201, 87, 0.32); color: #24452B; }
+    .estado--rechazado { background: rgba(188, 71, 73, 0.13); color: var(--rojo-texto); }
+    .productos { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    @media (min-width: 640px) { .productos { grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 16px; } }
+    .producto {
+      position: relative; display: grid; grid-template-rows: auto 1fr; background: var(--superficie);
+      border: 1px solid var(--linea); border-radius: 18px; overflow: hidden;
+      transition: transform .25s cubic-bezier(.2, .8, .2, 1), box-shadow .25s ease;
+    }
+    .producto:hover { transform: translateY(-2px); box-shadow: var(--sombra-alta); }
+    .producto.actual { box-shadow: 0 0 0 2.5px var(--verde-medio), var(--sombra); }
+    .producto__foto { aspect-ratio: 4 / 3; background: var(--crema-hondo); display: grid; place-items: center; color: var(--crema-tinta); }
+    .producto__foto { overflow: hidden; }
+    .producto__foto img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; }
+    .producto__cuerpo { padding: 10px 12px 12px; display: grid; gap: 6px; align-content: start; }
+    .producto__nombre { font-weight: 650; line-height: 1.3; }
+    .producto__nombre a { color: inherit; text-decoration: none; }
+    .producto__nombre a::after { content: ""; position: absolute; inset: 0; }
+    .producto__nombre a:focus-visible { box-shadow: none; }
+    .producto:has(a:focus-visible) { box-shadow: var(--anillo); }
+    .producto__fila { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+    .producto__precio { font-weight: 700; color: var(--verde); }
+    .producto__meta { font-size: 14px; color: var(--tinta-2); }
+    .producto__falta { font-size: 14px; color: #7A4F00; display: flex; gap: 6px; }
+    .producto__falta svg { width: 16px; height: 16px; margin-top: 2px; }
+    .producto__editar { font-size: 14px; font-weight: 650; color: var(--verde); display: inline-flex; align-items: center; gap: 4px; }
+    .nota-consulta { margin: 16px 0 0; font-size: 14px; color: var(--tinta-2); }
+    .quien__lista { display: grid; gap: 8px; }
+    .quien__nuevo { display: grid; gap: 18px; margin-top: 4px; }
+    .quien__nuevo[hidden] { display: none; }
+    .marcar { display: flex; align-items: center; gap: 10px; font-weight: 600; cursor: pointer; min-height: 44px; }
+    .marcar input { width: 22px; height: 22px; margin: 0; }
+    .trampa { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+    .vacio-inventario { padding: 40px 24px; border-radius: var(--radio); border: 2px dashed rgba(56, 102, 65, 0.25); text-align: center; color: var(--tinta-2); }
+    .vacio-inventario strong { display: block; color: var(--tinta); font-size: 1.25rem; margin-bottom: 4px; }
+    .paginas { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 24px; flex-wrap: wrap; font-size: 15px; color: var(--tinta-2); }
+
+
+    /* ---- Aviso flotante (20 s) tras enviar ---- */
+    .flotante {
+      position: fixed; z-index: 60; top: 76px; left: 50%; width: min(440px, calc(100% - 32px));
+      transform: translate(-50%, 0); background: #fff; border-radius: var(--radio);
+      border: 1px solid var(--linea); box-shadow: var(--sombra-alta); overflow: hidden;
+      animation: flotante-entra .45s cubic-bezier(.2, .8, .2, 1);
+    }
+    .flotante[hidden] { display: none; }
+    .flotante.sale { animation: flotante-sale .3s ease forwards; }
+    @keyframes flotante-entra { from { opacity: 0; transform: translate(-50%, -12px) scale(.98); } }
+    @keyframes flotante-sale { to { opacity: 0; transform: translate(-50%, -8px) scale(.98); } }
+    .flotante__cuerpo { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: start; padding: 16px; }
+    .flotante__foto { width: 72px; height: 72px; border-radius: var(--radio-campo); object-fit: cover; background: var(--crema); }
+    .flotante__icono { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; }
+    .flotante--exito .flotante__icono { background: rgba(167, 201, 87, 0.32); color: var(--verde); }
+    .flotante--error .flotante__icono { background: #FBECEC; color: var(--rojo-texto); }
+    .flotante__titulo { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.3; }
+    .flotante--exito .flotante__titulo { color: var(--verde); }
+    .flotante--error .flotante__titulo { color: var(--rojo-texto); }
+    .flotante__texto { margin: 4px 0 0; font-size: 14px; color: var(--tinta-2); }
+    .flotante__motivos { margin: 8px 0 0; padding-left: 18px; font-size: 14px; color: var(--tinta); display: grid; gap: 4px; }
+    .flotante__motivos strong { font-weight: 650; }
+    .flotante__cerrar { width: 36px; height: 36px; border: 0; border-radius: 50%; background: none; cursor: pointer; display: grid; place-items: center; color: var(--tinta-2); margin: -6px -6px 0 0; }
+    .flotante__cerrar:hover { background: var(--crema); color: var(--tinta); }
+    .flotante__tiempo { height: 4px; background: rgba(17, 17, 17, 0.06); }
+    .flotante__tiempo span { display: block; height: 100%; width: 100%; transform-origin: left; }
+    .flotante--exito .flotante__tiempo span { background: var(--verde-medio); }
+    .flotante--error .flotante__tiempo span { background: var(--rojo); }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="barra">
+    <div class="barra__in">
+      <a class="marca" href="{{ urls.inicio }}" aria-label="Autóctonos, inicio del panel">
+        <img src="{% static 'brand/favicon.svg' %}" alt="" width="36" height="36">
+        <span>Autóctonos</span>
+      </a>
+      {% if staff %}
+        <form class="barra__staff" method="get" action="{{ urls.inicio }}">
+          <label class="solo-lector" for="filtro-productor">Ver productos de</label>
+          <select id="filtro-productor" name="productor" onchange="this.form.submit()">
+            <option value="">Todos los productores</option>
+            {% for p in urls.productores %}
+              <option value="{{ p.pk }}" {% if productor and productor.pk == p.pk %}selected{% endif %}>{{ p.nombre }}</option>
+            {% endfor %}
+          </select>
+          <noscript><button class="boton boton--suave" type="submit">Ver</button></noscript>
+          <a class="boton boton--suave" href="{% url 'product-export' %}">Exportar a Excel</a>
+          <a class="boton boton--suave" href="{% url 'admin:index' %}">Admin</a>
+        </form>
+      {% else %}
+        <span class="barra__quien barra__lugar">Formulario de productos</span>
+      {% endif %}
+    </div>
+  </header>
+
+  <main>
+    {% if messages or fotos_perdidas %}
+      <div class="avisos" role="status">
+        {% for message in messages %}
+          <div class="aviso aviso--{{ message.tags }}">
+            {% if message.tags == "success" %}
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg>
+            {% else %}
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            {% endif %}
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+        {% if fotos_perdidas %}
+          <div class="aviso aviso--info">
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg>
+            <span>Por seguridad el navegador no guarda las fotos nuevas cuando hay un error. Corrige lo marcado y vuelve a elegir {{ fotos_perdidas }} foto{{ fotos_perdidas|pluralize }}.</span>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="encabezado">
+      {% if producto %}
+        <a class="volver" href="{{ urls.inicio }}{% if staff and productor %}?productor={{ productor.pk }}{% endif %}">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+          Agregar otro producto
+        </a>
+        <h1>Editar «{{ producto.nombre }}»</h1>
+        <p>
+          <span class="estado estado--{{ producto.estado }}">{% if producto.estado == "aprobado" %}Publicado en la tienda{% elif producto.estado == "rechazado" %}No aprobado{% else %}En revisión{% endif %}</span>
+        </p>
+      {% elif staff %}
+        <h1>Agregar producto</h1>
+        <p>Carga un producto a nombre de un productor. <span class="solo-escritorio">A la derecha</span><span class="solo-movil">Arriba</span> ves cómo queda en la tienda.</p>
+      {% else %}
+        <h1>Sube tu producto a la tienda</h1>
+        <p>Son cinco pasos cortos. <span class="solo-escritorio">A la derecha</span><span class="solo-movil">Arriba</span> ves tu producto tal como lo verá el comprador. El equipo de Autóctonos lo revisa antes de publicarlo.</p>
+      {% endif %}
+    </div>
+
+    <div class="mesa">
+      <form id="ficha" class="ficha" method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {{ form.orden_fotos }}{{ form.quitar_fotos }}
+
+        {% if not staff %}
+        <fieldset class="seccion" id="sec-quien" data-seccion="quien">
+          <legend class="seccion__titulo"><span class="seccion__paso" aria-hidden="true"></span><h2>Productor</h2></legend>
+          <p class="seccion__intro">Busca el productor en la lista. De su municipio sale el envío del producto.</p>
+          <div class="trampa" aria-hidden="true">{{ form.sitio_web }}</div>
+          <div class="quien__lista" id="quien-lista" {% if form.no_estoy.value %}hidden{% endif %}>
+            <div class="campo">
+              <label for="quien-buscar">Buscar productor</label>
+              <input type="search" id="quien-buscar" placeholder="Nombre del productor o municipio" autocomplete="off" aria-controls="id_id_productor">
+            </div>
+            {% include "products/_campo.html" with f=form.id_productor obligatorio=True ayuda="Si el productor es nuevo en Autóctonos, marca «El productor no está en la lista»." %}
+          </div>
+          <label class="marcar" for="id_no_estoy">{{ form.no_estoy }} El productor no está en la lista</label>
+          <div class="quien__nuevo" id="quien-nuevo" {% if not form.no_estoy.value %}hidden{% endif %}>
+            <div class="rejilla rejilla--2">
+              {% include "products/_campo.html" with f=form.nuevo_nombre ancho="ancho" obligatorio=True ayuda="Como aparecerá en la tienda." %}
+              {% include "products/_campo.html" with f=form.nuevo_telefono obligatorio=True ayuda="10 dígitos, empieza por 3. Escribimos aquí si hay que ajustar algo del producto." %}
+              {% include "products/_campo.html" with f=form.nuevo_municipio obligatorio=True ayuda="Desde este municipio se calcula el envío." %}
+            </div>
+          </div>
+        </fieldset>
+        {% endif %}
+
+        <fieldset class="seccion" id="sec-fotos" data-seccion="fotos">
+          <legend class="seccion__titulo"><span class="seccion__paso" aria-hidden="true"></span><h2>Fotos</h2></legend>
+          <p class="seccion__intro">{% if fotos_min %}Sube de {{ fotos_min }} a {{ fotos_max }} fotos{% else %}Hasta {{ fotos_max }} fotos{% endif %}. La primera es la portada en la tienda; arrástralas o usa las flechas para cambiar el orden.</p>
+          <div class="fotos campo{% if form.fotos.errors %} campo--error{% endif %}" data-campo="fotos">
+            <label class="zona" id="zona" for="id_fotos">
+              <span class="zona__icono" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg></span>
+              <strong>Toma o elige fotos</strong>
+              <span>En el computador también puedes arrastrarlas aquí</span>
+              <input type="file" name="fotos" id="id_fotos" multiple accept="image/jpeg,image/png,image/webp" aria-describedby="id_fotos-ayuda">
+            </label>
+            <div class="fotos__estado">
+              <span><span class="fotos__cuenta" id="fotos-cuenta">0</span> de {{ fotos_max }} fotos</span>
+              <span id="fotos-anuncio" class="solo-lector" aria-live="polite"></span>
+            </div>
+            <ul class="miniaturas" id="miniaturas" aria-label="Fotos del producto, en orden"></ul>
+            <p class="ayuda" id="id_fotos-ayuda">{% for e in form.fotos.errors %}<span class="error">{{ e }}</span>{% endfor %}</p>
+            <div class="consejos" role="note" aria-labelledby="consejos-titulo">
+              <h3 id="consejos-titulo"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>Cómo tomar fotos que vendan</h3>
+              <ul>
+                <li>Pon el producto sobre una superficie blanca o muy clara, cerca de una ventana con luz de día.</li>
+                <li>Que el producto llene casi toda la foto y quede centrado. Nada de textos ni logos encima.</li>
+                <li>Primera foto: el producto completo de frente. Las demás: un detalle, el empaque o cómo se sirve.</li>
+                <li>Si la foto sale muy pequeña o borrosa, te lo diremos para que tomes otra.</li>
+              </ul>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="seccion" id="sec-que" data-seccion="que">
+          <legend class="seccion__titulo"><span class="seccion__paso" aria-hidden="true"></span><h2>Qué vendes</h2></legend>
+          <p class="seccion__intro">El nombre y la descripción son lo primero que lee el comprador.</p>
+          <div class="rejilla rejilla--2">
+            {% include "products/_campo.html" with f=form.id_categoria ayuda="Así lo encuentran en la tienda." %}
+            {% include "products/_campo.html" with f=form.nombre ayuda="Corto y claro: qué es y qué lo hace especial." extra_id="nombre-contador" %}
+            {% include "products/_campo.html" with f=form.descripcion ancho="ancho" ayuda="De 2 a 4 frases: cómo se hace, de dónde viene, cuánto dura y cómo se conserva. Mínimo 80 caracteres." extra_id="descripcion-contador" %}
+          </div>
+        </fieldset>
+
+        <fieldset class="seccion" id="sec-precio" data-seccion="precio">
+          <legend class="seccion__titulo"><span class="seccion__paso" aria-hidden="true"></span><h2>Precio y presentación</h2></legend>
+          <p class="seccion__intro">Cómo se vende cada unidad y cuánto cuesta.</p>
+          <div class="rejilla rejilla--2">
+            {% include "products/_campo.html" with f=form.presentacion ayuda="Ejemplo: un queso se vende por Unidad; un café, por Gramos." %}
+            {% include "products/_campo.html" with f=form.cantidad_presentacion ayuda="Ejemplo: 500 si es una bolsa de 500 gramos." sufijo="Gr" sufijo_id="cantidad-unidad" %}
+            {% include "products/_campo.html" with f=form.precio prefijo="$" ayuda="Precio de una unidad, en pesos, sin envío." %}
+            {% include "products/_campo.html" with f=form.stock ayuda="Cuántas unidades tienes listas para vender." %}
+          </div>
+          <div class="oferta">
+            <label class="interruptor" for="{{ form.es_promocionado.id_for_label }}">
+              <span>¿Lo quieres poner en oferta?<small>El comprador verá el precio anterior tachado.</small></span>
+              {{ form.es_promocionado }}
+            </label>
+            <div class="oferta__detalle" id="oferta-detalle" {% if not form.es_promocionado.value %}hidden{% endif %}>
+              {% include "products/_campo.html" with f=form.porcentaje_descuento sufijo="%" obligatorio=True %}
+              <p class="oferta__calculo" id="oferta-calculo" aria-live="polite"></p>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="seccion" id="sec-envio" data-seccion="envio">
+          <legend class="seccion__titulo"><span class="seccion__paso" aria-hidden="true"></span><h2>Envío</h2></legend>
+          <p class="seccion__intro">Con esto calculamos cuánto cuesta enviarlo. Sin el peso no se puede vender.</p>
+          <div class="rejilla rejilla--2">
+            {% include "products/_campo.html" with f=form.peso_kg sufijo="kg" ayuda="Pesa el producto ya empacado, como lo vas a enviar. 600 gramos = 0,6" extra_id="peso-gramos" %}
+            {% include "products/_campo.html" with f=form.requiere_frio_override ayuda="Quesos, carnes y lácteos casi siempre necesitan frío." extra_id="frio-categoria" %}
+          </div>
+          <details class="mas" {% if form.id_municipio.value or form.id_municipio.errors %}open{% endif %}>
+            <summary><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>¿Este producto sale desde otro municipio?</summary>
+            <p class="ayuda" id="origen-normal" style="margin-top:8px">{% if municipio_productor %}Normalmente sale desde {{ municipio_productor }}.{% endif %}</p>
+            {% include "products/_campo.html" with f=form.id_municipio ayuda="Cámbialo solo si este producto se despacha desde un lugar distinto." %}
+          </details>
+        </fieldset>
+
+        {% if staff %}
+          <fieldset class="seccion" id="sec-admin">
+            <legend class="seccion__titulo"><span class="seccion__paso" aria-hidden="true">
+              <svg class="ico" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </span><h2>Administración</h2></legend>
+            <p class="seccion__intro">Solo lo ve el equipo de Autóctonos.</p>
+            <div class="rejilla rejilla--2">
+              {% include "products/_campo.html" with f=form.id_productor ayuda="Quien despacha: define el origen del envío." %}
+              {% include "products/_campo.html" with f=form.estado ayuda="Solo «Aprobado» aparece en la tienda." %}
+              {% include "products/_campo.html" with f=form.fabricante ancho="ancho" %}
+            </div>
+          </fieldset>
+        {% endif %}
+      </form>
+
+      <aside class="lado" aria-label="Vista previa del producto">
+        <div class="lado__cabecera">
+          <h2 class="lado__titulo">Así lo verá el comprador</h2>
+          <p class="lado__sub">Se actualiza mientras escribes.</p>
+        </div>
+        <div class="tarjeta" id="tarjeta" aria-hidden="true">
+          <div class="tarjeta__foto">
+            <img id="prev-foto" alt="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" hidden>
+            <div class="tarjeta__vacia" id="prev-foto-vacia">
+              <svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+              Aquí va tu foto de portada
+            </div>
+            <span class="tarjeta__descuento" id="prev-descuento" hidden></span>
+          </div>
+          <div class="tarjeta__cuerpo">
+            <span class="tarjeta__cat" id="prev-cat">Categoría</span>
+            <span class="tarjeta__nombre" id="prev-nombre">Nombre de tu producto</span>
+            <span class="tarjeta__pres" id="prev-pres"></span>
+            <span class="tarjeta__precio" id="prev-precio"><strong>$ —</strong></span>
+            <span class="tarjeta__boton">Añadir al carrito</span>
+          </div>
+        </div>
+
+        <div class="pendientes" id="pendientes">
+          <div class="pendientes__cabeza">
+            <strong id="pendientes-titulo">Lo que falta</strong>
+            <span class="contador" id="pendientes-cuenta"></span>
+          </div>
+          <div class="progreso" aria-hidden="true"><span id="pendientes-barra"></span></div>
+          <ul id="pendientes-lista"></ul>
+        </div>
+
+        <button class="boton boton--ancho boton--enviar" type="submit" form="ficha">
+          {% if producto %}Guardar cambios{% elif staff %}Guardar producto{% else %}Enviar a revisión{% endif %}
+        </button>
+        {% if not staff and not producto %}
+          <p class="lado__nota">El equipo de Autóctonos lo revisa y lo publica. Para cambiar algo después, escríbenos a <a href="mailto:{{ contacto_email }}">{{ contacto_email }}</a>.</p>
+        {% endif %}
+      </aside>
+    </div>
+
+    <section class="inventario" id="productos" aria-live="polite">
+      {% include "products/_inventario.html" %}
+    </section>
+  </main>
+
+
+  {% if creado or motivos_error %}
+    <div class="flotante {% if creado %}flotante--exito{% else %}flotante--error{% endif %}" id="flotante"
+         role="{% if creado %}status{% else %}alert{% endif %}" aria-live="{% if creado %}polite{% else %}assertive{% endif %}">
+      <div class="flotante__cuerpo">
+        {% if creado %}
+          {% if creado.foto %}
+            <img class="flotante__foto" src="{{ creado.foto }}" alt="" width="72" height="72">
+          {% else %}
+            <span class="flotante__icono" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg></span>
+          {% endif %}
+          <div>
+            <p class="flotante__titulo">¡Listo! «{{ creado.nombre }}» {% if creado.publico %}quedó en revisión{% else %}quedó guardado{% endif %}.</p>
+            {% if creado.publico %}<p class="flotante__texto">El equipo de Autóctonos lo revisa y lo publica en la tienda.</p>{% endif %}
+          </div>
+        {% else %}
+          <span class="flotante__icono" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></span>
+          <div>
+            <p class="flotante__titulo">No pudimos enviar el producto</p>
+            <p class="flotante__texto">Corrige esto y vuelve a enviarlo:</p>
+            <ul class="flotante__motivos">
+              {% for etiqueta, mensaje in motivos_error %}
+                <li>{% if etiqueta %}<strong>{{ etiqueta }}:</strong> {% endif %}{{ mensaje }}</li>
+              {% endfor %}
+              {% if fotos_perdidas %}<li><strong>Fotos:</strong> vuelve a elegir {{ fotos_perdidas }} foto{{ fotos_perdidas|pluralize }} (el navegador no las guarda cuando hay un error).</li>{% endif %}
+            </ul>
+          </div>
+        {% endif %}
+        <button type="button" class="flotante__cerrar" id="flotante-cerrar" aria-label="Cerrar aviso">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="flotante__tiempo" aria-hidden="true"><span id="flotante-tiempo"></span></div>
+    </div>
+  {% endif %}
+  <div class="barra-accion" aria-label="Guardar producto">
+    <div class="barra-accion__estado" aria-live="polite">
+      <strong id="movil-titulo">Lo que falta</strong>
+      <span id="movil-detalle"></span>
+    </div>
+    <button class="boton" type="submit" form="ficha">
+      {% if producto or staff %}Guardar{% else %}Enviar a revisión{% endif %}
+    </button>
+  </div>
+
+  {{ fotos_existentes_json|json_script:"datos-fotos" }}
+  {{ categorias_json|json_script:"datos-categorias" }}
+  <script>
+  (function () {
+    "use strict";
+    var $ = function (id) { return document.getElementById(id); };
+    var form = $("ficha");
+    var MAX = {{ fotos_max }}, MIN = {{ fotos_min }};
+    var input = $("id_fotos");
+    var lista = $("miniaturas");
+    var quitarInput = $("id_quitar_fotos"), ordenInput = $("id_orden_fotos");
+    var cop = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 0 });
+    var ICO = {
+      izq: '<svg class="ico" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>',
+      der: '<svg class="ico" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>',
+      x: '<svg class="ico" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+      ok: '<svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg>',
+      no: '<svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>'
+    };
+    var sucio = false;
+
+    /* ---------- Fotos: existentes + nuevas, en un solo orden ---------- */
+    var quitadas = (quitarInput.value || "").split(",").filter(Boolean);
+    var fotos = (JSON.parse($("datos-fotos").textContent) || [])
+      .filter(function (f) { return quitadas.indexOf(String(f.id)) === -1; })
+      .map(function (f) { return { tipo: "e", id: f.id, url: f.url }; });
+    var ordenPrevio = (ordenInput.value || "").split(",").filter(function (t) { return t[0] === "e"; });
+    if (ordenPrevio.length) {
+      fotos.sort(function (a, b) {
+        var ia = ordenPrevio.indexOf("e" + a.id), ib = ordenPrevio.indexOf("e" + b.id);
+        return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+      });
+    }
+
+    function sincronizarArchivos() {
+      // El input real lleva las fotos nuevas en el orden en que aparecen; «n<i>» apunta a él.
+      var nuevas = fotos.filter(function (f) { return f.tipo === "n" && f.archivo; });
+      try {
+        var dt = new DataTransfer();
+        nuevas.forEach(function (f) { dt.items.add(f.archivo); });
+        input.files = dt.files;
+      } catch (e) { /* Navegadores muy viejos: queda la selección nativa. */ }
+      var i = 0;
+      ordenInput.value = fotos.map(function (f) { return f.tipo === "e" ? "e" + f.id : (f.archivo ? "n" + (i++) : ""); }).filter(Boolean).join(",");
+      quitarInput.value = quitadas.join(",");
+    }
+
+    function anunciar(texto) { $("fotos-anuncio").textContent = texto; }
+
+    var zonaCasa = document.querySelector(".fotos__estado");
+    function pintarFotos() {
+      // Sin fotos, la zona grande invita a empezar; con fotos, se vuelve una casilla más
+      // de la grilla para no empujarlas hacia abajo. Se mueve (no se recrea): lleva el input.
+      var zonaEl = $("zona");
+      zonaCasa.parentNode.insertBefore(zonaEl, zonaCasa);
+      lista.innerHTML = "";
+      fotos.forEach(function (f, i) {
+        var li = document.createElement("li");
+        li.className = "mini" + (f.archivo || f.tipo === "e" ? "" : " cargando");
+        li.draggable = true;
+        li.dataset.i = i;
+        var img = document.createElement("img");
+        img.src = f.url; img.alt = i === 0 ? "Foto de portada" : "Foto " + (i + 1);
+        li.appendChild(img);
+        if (i === 0) { var b = document.createElement("span"); b.className = "mini__portada"; b.textContent = "Portada"; li.appendChild(b); }
+        var quitar = document.createElement("button");
+        quitar.type = "button"; quitar.className = "mini__btn mini__btn--quitar";
+        quitar.setAttribute("aria-label", "Quitar foto " + (i + 1)); quitar.innerHTML = ICO.x;
+        quitar.onclick = function () { quitarFoto(i); };
+        li.appendChild(quitar);
+        var acc = document.createElement("div"); acc.className = "mini__acciones";
+        var izq = document.createElement("button");
+        izq.type = "button"; izq.className = "mini__btn"; izq.innerHTML = ICO.izq;
+        izq.setAttribute("aria-label", i === 1 ? "Volver portada la foto 2" : "Mover foto " + (i + 1) + " antes");
+        izq.disabled = i === 0; izq.onclick = function () { mover(i, i - 1); };
+        var der = document.createElement("button");
+        der.type = "button"; der.className = "mini__btn"; der.innerHTML = ICO.der;
+        der.setAttribute("aria-label", "Mover foto " + (i + 1) + " después");
+        der.disabled = i === fotos.length - 1; der.onclick = function () { mover(i, i + 1); };
+        acc.appendChild(izq); acc.appendChild(der); li.appendChild(acc);
+        lista.appendChild(li);
+      });
+      $("fotos-cuenta").textContent = fotos.length;
+      zonaEl.hidden = fotos.length >= MAX;
+      zonaEl.querySelector("strong").textContent = fotos.length ? "Agregar foto" : "Toma o elige fotos";
+      if (fotos.length && fotos.length < MAX) {
+        var casilla = document.createElement("li");
+        casilla.className = "mini mini--agregar";
+        casilla.appendChild(zonaEl);
+        lista.appendChild(casilla);
+      }
+      sincronizarArchivos();
+      actualizar();
+    }
+
+    function quitarFoto(i) {
+      var f = fotos.splice(i, 1)[0];
+      if (f.tipo === "e") quitadas.push(String(f.id));
+      else if (f.url) URL.revokeObjectURL(f.url);
+      sucio = true; anunciar("Foto quitada. Quedan " + fotos.length + ".");
+      pintarFotos();
+    }
+    function mover(de, a) {
+      if (a < 0 || a >= fotos.length) return;
+      var f = fotos.splice(de, 1)[0]; fotos.splice(a, 0, f);
+      sucio = true; anunciar(a === 0 ? "Esa foto ahora es la portada." : "Foto movida a la posición " + (a + 1) + ".");
+      pintarFotos();
+      var btn = lista.children[a] && lista.children[a].querySelector(".mini__acciones button:" + (a < de ? "first-child" : "last-child"));
+      if (btn && !btn.disabled) btn.focus();
+    }
+
+    // Arrastrar para ordenar (ratón). En pantallas táctiles quedan las flechas.
+    var origen = null;
+    lista.addEventListener("dragstart", function (e) {
+      var li = e.target.closest(".mini"); if (!li || li.classList.contains("mini--agregar")) return;
+      origen = +li.dataset.i; li.classList.add("arrastrando");
+      e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", origen);
+    });
+    lista.addEventListener("dragover", function (e) {
+      if (origen === null) return;
+      e.preventDefault();
+      var li = e.target.closest(".mini");
+      lista.querySelectorAll(".destino").forEach(function (n) { n.classList.remove("destino"); });
+      if (li && +li.dataset.i !== origen) li.classList.add("destino");
+    });
+    lista.addEventListener("drop", function (e) {
+      e.preventDefault();
+      var li = e.target.closest(".mini:not(.mini--agregar)");
+      if (li && origen !== null) mover(origen, +li.dataset.i);
+      origen = null;
+    });
+    lista.addEventListener("dragend", function () { origen = null; pintarFotos(); });
+
+    // Fotos de celular de 4-12 MB: se reducen a 2400 px antes de subir. El servidor deja
+    // el maestro en 1600 px, así que no se pierde nada y la subida pesa ~10 veces menos.
+    function reducir(archivo) {
+      if (!window.createImageBitmap || archivo.size < 1.5 * 1024 * 1024) return Promise.resolve(archivo);
+      return createImageBitmap(archivo).then(function (bmp) {
+        var lado = Math.max(bmp.width, bmp.height);
+        if (lado <= 2400) return archivo;
+        var k = 2400 / lado, c = document.createElement("canvas");
+        c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+        var ctx = c.getContext("2d");
+        ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(bmp, 0, 0, c.width, c.height);
+        return new Promise(function (ok) {
+          c.toBlob(function (blob) {
+            ok(blob ? new File([blob], archivo.name.replace(/\.\w+$/, "") + ".jpg", { type: "image/jpeg" }) : archivo);
+          }, "image/jpeg", 0.9);
+        });
+      }).catch(function () { return archivo; });
+    }
+
+    function agregar(archivos) {
+      var libres = MAX - fotos.length;
+      var nuevos = Array.prototype.filter.call(archivos, function (a) { return /^image\//.test(a.type); });
+      if (nuevos.length > libres) anunciar("Solo caben " + MAX + " fotos; agregamos " + Math.max(libres, 0) + ".");
+      nuevos.slice(0, Math.max(libres, 0)).forEach(function (archivo) {
+        var f = { tipo: "n", url: URL.createObjectURL(archivo), archivo: null };
+        fotos.push(f);
+        reducir(archivo).then(function (listo) { f.archivo = listo; pintarFotos(); });
+      });
+      sucio = true;
+      pintarFotos();
+    }
+
+    input.addEventListener("change", function () {
+      var elegidos = Array.prototype.slice.call(input.files);
+      agregar(elegidos);
+    });
+    var zona = $("zona");
+    ["dragenter", "dragover"].forEach(function (ev) {
+      zona.addEventListener(ev, function (e) { if (origen === null) { e.preventDefault(); zona.classList.add("encima"); } });
+    });
+    ["dragleave", "drop"].forEach(function (ev) {
+      zona.addEventListener(ev, function () { zona.classList.remove("encima"); });
+    });
+    zona.addEventListener("drop", function (e) {
+      if (origen !== null) return;
+      e.preventDefault();
+      agregar(e.dataTransfer.files);
+    });
+
+    /* ---------- Vista previa en vivo ---------- */
+    var campos = {
+      cat: $("id_id_categoria"), nombre: $("id_nombre"), desc: $("id_descripcion"),
+      precio: $("id_precio"), stock: $("id_stock"), pres: $("id_presentacion"),
+      cant: $("id_cantidad_presentacion"), peso: $("id_peso_kg"), frio: $("id_requiere_frio_override"),
+      promo: $("id_es_promocionado"), pct: $("id_porcentaje_descuento")
+    };
+    var categorias = JSON.parse($("datos-categorias").textContent) || {};
+
+    /* ---------- Guías que cambian según lo que se elige ---------- */
+    // Por unidad de venta: qué significa la cantidad, un ejemplo real y un peso orientativo
+    // del paquete (contenido + empaque) para sugerir en el paso de envío.
+    var GUIA_UNIDAD = {
+      Un:  { pres: "Se vende por pieza: un queso entero, una ruana, una canasta." },
+      Paq: { pres: "Paquete de 12 unidades, por ejemplo 12 arepas o 12 bocadillos." },
+      Dz:  { pres: "Docena: 12 unidades, por ejemplo una docena de huevos o de panes." },
+      Gr:  { pres: "Para bolsas o paquetes que traen cierta cantidad de gramos.", suf: "g", ej: "250",
+             ayuda: "¿Cuántos gramos trae cada bolsa? Ejemplo: 250 para una bolsa de café de 250 g; 500 para medio kilo.",
+             kg: function (c) { return c / 1000 * 1.15; } },
+      Kg:  { pres: "Para productos que se venden por kilo.", suf: "kg", ej: "1",
+             ayuda: "¿Cuántos kilos trae cada paquete? Ejemplo: 1 para un kilo; 2,5 para dos kilos y medio.",
+             kg: function (c) { return c * 1.1; } },
+      Lb:  { pres: "Para productos que se venden por libra (500 g).", suf: "lb", ej: "1",
+             ayuda: "¿Cuántas libras trae? Ejemplo: 1 para una libra de queso; 0,5 para media libra.",
+             kg: function (c) { return c * 0.5 * 1.15; } },
+      Oz:  { pres: "Para frascos o empaques marcados en onzas.", suf: "oz", ej: "8",
+             ayuda: "¿Cuántas onzas trae? Ejemplo: 8 para un frasco de 8 onzas.",
+             kg: function (c) { return c * 0.02835 * 1.4; } },
+      Lt:  { pres: "Para líquidos que se venden por litro: leche, kumis, guarapo, aceite.", suf: "L", ej: "1",
+             ayuda: "¿Cuántos litros trae cada botella o bolsa? Ejemplo: 1 para un litro de kumis; 0,75 para tres cuartos.",
+             kg: function (c) { return c * 1.2; } },
+      Ml:  { pres: "Para frascos pequeños de líquido: miel, salsas, extractos.", suf: "ml", ej: "250",
+             ayuda: "¿Cuántos mililitros trae el frasco? Ejemplo: 250 para un frasco de miel de 250 ml.",
+             kg: function (c) { return c / 1000 * 1.6; } },
+      Bt:  { pres: "Para botellas de vidrio: vino, viche, licores, salsas.", suf: "cm³", ej: "750",
+             ayuda: "¿Cuántos cm³ (mililitros) trae la botella? Ejemplo: 750 para una botella de vino.",
+             kg: function (c) { return c / 1000 * 1.7; } }
+    };
+    // Por categoría (se reconoce por palabras del nombre): ejemplos del campo colombiano.
+    // Por categoría (se reconoce por palabras del nombre): ejemplos del campo colombiano.
+    // `unidades`: las que tienen sentido en esa categoría (fuera de ellas se sugiere otra).
+    // `porUnidad`: el ejemplo cambia con la unidad (un lácteo en litros es kumis, no queso).
+    var GUIA_CATEGORIA = [
+      { re: /l[aá]cte|queso|kumis|leche|yogur/i, unidades: ["Un", "Gr", "Kg", "Lb", "Lt", "Ml"], sugerida: "Un",
+        nombre: "Queso campesino doble crema de Ubaté",
+        desc: "Hecho con leche de nuestras vacas en Ubaté. Suave y cremoso, ideal para arepas y chocolate. Dura 15 días en nevera.",
+        porUnidad: {
+          Lt: { nombre: "Kumis artesanal de Paipa, botella de 1 L", desc: "Kumis fermentado de forma natural con leche fresca de Paipa. Sin conservantes; dura 8 días en nevera." },
+          Ml: { nombre: "Yogur artesanal de mora, 250 ml", desc: "Yogur hecho con leche de nuestras vacas y mora de Castilla de la huerta. Dura 10 días en nevera." },
+          Gr: { nombre: "Queso Paipa madurado, 500 g", desc: "Queso semimaduro con denominación de origen, madurado 20 días. Sabor intenso; se conserva en nevera." },
+          Lb: { nombre: "Queso costeño, libra", desc: "Queso salado hecho a mano en Córdoba, ideal para bollos y patacones. Se conserva en nevera." },
+          Kg: { nombre: "Cuajada fresca, 1 kg", desc: "Cuajada del día, suave y blanda. Para comer con melao o arepa. Dura 5 días en nevera." } } },
+      { re: /caf[eé]/i, unidades: ["Gr", "Kg", "Lb"], sugerida: "Gr",
+        nombre: "Café especial de Pitalito, tostión media, 500 g",
+        desc: "Café 100 % arábica cultivado a 1.700 m en Pitalito, Huila. Notas a panela y frutos rojos. En grano o molido." },
+      { re: /miel|ap[ií]col|abeja/i, unidades: ["Ml", "Gr", "Bt", "Kg", "Lt"], sugerida: "Ml",
+        nombre: "Miel de abejas pura de flor de café, 500 ml",
+        desc: "Miel cruda sin pasteurizar de nuestros apiarios en la montaña. No necesita nevera y no tiene azúcar añadida." },
+      { re: /cacao|chocolate/i, unidades: ["Gr", "Kg", "Lb", "Un", "Paq"], sugerida: "Gr",
+        nombre: "Chocolate de mesa 100 % cacao, 500 g",
+        desc: "Pastillas de cacao fino de aroma de Tumaco, molido en piedra, sin azúcar. Para chocolate caliente espeso." },
+      { re: /panela|dulce|bocadillo|arequipe|conserva/i, unidades: ["Paq", "Un", "Gr", "Kg", "Dz", "Lb"], sugerida: "Paq",
+        nombre: "Bocadillo veleño en hoja de bijao, paquete x12",
+        desc: "Bocadillo de guayaba y panela hecho en Vélez, Santander, envuelto en hoja de bijao como se ha hecho siempre." },
+      { re: /artesan|tejid|ruana|mochila|sombrero|cer[aá]mica|madera/i, unidades: ["Un"], sugerida: "Un",
+        nombre: "Mochila wayuu tejida a mano",
+        desc: "Tejida en crochet por artesanas wayuu de La Guajira. Cada una tarda unas tres semanas y su diseño es único." },
+      { re: /fruta|verdura|hortaliza|tub[eé]rculo|papa/i, unidades: ["Kg", "Lb", "Gr", "Un", "Dz"], sugerida: "Kg",
+        nombre: "Papa criolla de páramo, 2 kg",
+        desc: "Cosechada en Ventaquemada, Boyacá, sin químicos. Llega limpia y lista para cocinar." },
+      { re: /bebida|licor|vino|viche|guarapo|chicha/i, unidades: ["Bt", "Lt", "Ml"], sugerida: "Bt",
+        nombre: "Viche del Pacífico, botella de 750 cm³",
+        desc: "Destilado artesanal de caña hecho por familias de Guapi, Cauca, con la receta tradicional del Pacífico." },
+      { re: /c[aá]rnic|carne|embutido|longaniza|chorizo/i, unidades: ["Gr", "Kg", "Lb", "Un"], sugerida: "Gr",
+        nombre: "Longaniza santandereana ahumada, 500 g",
+        desc: "Hecha con carne de cerdo de nuestra granja y ahumada con leña. Viaja refrigerada y dura 10 días en nevera." }
+    ];
+    var GENERICA = { nombre: "Queso campesino doble crema",
+      desc: "Hecho con leche de nuestras vacas. Suave y cremoso, ideal para arepas. Dura 15 días en nevera." };
+
+    // Cómo se llama lo que se vende, para las ayudas de precio y existencias.
+    function unidadVenta(gu, c) {
+      var cant = c ? " de " + String(c).replace(".", ",") + " " + gu.suf : "";
+      switch (campos.pres.value) {
+        case "Paq": return { cada: "cada paquete de 12", plural: "paquetes", f: false };
+        case "Dz": return { cada: "cada docena", plural: "docenas", f: true };
+        case "Lt": case "Ml": case "Bt": return { cada: "cada botella o frasco" + cant, plural: "botellas o frascos" + cant, f: true };
+        case "Gr": case "Kg": case "Lb": case "Oz": return { cada: "cada paquete" + cant, plural: "paquetes" + cant, f: false };
+        default: return { cada: "cada unidad", plural: "unidades", f: true };
+      }
+    }
+
+    function ayuda(nombreCampo, texto) {
+      var el = document.querySelector("#id_" + nombreCampo + "-ayuda .ayuda-texto");
+      if (el) el.textContent = texto;
+    }
+    function guiaCategoria() {
+      var c = categorias[campos.cat.value];
+      if (!c) return GENERICA;
+      for (var i = 0; i < GUIA_CATEGORIA.length; i++) if (GUIA_CATEGORIA[i].re.test(c.nombre)) return GUIA_CATEGORIA[i];
+      return GENERICA;
+    }
+    function aplicarGuias() {
+      var gc = guiaCategoria();
+      var gu = GUIA_UNIDAD[campos.pres.value] || GUIA_UNIDAD.Un;
+      var ej = (gc.porUnidad && gc.porUnidad[campos.pres.value]) || gc;
+      campos.nombre.placeholder = "Ej.: " + ej.nombre;
+      campos.desc.placeholder = "Ej.: " + ej.desc;
+      ayuda("nombre", "Corto y claro: qué es, de dónde y cuánto trae. Ejemplo: «" + ej.nombre + "».");
+      var fuera = gc.unidades && gc.unidades.indexOf(campos.pres.value) === -1;
+      ayuda("presentacion", gu.pres + (fuera ? " Para esta categoría lo usual es «" + textoDe(campos.pres, gc.sugerida) + "»." : ""));
+      if (gu.ayuda) {
+        ayuda("cantidad_presentacion", gu.ayuda);
+        campos.cant.placeholder = "Ej.: " + gu.ej;
+        $("cantidad-unidad").textContent = gu.suf;
+      }
+      var c = num(campos.cant.value);
+      var uv = unidadVenta(gu, gu.ayuda ? c : 0);
+      ayuda("precio", "Precio de " + uv.cada + ", en pesos y sin envío.");
+      ayuda("stock", "¿Cuánt" + (uv.f ? "as" : "os") + " " + uv.plural + " tienes list" + (uv.f ? "as" : "os") + " para vender?");
+      // Peso sugerido a partir de la cantidad: orientativo, nunca se llena solo.
+      var sugerido = gu.kg && c ? gu.kg(c) : 0;
+      var kg = String(Math.max(0.1, Math.round(sugerido * 10) / 10)).replace(".", ",");
+      ayuda("peso_kg", sugerido
+        ? "Pesa el producto ya empacado. " + uv.cada.charAt(0).toUpperCase() + uv.cada.slice(1) + " suele pesar cerca de " + kg + " kg con empaque."
+        : "Pesa el producto ya empacado, como lo vas a enviar. 600 gramos = 0,6");
+      campos.peso.placeholder = "Ej.: " + (sugerido ? kg : "0,6");
+    }
+    function textoDe(sel, valor) {
+      for (var i = 0; i < sel.options.length; i++) if (sel.options[i].value === valor) return sel.options[i].text;
+      return valor;
+    }
+
+    function digitos(v) { return String(v || "").replace(/\D/g, ""); }
+    function textoOpcion(sel) { return sel && sel.value ? sel.options[sel.selectedIndex].text : ""; }
+    function unidadCorta(sel) {
+      var t = textoOpcion(sel); var m = t.match(/\(([^)]+)\)/);
+      return sel && sel.value ? (m && !/x12|Cm3/.test(m[1]) ? m[1] : sel.value) : "";
+    }
+    function num(v) { var n = parseFloat(String(v || "").replace(",", ".")); return isFinite(n) ? n : 0; }
+
+    var ultimaFoto = null, tarjeta = $("tarjeta");
+    function pulso() { tarjeta.classList.remove("pulso"); void tarjeta.offsetWidth; tarjeta.classList.add("pulso"); }
+
+    function actualizar() {
+      // Foto de portada
+      var portada = fotos[0] && fotos[0].url;
+      var img = $("prev-foto");
+      if (portada !== ultimaFoto) {
+        if (portada) { img.src = portada; img.hidden = false; $("prev-foto-vacia").hidden = true; }
+        else { img.hidden = true; $("prev-foto-vacia").hidden = false; }
+        if (ultimaFoto !== null) pulso();
+        ultimaFoto = portada || "";
+      }
+      // Textos
+      var cat = textoOpcion(campos.cat);
+      $("prev-cat").textContent = cat || "Categoría"; $("prev-cat").classList.toggle("vacio", !cat);
+      var nombre = campos.nombre.value.trim();
+      $("prev-nombre").textContent = nombre || "Nombre de tu producto"; $("prev-nombre").classList.toggle("vacio", !nombre);
+      var sinCantidad = ["Un", "Paq", "Dz"].indexOf(campos.pres.value) !== -1;
+      document.querySelector('[data-campo="cantidad_presentacion"]').hidden = sinCantidad;
+      // Sin cantidad, «Se vende por» ocupa la fila completa y Precio + Unidades quedan juntos.
+      campos.pres.closest(".rejilla").classList.toggle("sin-cantidad", sinCantidad);
+      var cant = sinCantidad ? 0 : num(campos.cant.value);
+      $("prev-pres").textContent = cant ? "Presentación: " + String(cant).replace(".", ",") + " " + (GUIA_UNIDAD[campos.pres.value] || {}).suf : (textoOpcion(campos.pres) ? "Se vende por " + textoOpcion(campos.pres).toLowerCase() : "");
+      // Precio y oferta
+      var precio = +digitos(campos.precio.value);
+      var promo = campos.promo.checked, pct = num(campos.pct.value);
+      var conDesc = promo && pct > 0 && pct <= 90 ? Math.round(precio * (1 - pct / 100)) : precio;
+      var p = $("prev-precio");
+      p.innerHTML = "";
+      var fuerte = document.createElement("strong");
+      fuerte.textContent = precio ? "$ " + cop.format(conDesc) : "$ —";
+      p.appendChild(fuerte);
+      if (precio && conDesc !== precio) { var s = document.createElement("s"); s.textContent = "$ " + cop.format(precio); p.appendChild(s); }
+      var badge = $("prev-descuento");
+      badge.hidden = !(promo && pct > 0 && precio);
+      badge.textContent = "−" + Math.round(pct) + "%";
+      $("oferta-detalle").hidden = !promo;
+      $("oferta-calculo").innerHTML = promo && precio && pct > 0 && pct <= 90
+        ? "Precio en oferta: <strong>$ " + cop.format(conDesc) + "</strong><br>El comprador ahorra $ " + cop.format(precio - conDesc) + "."
+        : "";
+      // Ayudas vivas
+      var gramos = Math.round(num(campos.peso.value) * 1000);
+      $("peso-gramos").textContent = gramos ? "≈ " + cop.format(gramos) + " gramos" + (gramos > 30000 ? " — revisa que esté en kilos" : "") : "";
+      $("nombre-contador").textContent = campos.nombre.value.length + " / 100";
+      var largo = campos.desc.value.trim().length;
+      $("descripcion-contador").textContent = largo ? (largo < 80 ? largo + " caracteres — cuenta un poco más" : largo + " caracteres") : "";
+      aplicarGuias();
+      var frioCat = categorias[campos.cat.value] && categorias[campos.cat.value].frio;
+      $("frio-categoria").textContent = campos.cat.value && campos.frio.value === "" && frioCat !== undefined
+        ? "Por su categoría: " + (frioCat ? "viaja refrigerado." : "no necesita frío.") : "";
+
+      revisar(precio, gramos);
+    }
+
+    /* ---------- Productor (solo formulario abierto) ---------- */
+    var quien = null;
+    if ($("sec-quien")) {
+      var sel = $("id_id_productor"), buscar = $("quien-buscar"), noEstoy = $("id_no_estoy");
+      var opciones = Array.prototype.slice.call(sel.options, 1).map(function (o) { return { v: o.value, t: o.text }; });
+      var normal = function (t) { return t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); };
+      buscar.addEventListener("input", function () {
+        var q = normal(buscar.value.trim()), actual = sel.value;
+        sel.length = 1;
+        opciones.forEach(function (o) {
+          if (!q || normal(o.t).indexOf(q) !== -1) sel.add(new Option(o.t, o.v, false, o.v === actual));
+        });
+        sel.options[0].text = q && sel.length === 1 ? "No encontramos «" + buscar.value.trim() + "»" : (q ? (sel.length - 1) + " resultado" + (sel.length === 2 ? "" : "s") + ": elige" : "Elige de la lista");
+        if (q && sel.length === 2) { sel.selectedIndex = 1; sel.dispatchEvent(new Event("change", { bubbles: true })); }
+      });
+      var cargar = function () {
+        var id = noEstoy.checked ? "" : sel.value;
+        var op = sel.options[sel.selectedIndex];
+        var lugar = id && op && op.text.indexOf(" — ") !== -1 ? op.text.split(" — ")[1] : "";
+        $("origen-normal").textContent = lugar ? "Normalmente sale desde " + lugar + "." : "";
+        try { id ? localStorage.setItem("autoctonos-productor", id) : null; } catch (e) {}
+        fetch("{% url 'panel-productos' %}" + (id ? "?productor=" + id : ""), { headers: { "X-Requested-With": "fetch" } })
+          .then(function (r) { return r.ok ? r.text() : Promise.reject(); })
+          .then(function (html) { $("productos").innerHTML = html; })
+          .catch(function () {});
+      };
+      sel.addEventListener("change", cargar);
+      noEstoy.addEventListener("change", function () {
+        $("quien-lista").hidden = noEstoy.checked;
+        $("quien-nuevo").hidden = !noEstoy.checked;
+        (noEstoy.checked ? $("id_nuevo_nombre") : buscar).focus();
+        cargar();
+      });
+      // Quien ya envió algo desde este navegador no tiene que volver a buscarse.
+      if (!sel.value && !noEstoy.checked) {
+        try {
+          var guardado = localStorage.getItem("autoctonos-productor");
+          if (guardado && opciones.some(function (o) { return o.v === guardado; })) { sel.value = guardado; cargar(); }
+        } catch (e) {}
+      }
+      // Celular: solo dígitos, máximo 10 (se quita el +57), se muestra «300 123 4567» y
+      // se avisa al salir del campo si no es un celular colombiano válido.
+      var tel = $("id_nuevo_telefono");
+      var CELULAR_RE = /^3[0-35]\d{8}$/;
+      var limpiarCel = function (v) {
+        var d = String(v || "").replace(/\D/g, "");
+        if (d.length === 12 && d.indexOf("57") === 0) d = d.slice(2);
+        return d.slice(0, 14);  // no se recorta a 10: un número largo se avisa, no se adivina
+      };
+      window.celularValido = function (v) { return CELULAR_RE.test(limpiarCel(v)); };
+      var errorCel = function (mostrar) {
+        var ayudaCel = $("id_nuevo_telefono-ayuda"), campoCel = ayudaCel.closest(".campo");
+        var previo = ayudaCel.querySelector(".error-vivo");
+        if (previo) previo.remove();
+        var d = limpiarCel(tel.value), msg = "";
+        if (mostrar && d) {
+          if (d[0] !== "3") msg = "Un celular en Colombia empieza por 3.";
+          else if (d.length < 10) msg = "Faltan " + (10 - d.length) + " dígito" + (d.length === 9 ? "" : "s") + ": el celular tiene 10.";
+          else if (d.length > 10) msg = "Sobra" + (d.length === 11 ? " 1 dígito" : "n " + (d.length - 10) + " dígitos") + ": el celular tiene 10.";
+          else if (!CELULAR_RE.test(d)) msg = "Revisa el número: después del 3 va 0, 1, 2, 3 o 5.";
+        }
+        campoCel.classList.toggle("campo--error", !!msg);
+        tel.setAttribute("aria-invalid", msg ? "true" : "false");
+        if (msg) {
+          var e = document.createElement("span"); e.className = "error error-vivo"; e.textContent = msg;
+          ayudaCel.insertBefore(e, ayudaCel.firstChild);
+        }
+      };
+      tel.addEventListener("input", function () {
+        var d = limpiarCel(tel.value);
+        tel.value = d.length > 10 ? d : d.length > 6 ? d.slice(0, 3) + " " + d.slice(3, 6) + " " + d.slice(6) : d.length > 3 ? d.slice(0, 3) + " " + d.slice(3) : d;
+        if (tel.getAttribute("aria-invalid") === "true") errorCel(true);
+      });
+      tel.addEventListener("blur", function () { errorCel(true); });
+
+      quien = {
+        listo: function () {
+          return noEstoy.checked
+            ? !!($("id_nuevo_nombre").value.trim() && celularValido($("id_nuevo_telefono").value) && $("id_nuevo_municipio").value)
+            : !!sel.value;
+        },
+        foco: function () { return noEstoy.checked ? $("id_nuevo_nombre") : buscar; }
+      };
+    }
+
+    /* ---------- Lo que falta ---------- */
+    function revisar(precio, gramos) {
+      var items = [];
+      if (quien) items.push({ ok: quien.listo(), txt: "Productor", sec: "sec-quien", foco: quien.foco() });
+      items = items.concat([
+        { ok: fotos.length >= Math.max(MIN, 1), txt: MIN ? "Al menos " + MIN + " fotos (" + fotos.length + ")" : "Fotos (" + fotos.length + ")", sec: "sec-fotos", foco: input },
+        { ok: !!campos.cat.value, txt: "Categoría", sec: "sec-que", foco: campos.cat },
+        { ok: campos.nombre.value.trim().length >= 3, txt: "Nombre", sec: "sec-que", foco: campos.nombre },
+        { ok: campos.desc.value.trim().length >= 20, txt: "Descripción", sec: "sec-que", foco: campos.desc },
+        { ok: !!campos.pres.value, txt: "Cómo se vende", sec: "sec-precio", foco: campos.pres },
+        { ok: precio > 0, txt: "Precio", sec: "sec-precio", foco: campos.precio },
+        { ok: campos.stock.value !== "" && +campos.stock.value >= 0, txt: "Unidades disponibles", sec: "sec-precio", foco: campos.stock },
+        { ok: gramos > 0, txt: "Peso del paquete", sec: "sec-envio", foco: campos.peso }
+      ]);
+      var hechos = items.filter(function (i) { return i.ok; }).length;
+      var ul = $("pendientes-lista"); ul.innerHTML = "";
+      items.forEach(function (it) {
+        var li = document.createElement("li"); li.className = it.ok ? "hecho" : "";
+        if (it.ok) { li.innerHTML = ICO.ok; li.appendChild(document.createTextNode(it.txt)); }
+        else {
+          var a = document.createElement("a"); a.href = "#" + it.sec; a.textContent = it.txt;
+          a.onclick = function (e) { e.preventDefault(); $(it.sec).scrollIntoView({ behavior: "smooth", block: "start" }); setTimeout(function () { it.foco.focus({ preventScroll: true }); }, 350); };
+          li.innerHTML = ICO.no; li.appendChild(a);
+        }
+        ul.appendChild(li);
+      });
+      var faltan = items.length - hechos;
+      $("pendientes-titulo").textContent = faltan ? "Lo que falta" : "¡Todo listo!";
+      $("pendientes-cuenta").textContent = hechos + " de " + items.length;
+      $("pendientes-barra").style.width = (100 * hechos / items.length) + "%";
+      $("movil-titulo").textContent = faltan ? "Faltan " + faltan + " dato" + (faltan > 1 ? "s" : "") : "¡Todo listo!";
+      $("movil-detalle").textContent = faltan ? items.filter(function (i) { return !i.ok; }).map(function (i) { return i.txt.replace(/ \(.*\)/, ""); }).slice(0, 2).join(", ") + (faltan > 2 ? "…" : "") : "Puedes enviarlo.";
+      // Cada sección marca su número cuando sus datos están completos.
+      var porSec = {};
+      items.forEach(function (it) { porSec[it.sec] = (porSec[it.sec] !== false) && it.ok; });
+      Object.keys(porSec).forEach(function (id) { $(id).classList.toggle("completa", porSec[id]); });
+    }
+
+    /* ---------- Precio con puntos de miles mientras se escribe ---------- */
+    campos.precio.addEventListener("input", function () {
+      var d = digitos(this.value);
+      this.value = d ? cop.format(+d) : "";
+    });
+
+    form.addEventListener("input", function () { sucio = true; actualizar(); });
+    form.addEventListener("change", actualizar);
+    window.addEventListener("beforeunload", function (e) { if (sucio) { e.preventDefault(); e.returnValue = ""; } });
+
+    form.addEventListener("submit", function (e) {
+      var pendientes = fotos.some(function (f) { return f.tipo === "n" && !f.archivo; });
+      if (pendientes) { e.preventDefault(); anunciar("Espera un momento: estamos preparando las fotos."); return; }
+      sincronizarArchivos();
+      sucio = false;
+      document.querySelectorAll("button[form=ficha]").forEach(function (b) { b.setAttribute("aria-busy", "true"); b.textContent = "Guardando…"; });
+    });
+
+
+    /* ---------- Aviso flotante: 20 s, se pausa con el ratón encima ---------- */
+    (function () {
+      var caja = $("flotante");
+      if (!caja) return;
+      var DURACION = 20000, restante = DURACION, inicio = Date.now(), timer = null, barra = $("flotante-tiempo");
+      var cerrar = function () {
+        clearTimeout(timer);
+        caja.classList.add("sale");
+        setTimeout(function () { caja.hidden = true; }, 300);
+      };
+      var correr = function () {
+        inicio = Date.now();
+        barra.style.transition = "transform " + restante + "ms linear";
+        barra.style.transform = "scaleX(0)";
+        timer = setTimeout(cerrar, restante);
+      };
+      var pausar = function () {
+        clearTimeout(timer);
+        restante -= Date.now() - inicio;
+        var actual = getComputedStyle(barra).transform;
+        barra.style.transition = "none";
+        barra.style.transform = actual;
+      };
+      $("flotante-cerrar").addEventListener("click", cerrar);
+      caja.addEventListener("mouseenter", pausar);
+      caja.addEventListener("mouseleave", correr);
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !caja.hidden) cerrar(); });
+      requestAnimationFrame(function () { requestAnimationFrame(correr); });
+    })();
+    pintarFotos();
+    // Con errores del servidor: llevar al primer campo marcado.
+    var primerError = document.querySelector(".campo--error");
+    if (primerError) {
+      primerError.scrollIntoView({ block: "center" });
+      var f = primerError.querySelector("input:not([type=hidden]), select, textarea");
+      if (f) f.focus({ preventScroll: true });
+    }
+  })();
+  </script>
+</body>
+</html>

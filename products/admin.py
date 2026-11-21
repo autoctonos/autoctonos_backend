@@ -155,8 +155,9 @@ class ImagenProductoInline(admin.TabularInline):
     extra = 2
     min_num = 2
     max_num = 4
-    fields = ('vista_previa', 'url_imagen')
+    fields = ('vista_previa', 'url_imagen', 'orden')
     readonly_fields = ('vista_previa',)
+    ordering = ('orden', 'id_imagen')
     verbose_name = "Imagen"
     verbose_name_plural = "Imágenes (mínimo 2, máximo 4) · cuadradas, fondo blanco, mín. 800 px"
 

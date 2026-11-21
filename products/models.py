@@ -220,6 +220,10 @@ class ImagenProducto(models.Model):
         upload_to='productos_imagenes/', null=True, blank=True, max_length=500,
         validators=[validar_imagen_producto], verbose_name="Foto", help_text=GUIA_FOTOS,
     )
+    orden = models.PositiveSmallIntegerField(
+        default=0, verbose_name="Orden",
+        help_text="La foto con el número más bajo es la portada del producto en la tienda.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(default=None, null=True)
@@ -238,6 +242,8 @@ class ImagenProducto(models.Model):
     class Meta:
         verbose_name = "Imagen de Producto"
         verbose_name_plural = "Imágenes de Productos"
+        # Las fotos sin orden explícito (todas en 0) conservan el orden de subida.
+        ordering = ['orden', 'id_imagen']
 
 class Post(models.Model):
     id_post = models.AutoField(primary_key=True)
