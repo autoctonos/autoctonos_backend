@@ -16,7 +16,8 @@ trayecto_choices = [
 
 class Trayecto(models.Model):
     """Tarifa de la transportadora. La jerarquía es única: MAX(origen, destino) debe
-    resolver a una sola tarifa."""
+    resolver a una sola tarifa. Excepción: si la guía no sale de su municipio se cobra la
+    urbana cuando sale más barata (`shipping/services/quote.py`)."""
 
     id_trayecto = models.AutoField(primary_key=True)
     codigo = models.CharField(max_length=20, unique=True, choices=trayecto_choices, verbose_name="Código")

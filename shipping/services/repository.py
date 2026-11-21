@@ -4,7 +4,7 @@ El cliente sólo manda ids y cantidades: precios, pesos y orígenes se resuelven
 """
 
 from products.models import Producto
-from shipping.models import CoberturaMunicipio, ConfiguracionEmpaque, PromocionEnvio
+from shipping.models import CoberturaMunicipio, ConfiguracionEmpaque, PromocionEnvio, Trayecto
 
 from .exceptions import (
     CarritoVacio,
@@ -24,7 +24,11 @@ from .quote import (
     ParametrosCalculo,
     PromocionCalculo,
     TarifaTrayecto,
+    mismo_municipio,
 )
+
+# Trayecto que se cobra cuando productor y comprador están en el mismo municipio.
+CODIGO_MISMO_MUNICIPIO = 'urbano'
 
 
 def _tarifa(trayecto) -> TarifaTrayecto:
@@ -147,23 +151,36 @@ def _resolver_config_empaque() -> ConfigEmpaque:
     return ConfigEmpaque(capacidad_kg=config.capacidad_kg)
 
 
-def _resolver_parametros() -> ParametrosCalculo:
+def _tarifa_mismo_municipio(destino: Destino, items: tuple[ItemCotizacion, ...]) -> TarifaTrayecto | None:
+    """Sin query en el caso común (envío a otro municipio) ni si el destino ya es urbano."""
+    if not any(mismo_municipio(item, destino) for item in items):
+        return None
+    if destino.tarifa.codigo == CODIGO_MISMO_MUNICIPIO:
+        return destino.tarifa
+    urbano = Trayecto.objects.filter(codigo=CODIGO_MISMO_MUNICIPIO, activo=True).first()
+    return _tarifa(urbano) if urbano else None
+
+
+def _resolver_parametros(tarifa_mismo_municipio: TarifaTrayecto | None) -> ParametrosCalculo:
     promocion = PromocionEnvio.objects.filter(activo=True).first()
-    if promocion is None:
-        return ParametrosCalculo()
-    return ParametrosCalculo(promocion=PromocionCalculo(
-        umbral_subtotal=promocion.umbral_subtotal,
-        jerarquia_maxima_cubierta=promocion.jerarquia_maxima_cubierta,
-        tope_cubierto=promocion.tope_cubierto,
-    ))
+    return ParametrosCalculo(
+        promocion=PromocionCalculo(
+            umbral_subtotal=promocion.umbral_subtotal,
+            jerarquia_maxima_cubierta=promocion.jerarquia_maxima_cubierta,
+            tope_cubierto=promocion.tope_cubierto,
+        ) if promocion else None,
+        tarifa_mismo_municipio=tarifa_mismo_municipio,
+    )
 
 
 def construir_entrada(id_municipio_destino: int, items_solicitados) -> EntradaCotizacion:
+    destino = _resolver_destino(id_municipio_destino)
+    items = _resolver_items(items_solicitados)
     return EntradaCotizacion(
-        destino=_resolver_destino(id_municipio_destino),
-        items=_resolver_items(items_solicitados),
+        destino=destino,
+        items=items,
         config_empaque=_resolver_config_empaque(),
-        parametros=_resolver_parametros(),
+        parametros=_resolver_parametros(_tarifa_mismo_municipio(destino, items)),
     )
 
 
