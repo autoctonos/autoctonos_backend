@@ -4,6 +4,10 @@ Réplica de la hoja «Módulo de Compra» del tarifario: total = subtotal + flet
 (F17). El empaque refrigerado no se cobra: va incluido en el flete que cobra el productor.
 Se sigue contando cuántas neveras necesita cada guía porque es información de despacho.
 
+Regla propia (no está en la hoja): si la guía no sale de su municipio —el productor
+despacha y el comprador recibe en el mismo— se cobra la tarifa urbana cuando es más
+barata que la normal; nunca encarece.
+
 Al comprador el sobreflete NO se le muestra como línea aparte: se presenta sumado al flete
 como `valor_envio` de cada guía (también se le paga a la transportadora, y como «garantía»
 separada confundía en pruebas con usuarios). El desglose flete/sobreflete se conserva en el
@@ -96,6 +100,8 @@ class PromocionCalculo:
 @dataclass(frozen=True)
 class ParametrosCalculo:
     promocion: PromocionCalculo | None = None
+    # Tarifa urbana para guías que no salen de su municipio; `None`: no hay ninguna.
+    tarifa_mismo_municipio: TarifaTrayecto | None = None
 
 
 @dataclass(frozen=True)
@@ -186,6 +192,21 @@ def _tarifa_aplicada(tarifa_origen: TarifaTrayecto, tarifa_destino: TarifaTrayec
     return tarifa_destino if tarifa_destino.jerarquia >= tarifa_origen.jerarquia else tarifa_origen
 
 
+def mismo_municipio(item: ItemCotizacion, destino: Destino) -> bool:
+    return item.id_municipio_origen == destino.id_municipio
+
+
+def _costo_envio(tarifa: TarifaTrayecto, adicionales: int, subtotal: Decimal) -> tuple[Decimal, Decimal]:
+    """(flete, sobreflete) de una guía con esta tarifa."""
+    flete = _money(tarifa.valor_kilo_inicial + adicionales * tarifa.valor_kilo_adicional)
+    # Base del 2%: el SUBTOTAL DEL PRODUCTO (hoja «Módulo de Compra», F15 = IF((F7*0.02)
+    # <800;800;F7*0.02), donde F7 es "Valor Subtotal"), no el flete (F14). Con montos
+    # bajos ambas bases caen en el piso de $800 y parecen coincidir — no es así: son
+    # fórmulas distintas, verificado contra el .xlsx original celda por celda.
+    sobreflete = _money(max(tarifa.sobreflete_minimo, subtotal * tarifa.porcentaje_sobreflete))
+    return flete, sobreflete
+
+
 def _clave_grupo(item: ItemCotizacion) -> tuple[int, int]:
     """Una guía por productor y municipio de despacho.
 
@@ -207,7 +228,8 @@ def _orden_grupo(item: ItemCotizacion) -> tuple[str, int, int]:
 
 
 def _cotizar_grupo(items: tuple[ItemCotizacion, ...], destino: Destino,
-                   config_empaque: ConfigEmpaque) -> GrupoEnvio:
+                   config_empaque: ConfigEmpaque,
+                   tarifa_mismo_municipio: TarifaTrayecto | None) -> GrupoEnvio:
     referencia = items[0]
     if any(_clave_grupo(item) != _clave_grupo(referencia) for item in items):
         raise ValueError("Un grupo de envío no puede mezclar productores ni municipios de origen.")
@@ -231,12 +253,13 @@ def _cotizar_grupo(items: tuple[ItemCotizacion, ...], destino: Destino,
     peso_facturable = int(peso_bruto.to_integral_value(rounding=ROUND_CEILING))
     adicionales = kilos_adicionales(peso_facturable)
 
-    flete = _money(tarifa.valor_kilo_inicial + adicionales * tarifa.valor_kilo_adicional)
-    # Base del 2%: el SUBTOTAL DEL PRODUCTO (hoja «Módulo de Compra», F15 = IF((F7*0.02)
-    # <800;800;F7*0.02), donde F7 es "Valor Subtotal"), no el flete (F14). Con montos
-    # bajos ambas bases caen en el piso de $800 y parecen coincidir — no es así: son
-    # fórmulas distintas, verificado contra el .xlsx original celda por celda.
-    sobreflete = _money(max(tarifa.sobreflete_minimo, subtotal * tarifa.porcentaje_sobreflete))
+    flete, sobreflete = _costo_envio(tarifa, adicionales, subtotal)
+    if tarifa_mismo_municipio is not None and mismo_municipio(referencia, destino):
+        # Se compara el precio real, no la jerarquía: las tarifas se editan en el admin.
+        # En empate se queda la normal, así la regla nunca encarece.
+        flete_local, sobreflete_local = _costo_envio(tarifa_mismo_municipio, adicionales, subtotal)
+        if flete_local + sobreflete_local < flete + sobreflete:
+            tarifa, flete, sobreflete = tarifa_mismo_municipio, flete_local, sobreflete_local
 
     peso_frio = sum(
         (item.peso_unitario_kg * item.cantidad for item in items if item.requiere_frio), CERO
@@ -309,7 +332,8 @@ def cotizar(entrada: EntradaCotizacion) -> ResultadoCotizacion:
 
     ordenados = sorted(entrada.items, key=_orden_grupo)
     grupos = tuple(
-        _cotizar_grupo(tuple(items), entrada.destino, entrada.config_empaque)
+        _cotizar_grupo(tuple(items), entrada.destino, entrada.config_empaque,
+                       entrada.parametros.tarifa_mismo_municipio)
         for _, items in groupby(ordenados, key=_clave_grupo)
     )
 

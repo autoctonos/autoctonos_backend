@@ -1,0 +1,17 @@
+<div class="campo{% if f.errors %} campo--error{% endif %}{% if ancho %} campo--{{ ancho }}{% endif %}" data-campo="{{ f.name }}">
+  <label for="{{ f.id_for_label }}">{{ f.label }}{% if not f.field.required and not obligatorio %} <span class="opcional">(opcional)</span>{% endif %}</label>
+  {% if prefijo or sufijo %}
+    <div class="con-afijo">
+      {% if prefijo %}<span class="afijo" aria-hidden="true">{{ prefijo }}</span>{% endif %}
+      {{ f }}
+      {% if sufijo %}<span class="afijo afijo--fin" aria-hidden="true" {% if sufijo_id %}id="{{ sufijo_id }}"{% endif %}>{{ sufijo }}</span>{% endif %}
+    </div>
+  {% else %}
+    {{ f }}
+  {% endif %}
+  <p class="ayuda" id="{{ f.auto_id }}-ayuda">
+    {% if f.errors %}<span class="error">{{ f.errors.0 }}</span>{% endif %}
+    <span class="ayuda-texto">{{ ayuda|default:"" }}</span>
+    {% if extra_id %}<span class="dato-vivo" id="{{ extra_id }}" aria-live="polite"></span>{% endif %}
+  </p>
+</div>

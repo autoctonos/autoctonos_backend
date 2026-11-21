@@ -10,3 +10,6 @@ CLAUDE.md
 .idea/
 autoctonos-env
 media/
+
+# Capturas de revisión de diseño (Impeccable): solo locales, no se despliegan.
+.impeccable/review/

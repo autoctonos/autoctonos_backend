@@ -42,6 +42,8 @@ ESPECIAL = TarifaTrayecto('especial', 'Especial', 5, Decimal('38400'), Decimal('
 EMPAQUE = ConfigEmpaque(capacidad_kg=Decimal('6.000'))
 
 TUNJA = Destino(id_municipio=1104, nombre='Tunja', departamento='Boyacá', tarifa=URBANO)
+PAIPA = Destino(id_municipio=1069, nombre='Paipa', departamento='Boyacá', tarifa=ZONAL)
+MISMO_MUNICIPIO = ParametrosCalculo(tarifa_mismo_municipio=URBANO)
 
 
 def item(**kwargs):
@@ -150,6 +152,66 @@ class CalculoFleteTests(SimpleTestCase):
         resultado = cotizar(entrada([item(tarifa_origen=URBANO)], destino=destino_lejano))
         self.assertEqual(resultado.grupos[0].trayecto_aplicado, 'nacional')
         self.assertEqual(resultado.grupos[0].jerarquia, 3)
+
+    def test_mismo_municipio_aplica_tarifa_urbana(self):
+        """Productor y comprador en Paipa (zonal): la guía no sale del municipio y paga
+        la tarifa urbana. 5 quesos = 4 kg: 8.150 + 3 × 3.850 = 19.700 (zonal: 25.100)."""
+        resultado = cotizar(entrada([item(cantidad=5)], destino=PAIPA, parametros=MISMO_MUNICIPIO))
+        grupo = resultado.grupos[0]
+        self.assertEqual(grupo.trayecto_aplicado, 'urbano')
+        self.assertEqual(grupo.jerarquia, 1)
+        self.assertEqual(grupo.flete, Decimal('19700.00'))
+        self.assertEqual(grupo.sobreflete, Decimal('3000.00'))
+        self.assertEqual(grupo.entrega, EntregaEstimada(1, 1))
+        self.assertEqual(resultado.totales.envio, Decimal('22700.00'))
+
+    def test_mismo_municipio_territorial_tambien_es_urbano(self):
+        pajarito = Destino(1070, 'Pajarito', 'Boyacá', TERRITORIAL)
+        resultado = cotizar(entrada(
+            [item(id_municipio_origen=1070, municipio_origen='Pajarito', tarifa_origen=TERRITORIAL)],
+            destino=pajarito, parametros=MISMO_MUNICIPIO,
+        ))
+        self.assertEqual(resultado.grupos[0].trayecto_aplicado, 'urbano')
+
+    def test_municipio_distinto_no_cambia(self):
+        """Paipa → Tunja sigue siendo zonal: el caso verificado del tarifario."""
+        resultado = cotizar(entrada([item(cantidad=5)], parametros=MISMO_MUNICIPIO))
+        self.assertEqual(resultado.grupos[0].trayecto_aplicado, 'zonal')
+        self.assertEqual(resultado.grupos[0].flete, Decimal('25100.00'))
+
+    def test_mismo_municipio_sin_tarifa_local_no_cambia(self):
+        """Sin tarifa urbana disponible, la de mayor jerarquía de siempre."""
+        resultado = cotizar(entrada([item()], destino=PAIPA))
+        self.assertEqual(resultado.grupos[0].trayecto_aplicado, 'zonal')
+
+    def test_mismo_municipio_nunca_encarece(self):
+        """Si la tarifa local no es más barata que la normal, se queda la normal."""
+        local_cara = ParametrosCalculo(tarifa_mismo_municipio=ZONAL)
+        resultado = cotizar(entrada(
+            [item(id_municipio_origen=1104, municipio_origen='Tunja', tarifa_origen=URBANO)],
+            destino=TUNJA, parametros=local_cara,
+        ))
+        self.assertEqual(resultado.grupos[0].trayecto_aplicado, 'urbano')
+
+    def test_mismo_municipio_compara_precio_no_jerarquia(self):
+        """Si en el admin la urbana queda más cara que la normal, se cobra la normal."""
+        urbano_caro = replace(URBANO, valor_kilo_inicial=Decimal('50000'))
+        resultado = cotizar(entrada([item()], destino=PAIPA,
+                                    parametros=ParametrosCalculo(tarifa_mismo_municipio=urbano_caro)))
+        self.assertEqual(resultado.grupos[0].trayecto_aplicado, 'zonal')
+        self.assertEqual(resultado.grupos[0].flete, Decimal('11900.00'))
+
+    def test_mismo_municipio_solo_afecta_su_guia(self):
+        """Dos productores: el de Paipa entrega en Paipa (urbano), el de Sogamoso viaja (zonal)."""
+        resultado = cotizar(entrada([
+            item(id_producto=1, id_productor=1, productor='A'),
+            item(id_producto=2, id_productor=2, productor='B',
+                 id_municipio_origen=1098, municipio_origen='Sogamoso'),
+        ], destino=PAIPA, parametros=MISMO_MUNICIPIO))
+        aplicados = {g.municipio_origen: g.trayecto_aplicado for g in resultado.grupos}
+        self.assertEqual(aplicados, {'Paipa': 'urbano', 'Sogamoso': 'zonal'})
+        # El pedido llega cuando llega la guía más lenta.
+        self.assertEqual(resultado.entrega, EntregaEstimada(1, 3))
 
     def test_carrito_multi_productor(self):
         """Dos productores son dos guías: dos fletes y dos sobrefletes."""
@@ -428,6 +490,57 @@ class CotizacionAPITests(DatosEnvioMixin, TestCase):
         self.assertEqual(cuerpo['grupos'][0]['peso_bruto_kg'], '4.000')
         self.assertEqual(cuerpo['grupos'][0]['peso_facturable_kg'], 4)
         self.assertEqual(cuerpo['grupos'][0]['valor_envio'], '28100.00')
+
+    def test_mismo_municipio_cobra_tarifa_urbana(self):
+        """Queso de Paipa entregado en Paipa: urbano, no zonal."""
+        respuesta = self.cotizar({
+            'id_municipio_destino': self.paipa.id_municipio,
+            'items': [{'id_producto': self.queso.id_producto, 'cantidad': 5}],
+        })
+        self.assertEqual(respuesta.status_code, 200)
+        cuerpo = respuesta.json()
+        self.assertEqual(cuerpo['grupos'][0]['trayecto_aplicado'], 'urbano')
+        self.assertEqual(cuerpo['totales']['flete'], '19700.00')
+        self.assertEqual(cuerpo['totales']['envio'], '22700.00')
+        self.assertEqual(cuerpo['totales']['total'], '172700.00')
+
+    def test_urbano_a_urbano_no_consulta_de_mas(self):
+        """Tunja → Tunja: el destino ya es urbano, se reutiliza sin otra query."""
+        local = Productor.objects.create(nombre='Panadería Tunja', descripcion='Pan',
+                                         telefono='3007778899', id_municipio=self.tunja)
+        pan = Producto.objects.create(
+            id_categoria=self.categoria, nombre='Almojábana', descripcion='Pan',
+            precio=Decimal('2000.00'), stock=100, peso_kg=Decimal('0.200'),
+            id_productor=local, estado='aprobado',
+        )
+        with self.assertNumQueries(4):
+            respuesta = self.cotizar({
+                'id_municipio_destino': self.tunja.id_municipio,
+                'items': [{'id_producto': pan.id_producto, 'cantidad': 1}],
+            })
+        self.assertEqual(respuesta.json()['grupos'][0]['trayecto_aplicado'], 'urbano')
+
+    def test_carrito_mixto_solo_rebaja_la_guia_local(self):
+        """Queso de Paipa + sabajón de Pajarito, entregados en Paipa."""
+        respuesta = self.cotizar({
+            'id_municipio_destino': self.paipa.id_municipio,
+            'items': [{'id_producto': self.queso.id_producto, 'cantidad': 1},
+                      {'id_producto': self.sabajon.id_producto, 'cantidad': 1}],
+        })
+        self.assertEqual(respuesta.status_code, 200)
+        aplicados = {g['municipio_origen']: g['trayecto_aplicado'] for g in respuesta.json()['grupos']}
+        self.assertEqual(aplicados, {'Paipa': 'urbano', 'Pajarito': 'territorial'})
+
+    def test_mismo_municipio_sin_urbano_activo_cobra_normal(self):
+        """Sin trayecto urbano activo no se rompe la cotización: cobra la tarifa normal."""
+        Trayecto.objects.filter(pk=self.urbano.pk).update(activo=False)
+        respuesta = self.cotizar({
+            'id_municipio_destino': self.paipa.id_municipio,
+            'items': [{'id_producto': self.queso.id_producto, 'cantidad': 5}],
+        })
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertEqual(respuesta.json()['grupos'][0]['trayecto_aplicado'], 'zonal')
+        self.assertEqual(respuesta.json()['totales']['flete'], '25100.00')
 
     def test_ignora_precio_enviado_por_el_cliente(self):
         """Regresión del agujero de PayU: el precio del cliente no toca el total."""
